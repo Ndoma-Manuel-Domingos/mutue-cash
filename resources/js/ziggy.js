@@ -1,0 +1,7 @@
+const Ziggy = {"url":"http://127.0.0.1:8000","port":null,"defaults":{},"routes":{"login":{"uri":"login","methods":["GET","HEAD"]},"mc.login.post":{"uri":"login","methods":["POST"]},"mc.logout":{"uri":"logout","methods":["POST"]},"mc.dashboard":{"uri":"dashboard","methods":["GET","HEAD"]},"mc.depositos.index":{"uri":"depositos","methods":["GET","HEAD"]},"mc.depositos.store":{"uri":"depositos\/store","methods":["POST"]},"mc.pagamentos.index":{"uri":"pagamentos","methods":["GET","HEAD"]},"mc.pagamentos.create":{"uri":"pagamentos\/criar","methods":["GET","HEAD"]},"mc.fecho-caixa-operador.index":{"uri":"relatorios\/fecho-caixa\/operador","methods":["GET","HEAD"]},"mc.searh-estudante.index":{"uri":"pesquisar-estudante","methods":["GET","HEAD"]},"mc.todas-referencias-nao-pagas":{"uri":"pagamentos-estudantes\/todas-referencias-nao-pagas\/{codigo_matricula}","methods":["GET","HEAD"]},"mc.fatura-by-reference":{"uri":"pagamentos-estudantes\/fatura-by-reference","methods":["GET","HEAD"]},"mc.pagamento-diversos-create":{"uri":"pagamentos-estudantes\/pagamento\/diversos\/create\/{codigo?}","methods":["POST"]},"mc.pagamento-fatura-diversos-create":{"uri":"pagamentos-estudantes\/fatura\/diversos\/create\/{numero_matricula?}","methods":["POST"]},"mc.banco-formas-pagamento":{"uri":"banco-formaPagamento","methods":["GET","HEAD"]}}};
+
+if (typeof window !== 'undefined' && typeof window.Ziggy !== 'undefined') {
+    Object.assign(Ziggy.routes, window.Ziggy.routes);
+}
+
+export { Ziggy };
