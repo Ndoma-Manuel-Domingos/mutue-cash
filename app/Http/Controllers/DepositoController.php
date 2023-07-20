@@ -26,6 +26,7 @@ class DepositoController extends Controller
     
     public function index(Request $request)
     {
+    
         $user = auth()->user();
        
         $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
@@ -37,7 +38,7 @@ class DepositoController extends Controller
         })
         ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
         ->orderBy('codigo', 'desc')
-        ->paginate(5)
+        ->paginate(10)
         ->withQueryString();
         
         
@@ -51,8 +52,7 @@ class DepositoController extends Controller
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
 
         $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
-        
-        
+    
         return Inertia::render('Operacoes/Depositos/Index', $data);
     }
     

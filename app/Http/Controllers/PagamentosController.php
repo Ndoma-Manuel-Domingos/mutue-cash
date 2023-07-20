@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Factura;
+use App\Exports\PagamentosExport;
 use App\Models\FormaPagamento;
-use App\Models\GerarRefereciaDePagamento;
 use App\Models\Matricula;
 use App\Models\Pagamento;
 use App\Models\PagamentoPorReferencia;
@@ -26,6 +25,12 @@ use App\Services\FaturaService;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
+use App\Models\AnoLectivo;
+use App\Models\Grupo;
+use App\Models\GrupoUtilizador;
+use App\Models\PagamentoItems;
+use App\Models\Utilizador;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PagamentosController extends Controller
 {
@@ -61,8 +66,59 @@ class PagamentosController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        
+        $ano = AnoLectivo::where('status', '1')->first();
+        
+        if(!$request->ano_lectivo){
+            $request->ano_lectivo = $ano->Codigo;
+        }
+        
+        $data['items'] = Pagamento::with('factura')->when($request->data_inicio, function($query, $value){
+            $query->where('created_at', '>=' ,Carbon::parse($value) );
+        })->when($request->data_final, function($query, $value){
+            $query->where('created_at', '<=' ,Carbon::parse($value));
+        })->when($request->operador, function($query, $value){
+            $query->where('fk_utilizador', $value);
+        })->when($request->ano_lectivo, function($query, $value){
+            $query->where('AnoLectivo', $value);
+        })
+        ->orderBy('tb_pagamentos.Codigo', 'desc')
+        ->paginate(10)
+        ->withQueryString();
+        
+        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
+         // utilizadores validadores
+        // utilizadores adiministrativos
+        // utilizadores área financeira
+        // utilizadores tesouraria
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
 
-        $data['items'] = Pagamento::leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
+        $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        
+        return Inertia::render('Operacoes/Pagamentos/Index', $data);
+    }
+    
+    public function pdf(Request $request)
+    {
+        $ano = AnoLectivo::where('status', '1')->first();
+        
+        if(!$request->ano_lectivo){
+            $request->ano_lectivo = $ano->Codigo;
+        }
+        
+        $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
+            $query->where('created_at', '>=' ,Carbon::parse($value) );
+        })->when($request->data_final, function($query, $value){
+            $query->where('created_at', '<=' ,Carbon::parse($value));
+        })->when($request->operador, function($query, $value){
+            $query->where('fk_utilizador', $value);
+        })->when($request->ano_lectivo, function($query, $value){
+            $query->where('tb_pagamentos.AnoLectivo', $value);
+        })
+        ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
         ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
         ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
         ->leftjoin('tb_cursos', 'tb_matriculas.Codigo_Curso', '=', 'tb_cursos.Codigo')
@@ -70,10 +126,52 @@ class PagamentosController extends Controller
         ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
         ->orderBy('tb_pagamentos.Codigo', 'desc')
         ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
-        ->paginate(5)
-        ->withQueryString();
+        ->get();
         
-        return Inertia::render('Operacoes/Pagamentos/Index', $data);
+        $data['requests'] = $request->all('data_inicio', 'data_final');
+        
+        $data['ano_lectivo'] = AnoLectivo::where('Codigo', $request->ano_lectivo)->first();
+        $data['operador'] =  Utilizador::where('codigo_importado', $request->operador)->first();
+        
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.listagem-pagamentos', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
+    }
+    
+      
+    public function excel(Request $request)
+    {
+        return Excel::download(new PagamentosExport($request), 'lista-de-pagamentos.xlsx');
+    }
+    
+    
+    public function detalhes($id)
+    {
+        $pagamento = Pagamento::leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
+        ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
+        ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
+        ->leftjoin('tb_cursos', 'tb_matriculas.Codigo_Curso', '=', 'tb_cursos.Codigo')
+        ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
+        ->orderBy('tb_pagamentos.Codigo', 'desc')
+        ->select('factura.ValorAPagar', 'factura.DataFactura', 'tb_pagamentos.AnoLectivo', 'tb_pagamentos.codigo_factura', 'tb_pagamentos.Codigo', 'tb_pagamentos.valor_depositado', 'tb_pagamentos.DataRegisto', 'tb_pagamentos.estado', 'tb_pagamentos.nome_documento', 'tb_pagamentos.updated_at', 'Nome_Completo', 'tb_pagamentos.Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso')
+        ->findOrFail($id);
+        
+        if($pagamento->AnoLectivo >= 2 AND $pagamento->AnoLectivo <= 15){
+            $pagamento_itens = PagamentoItems::with('mes', 'servico')
+            ->where('Codigo_Pagamento', $pagamento->Codigo)
+            ->get();            
+        }else{
+            $pagamento_itens = PagamentoItems::with('mes_temps', 'servico')
+            ->where('Codigo_Pagamento', $pagamento->Codigo)
+            ->get();        
+        }
+        
+        return response()->json([
+            'data' => $pagamento, 
+            'items' => $pagamento_itens
+        ], 200);
+    
     }
 
     public function create(Request $request)

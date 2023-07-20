@@ -43,8 +43,13 @@ Route::group(["middleware" => "auth"], function () {
     
     Route::get('/pagamentos', [PagamentosController::class, 'index'])->name('mc.pagamentos.index');
     Route::get('/pagamentos/criar', [PagamentosController::class, 'create'])->name('mc.pagamentos.create');
+    Route::get('/pagamentos/pdf', [PagamentosController::class, 'pdf']);
+    Route::get('/pagamentos/excel', [PagamentosController::class, 'excel']);
+    Route::get('/pagamentos/{id}/detalhes', [PagamentosController::class, 'detalhes']);
 
     Route::get('/relatorios/fecho-caixa/operador', [RelatorioController::class, 'fechoCaixaOperador'])->name('mc.fecho-caixa-operador.index');
+    Route::get('/relatorios/fecho-caixa/operador/pdf', [RelatorioController::class, 'pdf'])->name('mc.fecho-caixa-operador.pdf');
+    Route::get('/relatorios/fecho-caixa/operador/excel', [RelatorioController::class, 'excel'])->name('mc.fecho-caixa-operador.excel');
 
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search'])->name('mc.searh-estudante.index');
