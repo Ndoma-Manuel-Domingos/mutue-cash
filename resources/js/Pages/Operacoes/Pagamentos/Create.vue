@@ -291,7 +291,7 @@
                         </button>
 
 
-                        <button type="submit" v-else :disabled="  (!estudante.Nome_Completo && !estudante.curso_designacao) ||
+                        <button type="submit" v-else :disabled="(!estudante.Nome_Completo && !estudante.curso_designacao) ||
                           tabela.length + todos_meses_pagos >= +meses_temp_lista.length"
                           class="btn-sm btn-success m-1"
                         >
@@ -304,7 +304,7 @@
                         <button
                           :disabled="!estudante.Nome_Completo && !estudante.curso_designacao"
                           type="submit"
-                          class="btn-sm btn-success m-1"
+                          class="btn btn-sm btn-success m-1"
                         >
                         <i class="fas fa-plus"></i>Adicionar
                         </button>
@@ -566,7 +566,7 @@
                   enctype="multipart/form-data"
                 >
                   <div class="row">
-                    <div class="col-12 col-md-6 mb-3">
+                    <!-- <div class="col-12 col-md-6 mb-3">
                       <label for="" class="form-label"
                         >Forma de Pagamento</label
                       >
@@ -609,7 +609,7 @@
                           {{ item.descricao }}
                         </option>
                       </select>
-                    </div>
+                    </div> -->
 
                     <!-- <div
                       class="col-12 col-md-6 mb-3"
@@ -726,25 +726,27 @@
 
               <div class="card-footer" >
                 <button
+                id="btn"
                   type="submit"
-                  v-if="tabela.length != 0 || ( fatura.ValorAPagar && !numero_fatura_nao_paga > 0)"
+                  v-if="tabela.length != 0 || (fatura && fatura.ValorAPagar > 0 && !numero_fatura_nao_paga > 0)"
                   form="formulario_pagamento"
                   @click="registarFatura"
                   class="btn btn-primary"
                   style="float: right;"
                 >
-                  <i class="fa fa-paper-plane" aria-hidden="true" id="btn"  v-if="botao"></i> Enviar Pagamento
+                  <i class="fa fa-paper-plane" aria-hidden="true" v-if="botao"></i> Enviar Pagamento
                 </button>
 
                 <button
                   type="submit"
+                  id="btn"
                   v-if="tabela.length == 0 && numero_fatura_nao_paga > 0"
                   form="formulario_pagamento"
                   @click="registarPagamento"
                   class="btn btn-success"
                   style="float: right"
                 >
-                  <i class="fa fa-paper-plane" aria-hidden="true" id="btn"  v-if="botao"></i> Enviar Pagamento
+                  <i class="fa fa-paper-plane" aria-hidden="true" v-if="botao"></i> Registar Pagamento
                 </button>
               </div>
             </div>
@@ -756,12 +758,13 @@
 </template>
 
 <script>
+import Swal from "sweetalert2";
 import { sweetSuccess, sweetError } from "../../../components/Alert";
 export default {
   props: ["forma_pagamentos"],
   data() {
     return {
-      codigo_matricula: "44037",
+      codigo_matricula: null,
       isFormDisabled: true,
 
       anoLectivo: { Codigo: null },
@@ -1005,7 +1008,7 @@ export default {
   },
 
   mounted(){
-    this.pegaPropina();
+    // this.pegaPropina();
     // this.pegaUltimoMes();
   },
 
@@ -1015,6 +1018,7 @@ export default {
     },
 
     registarPagamento: function () {
+
       if (this.pagamento.forma_pagamento == "POR REFERÊNCIA") {
         if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
           //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
@@ -1054,10 +1058,13 @@ export default {
                     icon: "success",
                     confirmButtonColor: "#3d5476",
                     confirmButtonText: "Ok",
-                    onClose: () => {
-                    this.imprimirFatura(fatura);
-                    },
+                    onClose: this.imprimirFatura(fatura)
                 });
+                this.codigo_matricula = null;
+                this.nome_estudante = null,
+                this.bilheite_estudante = null,
+                this.pagamento.valor_depositado = 0,
+                this.saldo_aluno = 0,
                 this.pagamento = {};
                 this.numero_fatura_nao_paga = "";
                 document.getElementById("anexo").value = "";
@@ -1107,7 +1114,9 @@ export default {
             this.bilheite_estudante = response.data.dados.Bilhete_Identidade;
             this.saldo_aluno = response.data.dados.saldo;
 
-            (this.mostrar_dados_estudante = true), this.getTodasRefer();
+            (this.mostrar_dados_estudante = true),
+            this.pegaPropina();
+            this.getTodasRefer();
             this.pegaAluno();
             this.pegaSaldo();
             this.pegaAnoLectivo();
@@ -1116,7 +1125,7 @@ export default {
             this.pegaServicos();
             this.pegarDescricaoBolseiro();
             this.pegaBolseiro();
-            this.pegaPropina();
+
             this.verificaConfirmacaoNoAnoLectivoCorrente();
 
             sweetSuccess("Estudante Encontrado com sucesso!");
@@ -1164,8 +1173,7 @@ export default {
         )
         .then((response) => {
           this.referencias_nao_pagas = response.data;
-          this.numero_fatura_nao_paga =
-            this.referencias_nao_pagas.codigo_fatura;
+          this.numero_fatura_nao_paga = response.data.codigo_fatura;
         })
         .catch((error) => {
         });
@@ -1363,9 +1371,9 @@ export default {
 
     pegaPropina: function () {
     //   this.loading = true;
-    //   this.getUltimaPrestacaoPorAnoLectivo();
-    //   this.getPrimeiraPrestacaoPorAnoLectivo();
-    //   this.getPrestacoes();
+      this.getUltimaPrestacaoPorAnoLectivo();
+      this.getPrimeiraPrestacaoPorAnoLectivo();
+      this.getPrestacoes();
 
       axios
         .get(`/pagamentos-estudantes/propina/${this.codigo_matricula}`, {
@@ -1818,8 +1826,6 @@ export default {
 
     aplicarMesId: function (mes_temp) {
 
-      //var med_id='';
-
       var mes = this.meses_temp_lista.find((mes) => mes.designacao == mes_temp);
       this.mes_id = mes ? mes.id : "";
     },
@@ -1845,15 +1851,11 @@ export default {
 
 
         for (var key = 0; key < this.mes_qtd; key++) {
-          if (
-            this.mes_seguinte_novo != this.ultima_prestacao.designacao &&
+          if ( this.mes_seguinte_novo != this.ultima_prestacao.designacao &&
             this.ultimo_mes_novo != this.ultima_prestacao.designacao
           ) {
-
-
             if (this.tabela.length == 0) {
               var mes = this.ultimo_mes_novo;
-
 
               this.mes_seguinte_novo = this.mesSeguinteNovo(mes);
 
@@ -2027,7 +2029,6 @@ export default {
     },
 
     registarFatura: function () {
-
       if (this.pagamento.forma_pagamento == 'POR REFERÊNCIA') {
         if (this.total_adicionado < this.pagamento.valor_depositado) {
 
@@ -2042,59 +2043,7 @@ export default {
           document.getElementById("btn").disabled = false;
           return false;
         }
-        // this.gerarReferenciaDePagamento();
       }
-
-
-      if ( this.pagamento.forma_pagamento == null && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA' )
-      {
-        Swal.fire({
-          title: "Dados Incorrectos",
-          text: "Por favor preencha o campo: Forma de Pagamento",
-          icon: "error",
-          confirmButtonColor: "#3d5476",
-          confirmButtonText: "Ok",
-        });
-
-        document.getElementById("btn").disabled = false;
-      } else if ( this.pagamento.ContaMovimentada == null && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA' ) {
-        Swal.fire({
-          title: "Dados Incorrectos",
-          text: "Por favor preencha o campo: Conta Movimentada",
-          icon: "error",
-          confirmButtonColor: "#3d5476",
-          confirmButtonText: "Ok",
-        });
-
-        document.getElementById("btn").disabled = false;
-      }
-      // else if (
-      //   this.pagamento.DataBanco == null &&
-      //   Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA'
-      // ) {
-      //   Swal.fire({
-      //     title: "Dados Incorrectos",
-      //     text: "Por favor preencha o campo: Data do  Banco",
-      //     icon: "error",
-      //     confirmButtonColor: "#3d5476",
-      //     confirmButtonText: "Ok",
-      //   });
-
-      //   document.getElementById("btn").disabled = false;
-      // }
-      // else
-      //   if ( this.pagamento.N_Operacao_Bancaria == null && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA' ) {
-      //   Swal.fire({
-      //     title: "Dados Incorrectos",
-      //     text: "Por favor preencha o campo: Nº de Operação Bancária",
-      //     icon: "error",
-      //     confirmButtonColor: "#3d5476",
-      //     confirmButtonText: "Ok",
-      //   });
-
-      //   document.getElementById("btn").disabled = false;
-      // }
-      else
       if (
         (this.pagamento.valor_depositado == null ||
           this.pagamento.valor_depositado == 0) &&
@@ -2136,17 +2085,6 @@ export default {
         document.getElementById("btn").disabled = false;
         return false;
       }
-      // else if ( this.talao_banco == false && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA' ) {
-      //   Swal.fire({
-      //     title: "Dados Incorrectos",
-      //     text: "Por favor preencha o campo: Talão do Banco",
-      //     icon: "error",
-      //     confirmButtonColor: "#3d5476",
-      //     confirmButtonText: "Ok",
-      //   });
-
-      //   document.getElementById("btn").disabled = false;
-      // }
       else {
         this.botao = false;
         document.getElementById("btn").disabled = true;
@@ -2154,7 +2092,6 @@ export default {
         const config = {
           headers: { "content-type": "multipart/form-data" },
         };
-
 
         let formData = new FormData();
         var fatura_item = JSON.stringify(this.tabela); //grande  solução.
@@ -2167,9 +2104,9 @@ export default {
         formData.append("parametroSaldo", parametroSaldo);
         formData.append("pagamento", pagamento);
         formData.append("referencia", referencia);
-        // formData.append("talao_banco", this.talao_banco);
         formData.append("fonte", 2);// fonte de requisicao
-        //fim dados do pagamento
+
+
         axios
           .post("/pagamentos-estudantes/fatura/diversos/create/" +
             this.codigo_matricula,
@@ -2191,17 +2128,24 @@ export default {
                     icon: "success",
                     confirmButtonColor: "#3d5476",
                     confirmButtonText: "Ok",
-                    onClose: () => {
-                        this.imprimirFatura(fatura_ref);
-                    },
+                    // onClose: () => {
+                    //     this.imprimirFatura(fatura_ref);
+                    // },
+                    onClose: this.imprimirFatura(fatura_ref)
                 });
                 this.tabela = [];
+                this.codigo_matricula = null;
+                this.nome_estudante = null,
+                this.bilheite_estudante = null,
+                this.pagamento.valor_depositado = 0,
+                this.saldo_aluno = 0,
+                this.codigo_matricula = null;
                 this.saldo = 0;
             } else {
               Swal.fire({
                 icon: "info",
                 title: "Atenção...",
-                text: response.data,
+                text: response.data.message,
               });
               this.botao = true;
             }
