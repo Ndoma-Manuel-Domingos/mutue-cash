@@ -199,7 +199,6 @@ class SearhController extends Controller
             ->select('tb_matriculas.*')
             ->first();
 
-
         $curso = '';
         if ($candidato && $matricula && ($candidato->Curso_Candidatura != $matricula->Codigo_Curso)) {
             $curso = DB::table('tb_cursos')
@@ -214,8 +213,6 @@ class SearhController extends Controller
                 ->where('tb_matriculas.Codigo', $matricula->Codigo)
                 ->first();
         }
-        //$curso=DB::table('tb_cursos')->join('tb_preinscricao','tb_cursos.Codigo','=','tb_preinscricao.Curso_Candidatura')->select('tb_cursos.Designacao as curso')->where('tb_preinscricao.Codigo',$candidato->Codigo)->first();
-
         $data['propina'] = DB::table('tb_tipo_servicos')
             ->select('Descricao', 'Preco', 'TipoServico', 'Codigo')
             ->where('Descricao', 'like', '%' . $curso->curso . '%')
@@ -226,7 +223,8 @@ class SearhController extends Controller
         //Adicionei condição do Ciclos pós-graduação
         if ((int)$anoLectivo->Designacao <= 2019 && ($anoLectivo->Designacao != $this->anoAtualPrincipal->cicloMestrado()->Designacao) && ($anoLectivo->Designacao != $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)) {
 
-            $CodultimoMes = DB::table('tb_pagamentos')->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
+            $CodultimoMes = DB::table('tb_pagamentos')
+            ->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
                 ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'tb_pagamentosi.Codigo_Servico')
                 ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_pagamentos.Codigo_PreInscricao')
                 ->where('tb_preinscricao.Codigo', $candidato->Codigo)
@@ -271,7 +269,9 @@ class SearhController extends Controller
                 //->where('tb_tipo_servicos.Codigo',$data['propina']->Codigo)
                 ->where('tb_pagamentos.corrente', 1)
                 ->whereIn('tb_pagamentos.estado', [0, 1])
-                ->select(DB::raw('max(tb_pagamentosi.mes_temp_id) as ultimo'))
+                ->select(DB::raw('max(tb_pagamentosi.mes_temp_id) as ultimo'),
+                    DB::raw('max(tb_pagamentos.Codigo) as codigo')
+                )
                 ->first();
 
             //pega o ultimo codigo de pagamento do ultimo mes
@@ -605,15 +605,20 @@ class SearhController extends Controller
 
     public function getUltimaPrestacaoPorAnoLectivo($codigo_anoLectivo, $codigo_matricula)
     {
-        $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
 
+        $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
+        if (!$codigo_anoLectivo) {
+            $codigo_anoLectivo = $this->anoAtualPrincipal->index();
+        }
         $isencaoMes_tempIds = $this->getIsencaoMes_tempIds($codigo_anoLectivo, $codigo_matricula);
 
         if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
+            $anoLectivo = DB::table('tb_confirmacoes')->where('Codigo_Matricula', $codigo_matricula)->first();
             $mes_tem = DB::table('mes_temp')->where('ano_lectivo', $codigo_anoLectivo)->where('activo', 1)->whereNotIn('id', $isencaoMes_tempIds)->orderBy('prestacao', 'desc')->first();
         } else {
             $mes_tem = DB::table('mes_temp')->where('ano_lectivo', $codigo_anoLectivo)->where('activo_posgraduacao', 1)->whereNotIn('id', $isencaoMes_tempIds)->orderBy('prestacao', 'desc')->first();
         }
+
         return response()->json($mes_tem);
     }
 
@@ -1059,6 +1064,7 @@ class SearhController extends Controller
         $data['taxa_nov21_jul22'] = 0;
 
 
+
         if ($ano == $anoCorrente && $candidato->AlunoCacuaco == 'NAO') {
             $taxa_nov21_jul22 = $this->descontoService->descontoNov21Jul22();
 
@@ -1073,8 +1079,6 @@ class SearhController extends Controller
 
     public function mesesPagar($data, $tipo, $mes_id, $codigo_anoLectivo, $user_id)
     {
-
-
         $alunoLogado = $this->alunoRepository->dadosAlunoLogado($user_id);
 
         $dt = Carbon::now('Africa/Luanda');
@@ -1207,5 +1211,5 @@ class SearhController extends Controller
         return Response()->json($data);
     }
 
-    
+
 }

@@ -47,7 +47,7 @@
               </div>
             </div>
 
-            <div class="card" v-show="mostrar_dados_estudante">
+            <div class="card" v-show="mostrar_dados_estudante" v-if="codigo_matricula">
               <div class="card-header">
                 <h6>Dados do Estudantes</h6>
               </div>
@@ -80,8 +80,8 @@
 
             <div class="card">
               <div class="card-header">
-                <div class="row">
-                  <div class="col-12 col-md-6" v-if="anoLectivo.Codigo > 0">
+                <div class="row" v-if="codigo_matricula && prestacoes_por_ano > 0">
+                  <div class="col-12 col-md-6">
                     <h6>Última prestação paga:</h6>
                     <!-- + -->
                     <span v-if="anoLectivo.Designacao <= 2019">
@@ -119,8 +119,7 @@
                         bolseiro.codigo_tipo_bolsa == 32
                       "
                     >
-                      <b
-                        >{{ this.estudante_tipo2.designacao }} ({{
+                      <b style="font-size: 10;">{{ this.estudante_tipo2.designacao }} ({{
                           estudante_tipo2.descricao
                         }}
                         - {{ bolseiro.desconto }}%)</b
@@ -172,7 +171,7 @@
                   </div>
                 </div>
               </div>
-              <div class="card-body">
+              <div class="card-body" v-if="codigo_matricula">
                 <div class="row">
                   <div class="col-12 col-md-12 mt-2 mb-2">
                     <div class="input-group">
@@ -228,7 +227,7 @@
 
                 <form id="form" @submit.prevent="adicionarMeses">
                   <div class="row" v-if="fatura.ValorAPagar <= 0 || numero_fatura_nao_paga == -1">
-                    
+
                     <div class="col-12 col-md-6 mb-3">
                       <label for="" class="form-label">Serviço a pagar</label>
                       <select class="form-control" v-model="opcoes" required="" @change="AllClean">
@@ -241,7 +240,7 @@
 
                     <div class="col-12 col-md-6 mb-3">
                       <label for="" class="form-label">Ano Lectivo</label>
-                      <select class="form-control" v-model="anoLectivo" @change="pegaPropina()">
+                      <select class="form-control" v-model="anoLectivo" @change="pegaPropina(), getPrestacoes()">
                         <option disabled value="">Seleccione o ano</option>
                         <template v-if="estudante.tipo_candidatura == 1">
                           <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo" >
@@ -275,10 +274,10 @@
                         </option>
                       </select>
                     </div>
-                    
-                    
+
+
                   </div>
-                                    
+
                   <div class="row">
                     <div class="col-12 col-md-6" v-if="fatura.ValorAPagar <= 0 || numero_fatura_nao_paga == -1">
                       <template
@@ -288,19 +287,19 @@
                           :disabled="(!estudante.Nome_Completo && !estudante.curso_designacao) || tabela.length + todos_meses_pagos >= meses.length"
                           class="btn-sm btn-success m-1"
                         >
-                          <i class="fas fa-plus"></i> ADICIONAR                          
+                          <i class="fas fa-plus"></i> ADICIONAR
                         </button>
-                        
-                        
+
+
                         <button type="submit" v-else :disabled="  (!estudante.Nome_Completo && !estudante.curso_designacao) ||
                           tabela.length + todos_meses_pagos >= +meses_temp_lista.length"
                           class="btn-sm btn-success m-1"
                         >
-                          <i class="fas fa-plus"></i> ADICIONAR                          
-                        </button>  
-                        
+                          <i class="fas fa-plus"></i> ADICIONAR
+                        </button>
+
                       </template>
-                      
+
                       <template v-else>
                         <button
                           :disabled="!estudante.Nome_Completo && !estudante.curso_designacao"
@@ -310,12 +309,12 @@
                         <i class="fas fa-plus"></i>Adicionar
                         </button>
                       </template>
-                      
+
                       <button type="button" v-if="tabela.length != 0 " @click="AllClean" class="btn-sm btn-danger m-1">
                         <i class="fas fa-trash"></i> REMOVER
                       </button>
                     </div>
-                    
+
                     <!-- table para carregar as prestações -->
 
                     <table
@@ -330,7 +329,7 @@
                             TOTAL A PAGAR: {{ formatPrice(total_adicionado) }}
                           </td>
                         </tr>
-    
+
                         <tr>
                           <th>Nº</th>
                           <th>Serviço</th>
@@ -346,12 +345,12 @@
                           <td>{{ ++key }}</td>
                           <td>{{ item.Descricao }}</td>
                           <!--td>{{item.Mes}}</td-->
-                
+
                           <td v-if="item.Mes == 'MAR-2020'">{{ item.Mes }}</td>
                           <td v-else-if="item.Mes == 'JUL-2020'">{{ item.Mes }}</td>
                           <td v-else-if="item.Mes == 'AGO-2020'">{{ item.Mes }}</td>
                           <td v-else-if="item.Mes == 'SET-2020'">{{ item.Mes }}</td>
-                
+
                           <td
                             v-else-if="
                               opcoes == 2 || add_servico.TipoServico != 'Mensal'
@@ -370,7 +369,7 @@
                               {{ prestacoes_por_ano }}
                             </template>
                           </td>
-                
+
                           <td>{{ formatPrice(item.Preco) }}</td>
                           <td>{{ formatPrice(item.Multa) }}</td>
                           <td>{{ formatPrice(item.Desconto) }}</td>
@@ -379,8 +378,8 @@
                       </tbody>
                     </table>
                   </div>
-                  
-                  
+
+
                 </form>
 
                 <!-- esta tabela aparece quando a valor da factura será mairo do que 0 -->
@@ -534,11 +533,12 @@
 
               <div class="card-body"
                 :disabled="tabela.length == 0 && fatura.ValorAPagar <= 0"
-              >              
+              >
                 <table
-                  id="example1"
-                  style="width: 100%"
-                  class="table-sm table-bordered table-striped table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl table-responsive-xxl"
+                    v-if="estudante.saldo > 0 && (estudante.saldo >= total_adicionado || estudante.saldo >=  fatura.ValorAPagar)"
+                    id="example1"
+                    style="width: 100%"
+                    class="table-sm table-bordered table-striped table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl table-responsive-xxl"
                 >
                   <thead>
                     <tr>
@@ -735,7 +735,7 @@
                 >
                   <i class="fa fa-paper-plane" aria-hidden="true" id="btn"  v-if="botao"></i> Enviar Pagamento
                 </button>
-                
+
                 <button
                   type="submit"
                   v-if="tabela.length == 0 && numero_fatura_nao_paga > 0"
@@ -754,7 +754,7 @@
     </div>
   </MainLayouts>
 </template>
-    
+
 <script>
 import { sweetSuccess, sweetError } from "../../../components/Alert";
 export default {
@@ -796,7 +796,7 @@ export default {
 
       talao_banco: null,
       opcoes: 1,
-      
+
       ciclo_doutoramento: { Codigo: null },
       ciclo_mestrado:{ Codigo: null },
 
@@ -821,25 +821,25 @@ export default {
       desconto_preinscricao: 0,
       descontoDaPreinscricao: 0,
       ano_lectivo_actual: 0,
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       selecionar: 1,
-      
+
       bordero: "",
       erros: [],
       tabela: [],
@@ -937,13 +937,13 @@ export default {
       desconto_especial_nov21_jul22: 0,
       meses_bolsa: [],
       prazo_desconto_ano_todo: {},
-      
-      
+
+
     };
   },
-  
+
   created(){
-    
+
     this.getAnoLectivoActual();
   },
 
@@ -992,21 +992,21 @@ export default {
             this.estudante.saldo = 0;
         }else{
           if (this.estudante.saldo >= this.total_adicionado) {
-          
+
             this.pagamento.valor_depositado = this.estudante.saldo - this.total_adicionado;
             this.valor_por_depositar = this.estudante.saldo - this.total_adicionado;
           } else {
             this.pagamento.valor_depositado = this.total_adicionado;
-            this.valor_por_depositar = this.total_adicionado;            
+            this.valor_por_depositar = this.total_adicionado;
           }
         }
       }
     },
   },
-  
+
   mounted(){
     this.pegaPropina();
-    this.pegaUltimoMes();
+    // this.pegaUltimoMes();
   },
 
   methods: {
@@ -1045,37 +1045,29 @@ export default {
           { referencia: this.numero_fatura_nao_paga }
         )
         .then((response) => {
-          if (response.status === 200) {
-            var fatura = this.numero_fatura_nao_paga;
+            if(response.status === 200) {
+                var fatura = this.numero_fatura_nao_paga;
 
-            // if (fatura) {
-            //   sweetSuccess(response.data.mensagem);
-            // }
-            
-            if (fatura) {
-              Swal.fire({
-                title: "Sucesso",
-                text: response.data.mensagem,
-                icon: "success",
-                confirmButtonColor: "#3d5476",
-                confirmButtonText: "Ok",
-                onClose: () => {
-                  this.imprimirFatura(fatura);
-                },
-              });
+                Swal.fire({
+                    title: "Sucesso",
+                    text: response.data.mensagem,
+                    icon: "success",
+                    confirmButtonColor: "#3d5476",
+                    confirmButtonText: "Ok",
+                    onClose: () => {
+                    this.imprimirFatura(fatura);
+                    },
+                });
+                this.pagamento = {};
+                this.numero_fatura_nao_paga = "";
+                document.getElementById("anexo").value = "";
+
+                sweetSuccess(response.data.mensagem);
+            } else if (response.status === 500) {
+                sweetError("Falha de comunicação!");
+            } else {
+                sweetError(response.data);
             }
-
-            this.pagamento = {};
-            this.numero_fatura_nao_paga = "";
-            document.getElementById("anexo").value = "";
-
-            // this.pegaPropina();
-            sweetSuccess(response.data.mensagem);
-          } else if (response.status === 500) {
-            sweetError("Falha de comunicação!");
-          } else {
-            sweetError(response.data);
-          }
         })
         .catch((error) => {
           if (error.response.status == 422) {
@@ -1146,23 +1138,23 @@ export default {
           this.ciclo_mestrado = response.data.ciclo_mestrado;
           this.ciclo_doutoramento.Codigo = this.ciclo_doutoramento.Codigo;
           this.ciclo_mestrado.Codigo = this.ciclo_mestrado.Codigo;
-          
+
         })
         .catch((error) => {
         });
-        
+
     },
-    
+
     getAnoLectivoActual: function () {
       axios
         .get(`/ano-lectivo-actual`)
         .then((response) => {
           this.ano_lectivo_actual = response.data.ano_lectivo_actual;
-          
+
         })
         .catch((error) => {
         });
-        
+
     },
     // recuperar totas as factura do aluno não pagas
     getTodasRefer: function () {
@@ -1284,14 +1276,10 @@ export default {
               this.ultima_prestacao_antiga_paga = 0;
             }
           } else {
-          
-          
             if (response.data.mes) {
-              this.ultimo_mes_novo = response.data.mes;
+                this.ultimo_mes_novo = response.data.mes;
+                this.ultima_prestacao_paga = response.data.prestacao;
 
-              this.ultima_prestacao_paga = response.data.prestacao;
-              
-      
             } else if (!response.data.mes) {
               this.ultimo_mes_novo = "";
               this.ultima_prestacao_paga = 0;
@@ -1302,8 +1290,6 @@ export default {
     },
 
     async getPrestacoes() {
-      console.log();
-    
       await axios
         .get(
           `/pagamentos-estudantes/prestacoes-por-ano/${this.anoLectivo.Codigo}/${this.codigo_matricula}`
@@ -1313,7 +1299,7 @@ export default {
           this.meses = response.data.mes_temp;
           this.prestacoes_por_ano = response.data.prestacoes_por_ano;
           this.todos_meses_pagos = response.data.todos_meses_pagos;
-          
+
         })
         .catch((error) => {
         });
@@ -1374,13 +1360,13 @@ export default {
         }
       }
     },
-    
+
     pegaPropina: function () {
-      this.loading = true;
-      this.getUltimaPrestacaoPorAnoLectivo();
-      this.getPrimeiraPrestacaoPorAnoLectivo();
-      this.getPrestacoes();
-    
+    //   this.loading = true;
+    //   this.getUltimaPrestacaoPorAnoLectivo();
+    //   this.getPrimeiraPrestacaoPorAnoLectivo();
+    //   this.getPrestacoes();
+
       axios
         .get(`/pagamentos-estudantes/propina/${this.codigo_matricula}`, {
           params: { ano: this.anoLectivo.Codigo },
@@ -1404,18 +1390,15 @@ export default {
           //desconto_especial_nov_fev2021
           this.desconto_especial_nov21_jul22 = this.propina.Preco * (response.data.taxa_nov21_jul22 / 100);
 
-
-          //Desconto desconto = valor_total_com_reajuste - valor_total_sem_reajuste até dia 30.10.2021, desconto_excepcao_todos
           this.desconto_excepcao_todos = (this.propina.Preco - this.propina.valor_anterior);
 
           //this.loading=false;
           this.pegaUltimoMes();
-          //this.divida=parseInt(this.propina.Preco*0.1)+parseInt(this.propina.Preco);
-          this.pegaServicos()
-          this.pegaBolseiro()
-          this.pegaFinalista()
-         
-          
+          this.pegaServicos();
+          this.pegaBolseiro();
+          this.pegaFinalista();
+
+
           this.cadeiras
           this.multa = this.propina.Preco * 0.1;
           this.desconto_marco =
@@ -1459,7 +1442,7 @@ export default {
         })
         .catch((error) => {});
     },
-    
+
     mesesBolsa: async function () {
       await axios
         .get(`/estudante/prestacoes-por-bolsa-semestre`, {
@@ -1470,7 +1453,7 @@ export default {
         })
         .catch((error) => {});
     },
-    
+
     imprimirFatura: function (codigo_fatura) {
       window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
     },
@@ -1484,86 +1467,86 @@ export default {
       let val = (value / 1).toFixed(3).replace(".", ",");
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     validar: function () {
-      
+
       // this.$validator.validate().then((valid) => {
       //   if (!valid) {
       //     // do stuff if not valid.
@@ -1631,7 +1614,7 @@ export default {
         }
       }
     },
-    
+
     mesSeguinteNovo: function (mes_ultimo) {
       if (mes_ultimo == "") {
         var mes = this.meses_temp_lista.find(
@@ -1673,7 +1656,7 @@ export default {
       });
       this.total_adicionado = soma;
     },
-    
+
     decrementarAdicionado: function () {
       var subtracao = 0;
       this.tabela.forEach((item) => {
@@ -1710,20 +1693,20 @@ export default {
         }
       }
     },
-    
+
     aplicarDescontoFinalista() {
       this.add_servico.Desconto = this.desconto_finalista;
     },
-    
+
     aplicarDescontoBolseiro() {
       this.add_servico.Desconto = this.desconto_bolseiro;
     },
-    
+
     aplicarDescontoPreinscricao() {
       this.add_servico.Desconto = this.descontoDaPreinscricao;
       //this.add_servico.Total=parseInt(this.add_servico.Preco)-(parseInt(this.add_servico.Desconto));
     },
-    
+
     aplicarBolsaSemestral() {
 
       if (this.anoLectivo.ordem >= 17) {
@@ -1746,35 +1729,31 @@ export default {
         }
       }
     },
-    
+
     aplicarMultaAnoAtual() {
       var valor_com_desconto = 0;
       var multa_do_desconto = 0;
       var desconto = 0
+
       this.mesesApagar.forEach((item) => {
+
         if (this.mes_id == item.codigo) {
-        
-          valor_com_desconto =
-            this.add_servico.Preco - this.add_servico.Desconto;
+
+          valor_com_desconto = this.add_servico.Preco - this.add_servico.Desconto;
           multa_do_desconto = valor_com_desconto * (item.taxa / 100);
           this.add_servico.Multa = multa_do_desconto;
 
           if (this.cadeiras >= 0 && this.cadeiras <= 3) {
-          
+
             multa_do_desconto = valor_com_desconto * (item.taxa / 100);
             this.add_servico.Multa = multa_do_desconto;
           }
 
-          this.add_servico.Total =
-            this.add_servico.Preco -
-            this.add_servico.Desconto +
-            parseFloat(this.add_servico.Multa);
-
-
+          this.add_servico.Total = this.add_servico.Preco - this.add_servico.Desconto +  parseFloat(this.add_servico.Multa);
         }
       });
     },
-    
+
     adicionarMeses: function () {
       if (+this.anoLectivo.Designacao <= 2019) {
         if ((this.opcoes == 1)) {
@@ -1806,7 +1785,7 @@ export default {
             return;
           }
         }
-        
+
         if ((this.opcoes == 1) && (this.anoLectivo.Codigo == this.ano_lectivo_actual) && this.estudante.tipo_candidatura == 1) {
           if ((this.verifica_confirmacao_no_ano_corrente.length > 0)) {
             this.add();
@@ -1836,15 +1815,15 @@ export default {
         }
       }
     },
-    
+
     aplicarMesId: function (mes_temp) {
 
       //var med_id='';
-      
+
       var mes = this.meses_temp_lista.find((mes) => mes.designacao == mes_temp);
       this.mes_id = mes ? mes.id : "";
     },
-    
+
     add: function () {
       if (this.add_servico.TipoServico == "Mensal") {
         this.add_servico.Multa = 0;
@@ -1864,18 +1843,18 @@ export default {
           this.add_servico.Desconto +
           parseInt(this.add_servico.Multa);
 
-        
+
         for (var key = 0; key < this.mes_qtd; key++) {
           if (
             this.mes_seguinte_novo != this.ultima_prestacao.designacao &&
             this.ultimo_mes_novo != this.ultima_prestacao.designacao
           ) {
-           
-          
+
+
             if (this.tabela.length == 0) {
               var mes = this.ultimo_mes_novo;
-              
-              
+
+
               this.mes_seguinte_novo = this.mesSeguinteNovo(mes);
 
               if (this.add_servico.TipoServico == "Mensal") {
@@ -1901,11 +1880,11 @@ export default {
 
               if (this.add_servico.TipoServico == "Mensal") {
                 this.aplicarMesId(this.mes_seguinte_novo);
-       
+
                 this.aplicarBolsaSemestral()
-                
+
                 if (this.desconto_especial_nov21_jul22 == 0) {
-                
+
                   if (this.cadeiras > 3 && !this.bolseiro) {
                     this.aplicarDescontoAnoTodo();
                   }
@@ -1927,7 +1906,7 @@ export default {
       }
       this.totalAdicionado();
     },
-    
+
     addAnosAnteriores: function () {
       if (
         this.add_servico.TipoServico == "Mensal" &&
@@ -1996,12 +1975,12 @@ export default {
       }
       this.totalAdicionado();
     },
-    
+
     AllClean: function (key) {
       this.tabela.splice(key);
       this.total_adicionado = 0;
     },
-    
+
     remove: function (key) {
       //this.meus_servicos.splice(index,1)
       this.$delete(this.tabela, key);
@@ -2017,7 +1996,7 @@ export default {
         .catch((error) => {
         });
     },
-    
+
     getRefer: function () {
       axios
         .get(`/estudante/referencias-nao-pagas/${this.codigo_matricula}`)
@@ -2033,7 +2012,7 @@ export default {
       //console.log(e.target.files[0]);
       this.talao_banco = e.target.files[0];
     },
-    
+
     onTalao2Change(e) {
       //console.log(e.target.files[0]);
       this.talao_banco2 = e.target.files[0];
@@ -2048,7 +2027,7 @@ export default {
     },
 
     registarFatura: function () {
-    
+
       if (this.pagamento.forma_pagamento == 'POR REFERÊNCIA') {
         if (this.total_adicionado < this.pagamento.valor_depositado) {
 
@@ -2065,7 +2044,7 @@ export default {
         }
         // this.gerarReferenciaDePagamento();
       }
-      
+
 
       if ( this.pagamento.forma_pagamento == null && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA' )
       {
@@ -2088,7 +2067,7 @@ export default {
         });
 
         document.getElementById("btn").disabled = false;
-      } 
+      }
       // else if (
       //   this.pagamento.DataBanco == null &&
       //   Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA'
@@ -2102,8 +2081,8 @@ export default {
       //   });
 
       //   document.getElementById("btn").disabled = false;
-      // } 
-      // else 
+      // }
+      // else
       //   if ( this.pagamento.N_Operacao_Bancaria == null && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA' ) {
       //   Swal.fire({
       //     title: "Dados Incorrectos",
@@ -2114,8 +2093,8 @@ export default {
       //   });
 
       //   document.getElementById("btn").disabled = false;
-      // } 
-      else 
+      // }
+      else
       if (
         (this.pagamento.valor_depositado == null ||
           this.pagamento.valor_depositado == 0) &&
@@ -2167,7 +2146,7 @@ export default {
       //   });
 
       //   document.getElementById("btn").disabled = false;
-      // } 
+      // }
       else {
         this.botao = false;
         document.getElementById("btn").disabled = true;
@@ -2199,11 +2178,25 @@ export default {
           )
           .then((response) => {
             if (response.status === 200) {
-              this.fatura_id = response.data.codigo_fatura;
-              this.total_adicionado = 0;
-              this.imprimirFatura(this.fatura_id);
-              this.tabela = [];
-              this.saldo = 0;
+                document.getElementById("btn").disabled = false;
+                this.fatura_id = response.data.codigo_fatura;
+                this.total_adicionado = 0;
+
+                this.botao = true;
+                var fatura_ref = this.fatura_id;
+
+                Swal.fire({
+                    title: "Sucesso",
+                    text: response.data.message,
+                    icon: "success",
+                    confirmButtonColor: "#3d5476",
+                    confirmButtonText: "Ok",
+                    onClose: () => {
+                        this.imprimirFatura(fatura_ref);
+                    },
+                });
+                this.tabela = [];
+                this.saldo = 0;
             } else {
               Swal.fire({
                 icon: "info",
@@ -2232,14 +2225,8 @@ export default {
         .catch((error) => {
         });
     },
-
-    imprimirFatura: function (codigo_fatura) {
-
-      window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
-    },
   },
 };
 </script>
-    
-    
-    
+
+
