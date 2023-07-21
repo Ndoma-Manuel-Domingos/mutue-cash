@@ -73,14 +73,21 @@ class SearhController extends Controller
                 'tb_preinscricao.Bilhete_Identidade',
                 'tb_preinscricao.user_id',
                 'tb_preinscricao.saldo',
-                'tb_cursos.Designacao',
-            )
-            ->first();
+                'tb_preinscricao.codigo_tipo_candidatura',
+                'tb_cursos.Designacao'
+            )->first();
+            
+            if ($resultado->codigo_tipo_candidatura == 1) {
+                $ano_lectivo = $this->anoAtualPrincipal->index();
+            } else {
+                if ($resultado->codigo_tipo_candidatura == 2) {
+                    $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
+                } else {
+                    $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
+                }
+            }
 
-
-        return response()->json([
-            "dados" => $resultado,
-        ], 200);
+        return response()->json(["dados" => $resultado, "ano_lectivo_id"=>$ano_lectivo], 200);
     }
 
     public function bancosFormaPagamento(Request $request)
@@ -117,7 +124,7 @@ class SearhController extends Controller
                 'tb_preinscricao.Saldo as saldo',
                 'tb_preinscricao.codigo_tipo_candidatura as tipo_candidatura'
             )->where('tb_preinscricao.user_id', $aluno->admissao->preinscricao->user_id)->first();
-
+            
         return Response()->json($dados);
     }
 
@@ -126,27 +133,24 @@ class SearhController extends Controller
         $ano_lectivo = null;
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
-
+        
         $dados = DB::table('tb_preinscricao')
             ->join('tb_admissao', 'tb_admissao.pre_incricao', 'tb_preinscricao.Codigo')
             ->join('tb_matriculas', 'tb_matriculas.Codigo_Aluno', 'tb_admissao.codigo')
             ->join('polos', 'tb_preinscricao.polo_id', '=', 'polos.id')
             ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')
             ->join('tb_cursos as tb_curso_matricula', 'tb_curso_matricula.Codigo', '=', 'tb_matriculas.Codigo_Curso')
-            ->select(
-                'tb_preinscricao.codigo_tipo_candidatura as tipo_candidatura'
-            )->where('tb_preinscricao.user_id', $aluno->admissao->preinscricao->user_id)->first();
-
+            ->select('tb_preinscricao.codigo_tipo_candidatura as tipo_candidatura')->where('tb_preinscricao.user_id', $aluno->admissao->preinscricao->user_id)->first();
+        
         if ($dados->tipo_candidatura == 1) {
             $ano_lectivo = $this->anoAtualPrincipal->index();
         } else {
             if ($dados->tipo_candidatura == 2) {
-                $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado();
+                $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
             } else {
-                $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento();
+                $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
             }
         }
-
         return Response()->json($ano_lectivo);
     }
 
@@ -365,6 +369,7 @@ class SearhController extends Controller
         $verificaPagamentoMarco = $this->alunoRepository->verificaPagamentoMarco($codigo_anoLectivo, $aluno->preinscricao);
 
         $anosLectivo = $this->anoLectivoService->AnosLectivo((int)$codigo_anoLectivo);
+    
         $todos_meses_pagos = null;
         if ((int)$anosLectivo->Designacao <= 2019 && $anosLectivo->Designacao != $this->anoLectivoCorrente->cicloMestrado()->Designacao && $anosLectivo->Designacao != $this->anoLectivoCorrente->cicloDoutoramento()->Designacao) {
             $todos_meses_pagos = DB::table('tb_pagamentosi')->join('tb_pagamentos', 'tb_pagamentos.Codigo', 'tb_pagamentosi.Codigo_Pagamento')->where('tb_pagamentos.Codigo_PreInscricao', $this->alunoRepository->dadosAlunoLogado($aluno->admissao->preinscricao->user_id)->codigo_inscricao)->where('tb_pagamentosi.Ano', $anosLectivo->Designacao)->where('tb_pagamentosi.mes_id', '!=', null)->pluck('mes_id');
@@ -517,6 +522,7 @@ class SearhController extends Controller
                 }
             }
         }
+        
         return Response()->json($anosLectivos);
     }
 

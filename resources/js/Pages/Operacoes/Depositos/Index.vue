@@ -67,6 +67,15 @@
           <div class="col-12 col-md-12">
             <div class="card">
               <div class="card-header">
+                
+                <button
+                  class="btn btn-info float-left"
+                  type="button"
+                >
+                  <i class="fas fa-money-bill"></i>
+                  {{ formatValor(total_depositado) }}
+                </button>
+              
                 <button
                   class="btn btn-info float-right"
                   type="button"
@@ -172,30 +181,32 @@
             <div class="modal-body py-3">
               <div class="row">
                 <div class="col-12 col-md-12 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Matricula</label>
-                    <div class="input-group">
-                      <input
-                        class="form-control"
-                        v-model="form.codigo_matricula"
-                        type="search"
-                        placeholder="Search"
-                        aria-label="Search"
-                      />
-                      <div class="input-group-append">
-                        <button
-                          class="btn btn-info"
-                          @click="pesqisar_estudante"
-                        >
-                          <i class="fas fa-search fa-fw"></i>
-                        </button>
+                  <div class="col-12 col-md-4">
+                    <div class="form-group">
+                      <label for="" class="form-label">Matricula</label>
+                      <div class="input-group">
+                        <input
+                          class="form-control"
+                          v-model="form.codigo_matricula"
+                          type="search"
+                          placeholder="Introduz o Número da matricula!"
+                          aria-label="Search"
+                        />
+                        <div class="input-group-append">
+                          <button
+                            class="btn btn-info"
+                            @click="pesqisar_estudante"
+                          >
+                            <i class="fas fa-search fa-fw"></i>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <div
-                      v-if="form.errors.codigo_matricula"
-                      class="text-danger"
-                    >
-                      {{ form.errors.codigo_matricula }}
+                      <div
+                        v-if="form.errors.codigo_matricula"
+                        class="text-danger"
+                      >
+                        {{ form.errors.codigo_matricula }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -208,20 +219,20 @@
                       v-model="form.nome_estudante"
                       disabled
                       class="form-control"
-                      placeholder="Verificar o Nome Completo"
+                      placeholder="Nome Completo"
                     />
                   </div>
                 </div>
 
                 <div class="col-12 col-md-4 mb-3">
                   <div class="form-group">
-                    <label for="" class="form-label">Bilhete</label>
+                    <label for="" class="form-label">Número do BI</label>
                     <input
                       type="text"
                       v-model="form.bilheite_estudante"
                       disabled
                       class="form-control"
-                      placeholder="Verificar o Nome Completo"
+                      placeholder="Número do BI"
                     />
                   </div>
                 </div>
@@ -234,7 +245,7 @@
                       v-model="form.curso_estudante"
                       disabled
                       class="form-control"
-                      placeholder="Verificar o Nome Completo"
+                      placeholder="Curso"
                     />
                   </div>
                 </div>
@@ -248,6 +259,7 @@
                         v-model="form.valor_a_depositar"
                         class="form-control"
                         placeholder="informe o valor a depositar"
+                        @input="verificarLetras"
                       />
                       <div class="input-group-append">
                         <button type="button" class="btn btn-info">kz</button>
@@ -288,7 +300,7 @@
 
   
   export default {
-    props: ["items", "utilizadores"],
+    props: ["items", "utilizadores", "total_depositado"],
     components: { Link, Paginacao },
     data() {
       return { 
@@ -302,6 +314,9 @@
         
         depositos: [],
         params: {},
+        
+        contemLetras: false,
+        contemDeposito: false,
         
         form: this.$inertia.form({
           codigo_matricula: null,
@@ -352,8 +367,66 @@
         },
       });
     },
+    
+    verificarLetras() {
+      // Expressão regular que verifica se a string contém letras (a-zA-Z)
+      const regexLetras = /[a-zA-Z]/;
+      this.contemLetras = regexLetras.test(this.form.valor_a_depositar);
+    },
 
     submit() {
+    
+      if (this.contemLetras) {
+        Swal.fire({
+          title: "Atenção",
+          text: "O valor a depositar não pode conter letras!",
+          icon: "warning",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+          onClose: () => { },
+        });
+        return;
+      }
+    
+      if (this.form.valor_a_depositar < 5000) {
+        Swal.fire({
+          title: "Atenção",
+          text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",
+          icon: "warning",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+          onClose: () => { },
+        });
+        return;
+      }
+      
+      // if (this.form.valor_a_depositar > 1000000) {
+      //   Swal.fire({
+      //     title: 'Atenção?',
+      //     text: "O Valor a depositar é superior a 1.000.000,00 Kz, Deseja continuar com este deposito!",
+      //     icon: 'warning',
+      //     showCancelButton: true,
+      //     confirmButtonColor: '#3085d6',
+      //     cancelButtonColor: '#d33',
+      //     confirmButtonText: 'Sim, desejo continuar!'
+      //   }).then((result) => {
+      //     if (result.isConfirmed) {
+      //       this.contemDeposito = true;
+      //     }else {
+      //       this.contemDeposito = false;
+      //     }
+      //   })
+        
+      //   return this.contemDeposito;
+      // }
+      
+      // if(!this.contemDeposito){
+      
+      //   alert(this.contemDeposito)
+      
+      //   return
+      // }
+    
       this.$Progress.start();
       
       if (this.isUpdate) {

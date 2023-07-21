@@ -242,18 +242,20 @@
                       <label for="" class="form-label">Ano Lectivo</label>
                       <select class="form-control" v-model="anoLectivo" @change="pegaPropina(), getPrestacoes()">
                         <option disabled value="">Seleccione o ano</option>
-                        <template v-if="estudante.tipo_candidatura == 1">
+                        <template v-if="codigo_tipo_candidatura == 1">
                           <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo" >
                             {{ ano.Designacao }}
                           </option>
                         </template>
-                        <template v-else-if="estudante.tipo_candidatura == 2 && ciclo_mestrado">
-                          <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo" v-if="ano.Codigo == ciclo_mestrado.Codigo">
-                            {{ ano.Designacao }} </option>
+                        <template v-else-if="codigo_tipo_candidatura == 2 && opcoes == 1">
+                          <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo">
+                            {{ ano.Designacao }}
+                          </option>
                         </template>
-                        <template  v-else-if="estudante.tipo_candidatura == 3 && ciclo_doutoramento">
-                          <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo" v-if="ano.Codigo == ciclo_doutoramento.Codigo">
-                            {{ ano.Designacao }} </option>
+                        <template  v-else-if="codigo_tipo_candidatura == 3 && opcoes == 1">
+                          <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo">
+                            {{ ano.Designacao }} 
+                          </option>
                         </template>
                       </select>
                     </div>
@@ -765,6 +767,8 @@ export default {
   data() {
     return {
       codigo_matricula: null,
+      codigo_tipo_candidatura: null,
+      ano_lectivo_id: null,
       isFormDisabled: true,
 
       anoLectivo: { Codigo: null },
@@ -1112,14 +1116,16 @@ export default {
             this.codigo_matricula = response.data.dados.Codigo;
             this.nome_estudante = response.data.dados.Nome_Completo;
             this.bilheite_estudante = response.data.dados.Bilhete_Identidade;
+            this.codigo_tipo_candidatura = response.data.dados.codigo_tipo_candidatura;
+            this.ano_lectivo_id = response.data.ano_lectivo_id;
             this.saldo_aluno = response.data.dados.saldo;
 
             (this.mostrar_dados_estudante = true),
             this.pegaPropina();
-            this.getTodasRefer();
-            this.pegaAluno();
-            this.pegaSaldo();
             this.pegaAnoLectivo();
+            this.pegaAluno();
+            this.getTodasRefer();
+            this.pegaSaldo();
             this.getAnosLectivosEstudante();
             this.getCiclos();
             this.pegaServicos();
@@ -1231,13 +1237,10 @@ export default {
 
     pegaAluno: function () {
       this.loading = true;
-      axios
-        .get(`/aluno/${this.codigo_matricula}`)
-        .then((response) => {
-          this.estudante = response.data;
-          this.candidato = response.data;
-        })
-        .catch((error) => {});
+      axios.get(`/aluno/${this.codigo_matricula}`).then((response) => {
+        this.estudante = response.data;
+        this.candidato = response.data;
+      }).catch((error) => {});
     },
 
     pegaCandidato: function () {
@@ -1300,7 +1303,7 @@ export default {
     async getPrestacoes() {
       await axios
         .get(
-          `/pagamentos-estudantes/prestacoes-por-ano/${this.anoLectivo.Codigo}/${this.codigo_matricula}`
+          `/pagamentos-estudantes/prestacoes-por-ano/${this.ano_lectivo_id}/${this.codigo_matricula}`
         )
         .then((response) => {
           this.meses_temp_lista = response.data.mes_temp;
