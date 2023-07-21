@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use DB;
-use App\Candidato;
 use App\Repositories\AlunoRepository;
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
 use App\Models\Matricula;
@@ -74,9 +73,9 @@ class DividaService
     }
 
     $dados_ano = $this->Anolectivo($ano_lectivo);
-    /*Houve uma epoca em que a designacao do ano lectivo para 2020 era so mesmo "2020", mas mudou-se 
+    /*Houve uma epoca em que a designacao do ano lectivo para 2020 era so mesmo "2020", mas mudou-se
      2020-2021 sem se alterar na bd. Essa bd nao ajuda!*/
-    /* estou a filtrar pelo ano do pagamentosi porque nos pagamentos de negociacao de dividas na tb_pagamentos o ano lectivo 
+    /* estou a filtrar pelo ano do pagamentosi porque nos pagamentos de negociacao de dividas na tb_pagamentos o ano lectivo
      esta o ano corrente, portanto tenho que filtrar pelo ano correcto que é o da tb_pagamentosi*/
 
     $pagamentos = DB::table('tb_pagamentos')->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
@@ -118,9 +117,9 @@ class DividaService
     }
 
     $dados_ano = $this->Anolectivo($ano_lectivo);
-    /*Houve uma epoca em que a designacao do ano lectivo para 2020 era so mesmo "2020", mas mudou-se 
+    /*Houve uma epoca em que a designacao do ano lectivo para 2020 era so mesmo "2020", mas mudou-se
      2020-2021 sem se alterar na bd. Essa bd nao ajuda!*/
-    /* estou a filtrar pelo ano do pagamentosi porque nos pagamentos de negociacao de dividas na tb_pagamentos o ano lectivo 
+    /* estou a filtrar pelo ano do pagamentosi porque nos pagamentos de negociacao de dividas na tb_pagamentos o ano lectivo
      esta o ano corrente, portanto tenho que filtrar pelo ano correcto que é o da tb_pagamentosi*/
 
     $pagamentos = DB::table('tb_pagamentos')->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'tb_pagamentosi.Codigo_Servico')
@@ -220,42 +219,21 @@ class DividaService
     return $prestacoes;
   }
   // para anos anteriores a 2020
-  public function getPrestacoesAnosAnterioresPorAnoLectivo($codigo_anoLectivo)
+  public function getPrestacoesAnosAnterioresPorAnoLectivo($codigo_anoLectivo, $user_id)
   {
-    // $aluno = $this->alunoRepository->dadosAlunoLogado();
+    $aluno = $this->alunoRepository->dadosAlunoLogado($user_id);
 
-    if (auth()->user()) {
-      $user = auth()->user()->candidato;
-      $aluno = $this->alunoRepository->dadosAlunoLogado();
-    } else {
-      $user = Candidato::where('tb_preinscricao.Bilhete_Identidade', request()->get('numero_docuemnto'))
-        ->orWhere('tb_preinscricao.Contactos_Telefonicos', request()->get('telefone'))
-        ->orWhere('tb_preinscricao.Email', request()->get('email'))->first();
-
-      $aluno = $this->alunoRepository->getAlunoByDadosUser(request()->get('numero_docuemnto'), request()->get('telefone'))->first();
-    }
+    $user = PreInscricao::where('tb_preinscricao.user_id', $user_id)->first();
 
     $isencao = DB::table('tb_isencoes')->where('mes_id', '!=', null)->where('codigo_matricula', $aluno->matricula)
       ->where('estado_isensao', 'Activo')
       ->where('codigo_anoLectivo', $codigo_anoLectivo)->select('tb_isencoes.mes_id as mes_id')->get();
+
     $isencaoIds = $isencao->pluck('mes_id');
-    //$prestacoes = DB::table('meses')->whereNotIn('codigo', $isencaoIds)->orderBy('codigo', 'asc')->get();
 
     return $isencaoIds;
   }
 
-
-  public function getPrestacoesAnosAnterioresPorAnoLectivoAPI($codigo_matricula, $codigo_anoLectivo)
-  {
-    // $aluno = $this->alunoRepository->dadosAlunoLogado();
-    $isencao = DB::table('tb_isencoes')->where('mes_id', '!=', null)->where('codigo_matricula', $codigo_matricula)
-      ->where('estado_isensao', 'Activo')
-      ->where('codigo_anoLectivo', $codigo_anoLectivo)->select('tb_isencoes.mes_id as mes_id')->get();
-    $isencaoIds = $isencao->pluck('mes_id');
-    //$prestacoes = DB::table('meses')->whereNotIn('codigo', $isencaoIds)->orderBy('codigo', 'asc')->get();
-
-    return $isencaoIds;
-  }
 
   public function propinaAluno($codigo_inscricao, $aluno_cacuaco, $ano_lectivo)
   {
@@ -274,7 +252,7 @@ class DividaService
     ->select('tb_cursos.Designacao as curso', 'tb_cursos.Codigo as codigo_curso')
     ->where('tb_preinscricao.Codigo', $preinscricao->Codigo)
     ->first();
-    
+
     $propina = DB::table('tb_tipo_servicos')
     ->select('Descricao', 'Preco', 'TipoServico', 'Codigo')
     ->where('Descricao', 'like', 'propina ' . $curso->curso . '%')
@@ -295,9 +273,9 @@ class DividaService
       ->join('tb_matriculas', 'tb_matriculas.Codigo', '=', 'tb_confirmacoes.Codigo_Matricula')
       ->where('tb_matriculas.Codigo', $codigo_matricula)
       ->where('tb_confirmacoes.Codigo_Ano_lectivo', '!=', $anoCorrente)
-      ->select(DB::raw(' 
+      ->select(DB::raw('
     ANY_VALUE(tb_ano_lectivo.Codigo) as ultimoAnoInscritoId,ANY_VALUE(tb_ano_lectivo.Designacao) as ultimoAnoInscritoDesig'))->OrderBy('tb_ano_lectivo.ordem', 'desc')->first();
-    //->select(DB::raw('max(tb_ano_lectivo.ordem), 
+    //->select(DB::raw('max(tb_ano_lectivo.ordem),
     //dd($confirmacao);
     return $confirmacao;
   }
@@ -311,9 +289,9 @@ class DividaService
       ->join('tb_matriculas', 'tb_matriculas.Codigo', '=', 'tb_confirmacoes.Codigo_Matricula')
       ->where('tb_matriculas.Codigo', $codigo_matricula)
       // ->where('tb_confirmacoes.Codigo_Ano_lectivo', '!=',$anoCorrente)
-      ->select(DB::raw(' 
+      ->select(DB::raw('
     ANY_VALUE(tb_ano_lectivo.Codigo) as ultimoAnoInscritoId,ANY_VALUE(tb_ano_lectivo.Designacao) as ultimoAnoInscritoDesig'))->OrderBy('tb_ano_lectivo.ordem', 'desc')->first();
-    //->select(DB::raw('max(tb_ano_lectivo.ordem), 
+    //->select(DB::raw('max(tb_ano_lectivo.ordem),
     //dd($confirmacao);
     return $confirmacao;
   }
@@ -321,9 +299,9 @@ class DividaService
 
   public function dividasNovaVersao($codigo_matricula) // dividas apartir do ano 2020
   {
-  
+
     $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
-    
+
     $user  = $aluno;
 
     if ($user->admissao->preinscricao->codigo_tipo_candidatura == 1) {
@@ -333,11 +311,13 @@ class DividaService
       ->select('tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto')
       ->where('tb_preinscricao.user_id', $user->admissao->preinscricao->user_id)
       ->first();
-      
+
       $curso = DB::table('tb_cursos')->join('tb_preinscricao', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')
       ->select('tb_cursos.Designacao as curso', 'tb_cursos.Codigo as codigo_curso')
       ->where('tb_preinscricao.Codigo', $matricula1->codigo_inscricao)
       ->first();
+
+
 
       $anoCorrente = $this->anoAtualPrincipal->index();
 
@@ -353,7 +333,7 @@ class DividaService
       ->where('tb_inscricoes_ano_anterior.codigo_matricula', $matricula1->Codigo)
       ->where('tb_inscricoes_ano_anterior.status', 1)
       ->first();
-      
+
       $inscricaoAnosAnteriores = DB::table('tb_inscricoes_ano_anterior')
       ->join('tb_matriculas', 'tb_matriculas.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_matricula')
       ->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_ano_lectivo')
@@ -386,8 +366,9 @@ class DividaService
       $desconto_preinscricao = 0;
       $taxa_desconto = 0;
       $bolsa = '';
-      
-      
+
+
+
       foreach ($arrayAnos as $key => $ano) {
 
         $bolseiro = DB::table('tb_bolseiro_siiuma')->where('tb_bolseiro_siiuma.codigo_matricula', $matricula1->Codigo)
@@ -428,7 +409,7 @@ class DividaService
 
             if (!$diplomado) {
 
-              $mesesIsentos = $this->getPrestacoesAnosAnterioresPorAnoLectivo($ano['ano_lectivo']);
+              $mesesIsentos = $this->getPrestacoesAnosAnterioresPorAnoLectivo($ano['ano_lectivo'], $user->admissao->preinscricao->user_id);
               //$arrayIsentos=json_decode($mesesIsentos->pluck('codigo'),true);
 
               $mesesNaoPagos = DB::table('propina_por_curso')
@@ -483,7 +464,7 @@ class DividaService
                 //dd($confirmacao);
                 $collection->push(['codGradeCurricular' => '', 'codFacturaOutrosServicos' => '', 'valor' => $mes['valor'], 'multa' => $mes['multa'], 'total' => $total, 'servico' => $mes['servico'], 'mes_propina' => $mes['mes_propina'], 'mes_temp_id' => null, 'n_prestacao' => $mes['codigo_mes'], 'ano_lectivo' => $mes['ano'], 'taxa_multa' => 10, 'taxa_desconto' => $taxa_desconto, 'bolsa' => $bolsa, 'codigo_propina' => $mes['codigo_propina'], 'codigo_anoLectivo' => $mes['codigo_anoLectivo'], 'desconto' => $desconto]);
               }
-            } //FIM IF DO DIPLOMADO  
+            } //FIM IF DO DIPLOMADO
 
           }
 
@@ -491,7 +472,7 @@ class DividaService
 
         }
       }
-      
+
       //Novas dívidas
       $dividas = collect([]);
       //$anoCorrente=$this->anoAtualPrincipal->index();
@@ -503,7 +484,7 @@ class DividaService
 
       // && sizeof($mesesPagos)>0
       $pagamentoOutubro = $this->pagouOutubro($aluno->codigo_inscricao);
-  
+
       //dd($pagamentoOutubro);
       //dd($pagamentoOutubro);
       if (!$diplomado) {
@@ -511,15 +492,15 @@ class DividaService
           $mesesPagos = $this->mesesPagosPorAnoPropina($confirmacao->ultimoAnoInscritoId, $aluno->codigo_inscricao);
           $mesesNaoPagos = $this->getPrestacoesPorAnoLectivo($confirmacao->ultimoAnoInscritoId, $mesesPagos->pluck('codigo_mes'), $codigo_matricula);
           $propina = $this->propinaAluno($aluno->codigo_inscricao, $aluno->AlunoCacuaco, $confirmacao->ultimoAnoInscritoId);
-  
+
           $bolseiro = $this->bolsaService->Bolsa($codigo_matricula, $confirmacao->ultimoAnoInscritoId);
-    
+
           /*$bolseiro = DB::table('tb_bolseiros')->join('tb_tipo_bolsas','tb_tipo_bolsas.codigo','tb_bolseiros.codigo_tipo_bolsa')->where('tb_bolseiros.codigo_matricula', $codigo_matricula)->where('tb_bolseiros.codigo_anoLectivo', $confirmacao->ultimoAnoInscritoId)->where('status',0)->select('*','tb_tipo_bolsas.designacao as tipo_bolsa')->first();*/
           //bolsa status 0- bolsa ativa e status 1 bolsa desativa
           $taxaMultaMeses = $this->mesesPagarPropina->mesesPagar(date('Y-m-d'), 1, $mes = 0, $confirmacao->ultimoAnoInscritoId, $codigo_matricula);
           $arrayMesesNPagos = json_decode($mesesNaoPagos, true);
           $anoLectivo = DB::table('tb_ano_lectivo')->where('Codigo', $confirmacao->ultimoAnoInscritoId)->first();
-        
+
           if ($propina && (!$bolseiro || ($bolseiro && $bolseiro->desconto != 100))) {
             foreach ($arrayMesesNPagos as $key => $mes) {
 
@@ -592,7 +573,7 @@ class DividaService
           }
         }
       }
-      
+
 
       $collection1 = $collection->concat($dividas);
       //dd($dividas);
@@ -798,476 +779,6 @@ class DividaService
           $collection->push(['codGradeCurricular' => '', 'codFacturaOutrosServicos' => '', 'valor' => $mes['valor'], 'multa' => $mes['multa'], 'total' => $total, 'servico' => $mes['servico'], 'mes_propina' => $mes['mes_propina'], 'mes_temp_id' => null, 'n_prestacao' => $mes['codigo_mes'], 'ano_lectivo' => $anoActual->Designacao, 'taxa_multa' => 10, 'taxa_desconto' => $taxa_desconto, 'bolsa' => $bolsa, 'codigo_propina' => $mes['codigo_propina'], 'codigo_anoLectivo' => $anoActual->Codigo, 'desconto' => $desconto]);
         }
       }
-      return $collection;
-    }
-  }
-
-
-
-  public function dividasNovaVersaoAPI($codigo_matricula) // dividas apartir do ano 2020
-  {
-
-    // $dividaAntiga()
-    $user = DB::table('tb_matriculas')
-      ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
-
-      ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-      //->select('tb_admissao.pre_incricao as admitido')
-      ->select(
-        'tb_matriculas.*',
-        'tb_preinscricao.Codigo as codigo_inscricao',
-        'tb_preinscricao.AlunoCacuaco as aluno_cacuaco',
-        'tb_preinscricao.desconto as desconto',
-        'tb_preinscricao.codigo_tipo_candidatura',
-        'tb_preinscricao.user_id',
-        'tb_preinscricao.anoLectivo as anoLectivo'
-      )
-      ->where('tb_matriculas.Codigo', $codigo_matricula)->first();
-
-    if ($user->codigo_tipo_candidatura == 1) {
-
-      $matricula1 = DB::table('tb_matriculas')
-        ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
-
-        ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-        //->select('tb_admissao.pre_incricao as admitido')
-        ->select('tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto', 'tb_preinscricao.saldo_reset')
-        ->where('tb_preinscricao.user_id', $user->user_id)->first();
-
-
-
-      $curso = DB::table('tb_cursos')->join('tb_preinscricao', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')->select('tb_cursos.Designacao as curso', 'tb_cursos.Codigo as codigo_curso')->where('tb_preinscricao.Codigo', $matricula1->codigo_inscricao)->first();
-
-
-      $anoCorrente = $this->anoAtualPrincipal->index();
-
-      $data['anoAtual'] = $anoCorrente;
-      $data['anoCorrente'] = DB::table('tb_ano_lectivo')
-        ->where('Codigo', $anoCorrente)
-        ->first();
-
-
-
-      $maiorAno = DB::table('tb_inscricoes_ano_anterior')->join('tb_matriculas', 'tb_matriculas.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_matricula')->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_ano_lectivo')
-        ->select(DB::raw('max(tb_ano_lectivo.Designacao) as ano_designacao, ANY_VALUE(tb_ano_lectivo.Codigo) as maior'))->where('tb_inscricoes_ano_anterior.codigo_matricula', $matricula1->Codigo)->where('tb_inscricoes_ano_anterior.status', 1)
-        ->first();
-
-      $inscricaoAnosAnteriores = DB::table('tb_inscricoes_ano_anterior')->join('tb_matriculas', 'tb_matriculas.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_matricula')->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_ano_lectivo')
-        ->select('tb_ano_lectivo.Designacao as ano_designacao', 'tb_inscricoes_ano_anterior.codigo_ano_lectivo as ano_lectivo')->where('tb_inscricoes_ano_anterior.codigo_matricula', $matricula1->Codigo) //->where('tb_inscricoes_ano_anterior.codigo_ano_lectivo', $maiorAno->maior)
-        ->get();
-
-
-      $arrayAnos = json_decode($inscricaoAnosAnteriores, true);
-
-
-      $collection = collect([]);
-
-
-      $diplomado = DB::table('tb_matriculas')->where('estado_matricula', 'diplomado')->where('Codigo', $matricula1->Codigo)->select('*')->first();
-
-
-      $data['meses'] = DB::table('meses_calendario')->where('id', 7)->get();
-
-
-      $desconto_bolseiro = 0;
-      $total = 0;
-      $desconto = 0;
-      $valorComDesconto = 0;
-      $desconto_preinscricao = 0;
-      $taxa_desconto = 0;
-      $bolsa = '';
-      foreach ($arrayAnos as $key => $ano) {
-        $bolseiro = DB::table('tb_bolseiro_siiuma')->where('tb_bolseiro_siiuma.codigo_matricula', $matricula1->Codigo)->where('tb_bolseiro_siiuma.ano', $ano['ano_designacao'])->select('*')->first();
-
-        $mesesPagos = DB::table('tb_pagamentos')->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
-          ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'tb_pagamentosi.Codigo_Servico')
-          ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_pagamentos.Codigo_PreInscricao')
-          ->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', 'tb_pagamentos.AnoLectivo')
-          ->select('tb_pagamentosi.Mes as mes', 'tb_pagamentosi.Valor_Pago as valor', 'tb_ano_lectivo.Designacao as ano', 'tb_pagamentos.estado as estado_pagamento', 'tb_pagamentosi.mes_id as codigo_mes')
-          ->where('tb_preinscricao.Codigo', $matricula1->codigo_inscricao)->where('tb_pagamentosi.Ano', $ano['ano_designacao'])
-          ->where('tb_tipo_servicos.TipoServico', 'Mensal')->where('tb_pagamentos.estado', 1)->distinct('tb_pagamentosi.Mes')->get();
-        //->where('tb_pagamentos.estado',1)
-
-
-
-        $mesesIds = $mesesPagos->pluck('codigo_mes');
-        $array = json_decode($mesesIds, true);
-
-        $ano_lectivo = DB::table('tb_ano_lectivo')
-          ->where('Codigo', $ano['ano_lectivo'])->select('Designacao', 'Codigo')
-          ->first();
-
-        $propina = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('Descricao', 'like', 'propina ' . $curso->curso . '%')->where('cacuaco', $matricula1->aluno_cacuaco)->where('codigo_ano_lectivo', $ano['ano_lectivo'])->first();
-
-        if ($ano_lectivo->Codigo != $data['anoAtual'] && sizeof($inscricaoAnosAnteriores) > 0 && $propina) {
-
-
-          $ano_lectivo = DB::table('tb_ano_lectivo')
-            ->where('Codigo', $ano['ano_lectivo'])->select('Designacao')
-            ->first();
-
-          if (!$bolseiro || ($bolseiro && $bolseiro->desconto != 100)) {
-
-            if (!$diplomado) {
-
-              $mesesIsentos = $this->getPrestacoesAnosAnterioresPorAnoLectivoAPI($matricula1->Codigo, $ano['ano_lectivo']);
-
-              //$arrayIsentos=json_decode($mesesIsentos->pluck('codigo'),true);
-
-              $mesesNaoPagos = DB::table('propina_por_curso')
-                ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'propina_por_curso.codigo_servico')
-                ->join('meses', 'meses.codigo', 'propina_por_curso.mes_id')
-                ->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', 'tb_tipo_servicos.codigo_ano_lectivo')
-                ->select(DB::raw('tb_tipo_servicos.Descricao as servico,meses.mes as mes_propina,meses.codigo as codigo_mes,tb_ano_lectivo.Designacao as ano,
-              tb_ano_lectivo.Codigo as codigo_anoLectivo,propina_por_curso.codigo_servico as codigo_propina,((tb_tipo_servicos.Preco*0.1)+tb_tipo_servicos.Preco) as total,
-              propina_por_curso.codigo_servico,tb_tipo_servicos.Preco as valor,tb_tipo_servicos.Preco*0.1 as multa'))
-                ->where('tb_tipo_servicos.Codigo', $propina->Codigo)
-                ->where('tb_tipo_servicos.cacuaco', $matricula1->aluno_cacuaco)
-                ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano['ano_lectivo'])
-                ->whereNotIn('propina_por_curso.mes_id', $array)
-                ->whereNotIn('propina_por_curso.mes_id', $mesesIsentos)
-                ->distinct('meses.mes')->get();
-
-              // dd($mesesNaoPagos);
-
-
-              $arrayNP = json_decode($mesesNaoPagos, true);
-
-              foreach ($arrayNP as $key => $mes) {
-
-                $desconto_finalista = $this->pegar_finalistaAPI($codigo_matricula, $mes['codigo_anoLectivo']);
-
-                if ($bolseiro && $bolseiro->desconto != 100 && $bolseiro->desconto != 0) {
-                  $taxa_desconto = $bolseiro->desconto;
-                  $bolsa = $bolseiro->instituicao;
-                  $desconto_bolseiro = $mes['valor'] * ($bolseiro->desconto / 100);
-
-                  $desconto = $desconto_bolseiro;
-
-                  $valorComDesconto = $mes['valor'] - $desconto;
-
-                  $mes['multa'] = $valorComDesconto * 0.1;
-
-                  $total = $valorComDesconto + $mes['multa'];
-                } elseif ($matricula1 && $matricula1->desconto > 0) {
-                  $taxa_desconto = $matricula1->desconto;
-                  $desconto_preinscricao = $mes['valor'] * ($matricula1->desconto / 100);
-
-                  $desconto = $desconto_preinscricao;
-
-                  $valorComDesconto = $mes['valor'] - $desconto;
-
-                  $mes['multa'] = $valorComDesconto * 0.1;
-
-                  $total = $valorComDesconto + $mes['multa'];
-                } else {
-
-                  $desconto = 0;
-                  $total = $mes['total'];
-                }
-
-                //dd($confirmacao);
-
-                $collection->push(['ano' => $mes['ano'], 'valor' => $mes['valor'], 'multa' => $mes['multa'], 'total' => $total, 'taxa_multa' => 10, 'taxa_desconto' => $taxa_desconto, 'desconto' => $desconto, 'mes_propina' => $mes['mes_propina']]);
-              }
-            } //FIM IF DO DIPLOMADO  
-
-          }
-        }
-      }
-
-      // dd($collection);
-
-      //Novas dívidas
-      $dividas = collect([]);
-      //$anoCorrente=$this->anoAtualPrincipal->index();
-      $aluno = $this->alunoRepository->dadosAlunoPorMatricula($codigo_matricula);
-
-      // se teve confirmado e pagou outubro tem divida
-      $confirmacao = $this->confirmacaoAPI($codigo_matricula);
-
-      $diplomado = DB::table('tb_matriculas')->where('estado_matricula', 'diplomado')->where('Codigo', $codigo_matricula)->select('*')->first();
-
-      // && sizeof($mesesPagos)>0
-      $pagamentoOutubro = $this->pagouOutubro($aluno->codigo_inscricao);
-
-
-      //dd($pagamentoOutubro);
-      //dd($pagamentoOutubro);
-      if (!$diplomado) {
-
-        if (($confirmacao && $confirmacao->ultimoAnoInscritoId == 1 && $pagamentoOutubro) || ($confirmacao && $confirmacao->ultimoAnoInscritoId != 1 && (!(int)($confirmacao->ultimoAnoInscritoDesig <= 2019)))) {
-
-          $mesesPagos = $this->mesesPagosPorAnoPropinaAPI($codigo_matricula, $confirmacao->ultimoAnoInscritoId, $aluno->codigo_inscricao);
-
-          $mesesNaoPagos = $this->getPrestacoesPorAnoLectivoAPI($codigo_matricula, $confirmacao->ultimoAnoInscritoId, $mesesPagos->pluck('codigo_mes'), date('Y-m-d'));
-
-
-          $propina = $this->propinaAluno($aluno->codigo_inscricao, $aluno->AlunoCacuaco, $confirmacao->ultimoAnoInscritoId);
-
-          $bolseiro = $this->bolsaService->Bolsa($codigo_matricula, $confirmacao->ultimoAnoInscritoId);
-
-
-          /*$bolseiro = DB::table('tb_bolseiros')->join('tb_tipo_bolsas','tb_tipo_bolsas.codigo','tb_bolseiros.codigo_tipo_bolsa')->where('tb_bolseiros.codigo_matricula', $codigo_matricula)->where('tb_bolseiros.codigo_anoLectivo', $confirmacao->ultimoAnoInscritoId)->where('status',0)->select('*','tb_tipo_bolsas.designacao as tipo_bolsa')->first();*/
-          //bolsa status 0- bolsa ativa e status 1 bolsa desativa
-          $taxaMultaMeses = $this->mesesPagarPropina->mesesPagar(date('Y-m-d'), 1, $mes = 0, $confirmacao->ultimoAnoInscritoId, $codigo_matricula);
-          $arrayMesesNPagos = json_decode($mesesNaoPagos, true);
-          $anoLectivo = DB::table('tb_ano_lectivo')->where('Codigo', $confirmacao->ultimoAnoInscritoId)->first();
-
-          if ($propina && (!$bolseiro || ($bolseiro && $bolseiro->desconto != 100))) {
-            foreach ($arrayMesesNPagos as $key => $mes) {
-
-
-              $desconto_finalista = $this->pegar_finalistaAPI($codigo_matricula, $confirmacao->ultimoAnoInscritoId);
-
-              $desconto_bolseiro = 0;
-              $total = 0;
-              $desconto = 0;
-              $valorComDesconto = 0;
-              $desconto_preinscricao = 0;
-              $multa = 0;
-              $taxa_desconto = 0;
-              $bolsa = '';
-              $mesNPago = $taxaMultaMeses->where('codigo', $mes['id'])->first();
-
-
-              if ($mesNPago) {
-                $semestre = $mes['semestre'];
-                if ($aluno->codigo_tipo_candidatura != 1) {
-                  $semestre = $mes['semestre_posgraduacao'];
-                }
-
-
-                if ($bolseiro && $bolseiro->desconto != 100 && $bolseiro->desconto != 0) {
-
-                  $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDividaAPI($codigo_matricula, $confirmacao->ultimoAnoInscritoId, $mes['id'], $semestre);
-
-                  $taxa_desconto = $bolseiro->desconto;
-
-                  $bolsa = $bolseiro->tipo_bolsa;
-                  $desconto_bolseiro = $propina->Preco * ($bolseiro->desconto / 100);
-                  if ($bolsaSemestre && $anoLectivo->ordem >= 17) {
-                    $taxa_desconto = $bolsaSemestre['desconto'];
-                    $desconto_bolseiro = $propina->Preco * ($bolsaSemestre['desconto'] / 100);
-                  }
-                  $desconto = $desconto_bolseiro;
-
-
-                  $valorComDesconto = $propina->Preco - $desconto;
-
-                  $multa = $valorComDesconto * ($mesNPago['taxa'] / 100);
-
-                  $total = $valorComDesconto + $multa;
-                } elseif ($aluno && $aluno->desconto > 0) {
-
-                  $taxa_desconto = $aluno->desconto;
-                  $desconto_preinscricao = $propina->Preco * ($aluno->desconto / 100);
-
-                  $desconto = $desconto_preinscricao;
-
-                  $valorComDesconto = $propina->Preco - $desconto;
-
-                  $multa = $valorComDesconto * ($mesNPago['taxa'] / 100);
-                  $total = $valorComDesconto + $multa;
-                } else {
-
-                  $desconto = 0;
-                  $taxa_desconto = 0;
-                  if ($desconto_finalista > 0 && $desconto_finalista <= 3) {
-                    $desconto = $propina->Preco * 0.5;
-                    $taxa_desconto = 50;
-                  }
-                  $multa = ($propina->Preco - $desconto) * ($mesNPago['taxa'] / 100);
-                  $total = ($propina->Preco - $desconto) + $multa;
-                }
-
-                $dividas->push(['valor' => $propina->Preco, 'multa' => $multa, 'total' => $total, 'taxa_multa' => $mesNPago['taxa'], 'taxa_desconto' => $taxa_desconto, 'desconto' => $desconto, 'mes' => $mesNPago['mes']]);
-              }
-            }
-          }
-        }
-      }
-
-      $collection1 = $collection->concat($dividas);
-
-
-      return $collection1;
-    } else {
-
-      if ($user->codigo_tipo_candidatura == 2) {
-        $ano_lectivo_ciclo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
-      } else {
-        $ano_lectivo_ciclo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
-      }
-
-      $matricula1 = DB::table('tb_matriculas')
-        ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
-
-        ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-        //->select('tb_admissao.pre_incricao as admitido')
-        ->select('tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto')
-        ->where('tb_preinscricao.user_id', $user->user_id)->first();
-
-      $curso = DB::table('tb_cursos')->join('tb_preinscricao', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')->select('tb_cursos.Designacao as curso', 'tb_cursos.Codigo as codigo_curso')->where('tb_preinscricao.Codigo', $matricula1->codigo_inscricao)->first();
-
-
-      $anoCorrente = $this->anoAtualPrincipal->index();
-
-      $maiorAno = DB::table('tb_inscricoes_ano_anterior')->join('tb_matriculas', 'tb_matriculas.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_matricula')->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'tb_inscricoes_ano_anterior.codigo_ano_lectivo')
-        ->select(DB::raw('max(tb_ano_lectivo.Designacao) as ano_designacao, ANY_VALUE(tb_ano_lectivo.Codigo) as maior'))->where('tb_inscricoes_ano_anterior.codigo_matricula', $matricula1->Codigo)->where('tb_inscricoes_ano_anterior.status', 1)
-        ->first();
-
-      $collection = collect([]);
-
-      if ($maiorAno->maior) {
-        $anoLectivoBolsa = DB::table('tb_ano_lectivo')
-          ->where('Codigo', $maiorAno->maior)
-          ->first();
-      }
-
-      $diplomado = DB::table('tb_matriculas')->where('estado_matricula', 'diplomado')->where('Codigo', $matricula1->Codigo)->select('*')->first();
-
-
-      $desconto_bolseiro = 0;
-      $total = 0;
-      $desconto = 0;
-      $valorComDesconto = 0;
-      $desconto_preinscricao = 0;
-      $taxa_desconto = 0;
-      $bolsa = '';
-
-      if ($user->codigo_tipo_candidatura == 2) {
-        $meses = DB::table('mes_temp')->where('activo_posgraduacao', 1)->select('id')->limit(24)->get();
-      } else {
-        $meses = DB::table('mes_temp')->where('activo_posgraduacao', 1)->select('id')->get();
-      }
-
-
-      $mesesCiclo = $meses->pluck('id');
-
-      $ano_lectivo = DB::table('tb_ano_lectivo')->where('Codigo', $user->anoLectivo)->select('Designacao', 'Codigo', 'ordem')->first();
-
-      $ano['ano_lectivo'] = $ano_lectivo->Codigo;
-
-      $anoCorrente = $this->anoAtualPrincipal->index();
-
-      $anoActual =  DB::table('tb_ano_lectivo')->where('Codigo', $anoCorrente)->select('Designacao', 'Codigo', 'ordem')->first();
-
-
-
-      if ($ano_lectivo->ordem >= 15) {
-
-
-        $mesesPagos = DB::table('factura')
-          ->join('factura_items', 'factura_items.CodigoFactura', 'factura.Codigo')
-          ->join('tb_pagamentos', 'tb_pagamentos.codigo_factura', 'factura.Codigo')
-          ->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', 'tb_pagamentos.Codigo')
-          ->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', 'tb_pagamentos.AnoLectivo')
-          ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'tb_pagamentosi.Codigo_Servico')
-          ->select(
-            'tb_pagamentosi.Mes as mes',
-            'tb_pagamentosi.Valor_Pago as valor',
-            'tb_ano_lectivo.Designacao as ano',
-            'tb_pagamentos.estado as estado_pagamento',
-            'tb_pagamentosi.mes_temp_id as codigo_mes'
-          )
-          ->where('factura.CodigoMatricula', $matricula1->Codigo)->where('tb_pagamentos.estado', 1)
-          ->where('tb_tipo_servicos.TipoServico', 'Mensal')->distinct('tb_pagamentosi.mes_temp_id')->get();
-      } else {
-
-        $mesesPagos = DB::table('tb_pagamentos')
-          ->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
-          ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'tb_pagamentosi.Codigo_Servico')
-          ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_pagamentos.Codigo_PreInscricao')
-          ->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', 'tb_pagamentos.AnoLectivo')
-          ->select(
-            'tb_pagamentosi.Mes as mes',
-            'tb_pagamentosi.Valor_Pago as valor',
-            'tb_ano_lectivo.Designacao as ano',
-            'tb_pagamentos.estado as estado_pagamento',
-            'tb_pagamentosi.mes_temp_id as codigo_mes'
-          )
-          ->where('tb_preinscricao.Codigo', $matricula1->codigo_inscricao)
-          ->where('tb_tipo_servicos.TipoServico', 'Mensal')
-          ->where('tb_pagamentos.estado', 1)->distinct('tb_pagamentosi.Mes')->get();
-      }
-
-
-      $mesesIds = $mesesPagos->pluck('codigo_mes');
-
-      $array = json_decode($mesesIds, true);
-
-
-
-      $propina = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')
-        ->where('Descricao', 'like', 'propina ' . $curso->curso . '%')
-        ->where('cacuaco', $matricula1->aluno_cacuaco)->where('codigo_ano_lectivo', $ano_lectivo_ciclo)->first();
-
-      if ($propina) {
-
-        $isencao = DB::table('tb_isencoes')->where('mes_temp_id', '!=', null)->where('codigo_matricula', $matricula1->Codigo)
-          ->where('estado_isensao', 'Activo')
-          ->where('codigo_anoLectivo', '>=', $ano_lectivo->Codigo)->select('tb_isencoes.mes_temp_id as mes_id')->get();
-
-        $mesesIsentos = $isencao->pluck('mes_id');
-
-        $collectionMDadosPagamento = collect([]);
-
-        $dadosPagamento = DB::table('tb_tipo_servicos')
-          ->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', 'tb_tipo_servicos.codigo_ano_lectivo')
-          ->select(DB::raw('tb_tipo_servicos.Descricao as servico, tb_ano_lectivo.Designacao as ano,
-            tb_ano_lectivo.Codigo as codigo_anoLectivo,tb_tipo_servicos.Codigo as codigo_propina,((tb_tipo_servicos.Preco*0.1)+tb_tipo_servicos.Preco) as total,
-            tb_tipo_servicos.Codigo as codigo_servico,tb_tipo_servicos.Preco as valor,tb_tipo_servicos.Preco*0.1 as multa'))
-          ->where('tb_tipo_servicos.Codigo', $propina->Codigo)
-          ->where('tb_tipo_servicos.cacuaco', $matricula1->aluno_cacuaco)
-          ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano_lectivo_ciclo)
-          ->first();
-
-        $naoPagos = DB::table('mes_temp')->whereIn('id', $mesesCiclo)->whereNotIn('id', $array)->whereNotIn('id', $mesesIsentos)->select('designacao as mes_propina', 'id as codigo_mes')->get();
-
-        $arrayMesesNaoPago = json_decode($naoPagos, true);
-
-        foreach ($arrayMesesNaoPago as $key => $mes) {
-          $collectionMDadosPagamento->push([
-            'valor' => $dadosPagamento->valor,
-            'multa' => $dadosPagamento->multa,
-            'total' => $dadosPagamento->total,
-            'multa' => $dadosPagamento->multa,
-            'servico' => $dadosPagamento->servico,
-            'mes_propina' => $mes['mes_propina'],
-            'codigo_mes' => $mes['codigo_mes'],
-            'codigo_propina' => $dadosPagamento->codigo_propina
-          ]);
-        }
-        $mesesNaoPagos = $collectionMDadosPagamento;
-
-        $arrayNP = json_decode($mesesNaoPagos, true);
-
-        foreach ($arrayNP as $key => $mes) {
-
-
-          if ($matricula1 && $matricula1->desconto > 0) {
-            $taxa_desconto = $matricula1->desconto;
-            $desconto_preinscricao = $mes['valor'] * ($matricula1->desconto / 100);
-
-            $desconto = $desconto_preinscricao;
-
-            $valorComDesconto = $mes['valor'] - $desconto;
-
-            $mes['multa'] = $valorComDesconto * 0.1;
-
-            $total = $valorComDesconto + $mes['multa'];
-          } else {
-
-            $desconto = 0.0;
-            $total = $mes['total'];
-          }
-
-          //dd($confirmacao);
-          $collection->push(['codGradeCurricular' => '', 'codFacturaOutrosServicos' => '', 'valor' => $mes['valor'], 'multa' => $mes['multa'], 'total' => $total, 'servico' => $mes['servico'], 'mes_propina' => $mes['mes_propina'], 'mes_temp_id' => null, 'n_prestacao' => $mes['codigo_mes'], 'ano_lectivo' => $anoActual->Designacao, 'taxa_multa' => 10, 'taxa_desconto' => $taxa_desconto, 'bolsa' => $bolsa, 'codigo_propina' => $mes['codigo_propina'], 'codigo_anoLectivo' => $anoActual->Codigo, 'desconto' => $desconto]);
-        }
-      }
-
       return $collection;
     }
   }
@@ -1645,7 +1156,7 @@ class DividaService
   public function DividasAntigas($codigo_matricula) // anterior a 2020
   {
     $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
-    
+
     $user  = $aluno;
 
     $matricula = DB::table('tb_matriculas')
@@ -1722,7 +1233,7 @@ class DividaService
 
           if (!$diplomado) {
 
-            $mesesIsentos = $this->getPrestacoesAnosAnterioresPorAnoLectivo($ano['ano_lectivo']);
+            $mesesIsentos = $this->getPrestacoesAnosAnterioresPorAnoLectivo($ano['ano_lectivo'], $user->admissao->preinscricao->user_id);
 
             $mesesNaoPagos = DB::table('propina_por_curso')->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'propina_por_curso.codigo_servico')->join('meses', 'meses.codigo', 'propina_por_curso.mes_id')->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', 'tb_tipo_servicos.codigo_ano_lectivo')->select(DB::raw('tb_tipo_servicos.Descricao as servico,meses.mes as mes_propina,meses.codigo as codigo_mes,tb_ano_lectivo.Designacao as ano,tb_ano_lectivo.Codigo as codigo_anoLectivo,propina_por_curso.codigo_servico as codigo_propina,((tb_tipo_servicos.Preco*0.1)+tb_tipo_servicos.Preco) as total, propina_por_curso.codigo_servico,tb_tipo_servicos.Preco as valor,tb_tipo_servicos.Preco*0.1 as multa'))->where('tb_tipo_servicos.Codigo', $propina->Codigo)->where('tb_tipo_servicos.cacuaco', $matricula->aluno_cacuaco)->where('tb_tipo_servicos.codigo_ano_lectivo', $ano['ano_lectivo'])->whereNotIn('propina_por_curso.mes_id', $array)->whereNotIn('propina_por_curso.mes_id', $mesesIsentos)->distinct('meses.mes')->get();
 
@@ -1762,7 +1273,7 @@ class DividaService
 
               $collection->push(['valor' => $mes['valor'], 'multa' => $mes['multa'], 'total' => $total, 'servico' => $mes['servico'], 'mes_propina' => $mes['mes_propina'], 'mes_temp_id' => null, 'n_prestacao' => $mes['codigo_mes'], 'ano_lectivo' => $mes['ano'], 'taxa_multa' => 10, 'taxa_desconto' => $taxa_desconto, 'bolsa' => $bolsa, 'codigo_propina' => $mes['codigo_propina'], 'codigo_anoLectivo' => $mes['codigo_anoLectivo'], 'desconto' => $desconto]);
             }
-          } //FIM IF DO DIPLOMADO  
+          } //FIM IF DO DIPLOMADO
 
         }
       }
@@ -1774,14 +1285,12 @@ class DividaService
   public function DividasAntigasAlunoSemUser($codigo_matricula) // anterior a 2020
   {
 
-    $user = auth()->user();
-
     $matricula = DB::table('tb_matriculas')
       ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
 
       ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
       //->select('tb_admissao.pre_incricao as admitido')
-      ->select('tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto')
+      ->select('tb_preinscricao.user_id', 'tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto')
       ->where('tb_matriculas.Codigo', $codigo_matricula)->first();
 
     $curso = DB::table('tb_cursos')->join('tb_preinscricao', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')->select('tb_cursos.Designacao as curso', 'tb_cursos.Codigo as codigo_curso')->where('tb_preinscricao.Codigo', $matricula->codigo_inscricao)->first();
@@ -1855,7 +1364,7 @@ class DividaService
 
           if (!$diplomado) {
 
-            $mesesIsentos = $this->getPrestacoesAnosAnterioresPorAnoLectivo($ano['ano_lectivo']);
+            $mesesIsentos = $this->getPrestacoesAnosAnterioresPorAnoLectivo($ano['ano_lectivo'], $matricula->user_id);
             //$arrayIsentos=json_decode($mesesIsentos->pluck('codigo'),true);
 
             $mesesNaoPagos = DB::table('propina_por_curso')->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'propina_por_curso.codigo_servico')->join('meses', 'meses.codigo', 'propina_por_curso.mes_id')->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', 'tb_tipo_servicos.codigo_ano_lectivo')->select(DB::raw('tb_tipo_servicos.Descricao as servico,meses.mes as mes_propina,meses.codigo as codigo_mes,tb_ano_lectivo.Designacao as ano,tb_ano_lectivo.Codigo as codigo_anoLectivo,propina_por_curso.codigo_servico as codigo_propina,((tb_tipo_servicos.Preco*0.1)+tb_tipo_servicos.Preco) as total, propina_por_curso.codigo_servico,tb_tipo_servicos.Preco as valor,tb_tipo_servicos.Preco*0.1 as multa'))->where('tb_tipo_servicos.Codigo', $propina->Codigo)->where('tb_tipo_servicos.cacuaco', $matricula->aluno_cacuaco)->where('tb_tipo_servicos.codigo_ano_lectivo', $ano['ano_lectivo'])->whereNotIn('propina_por_curso.mes_id', $array)->whereNotIn('propina_por_curso.mes_id', $mesesIsentos)->distinct('meses.mes')->get();
@@ -1896,7 +1405,7 @@ class DividaService
 
               $collection->push(['valor' => $mes['valor'], 'multa' => $mes['multa'], 'total' => $total, 'servico' => $mes['servico'], 'mes_propina' => $mes['mes_propina'], 'mes_temp_id' => null, 'n_prestacao' => $mes['codigo_mes'], 'ano_lectivo' => $mes['ano'], 'taxa_multa' => 10, 'taxa_desconto' => $taxa_desconto, 'bolsa' => $bolsa, 'codigo_propina' => $mes['codigo_propina'], 'codigo_anoLectivo' => $mes['codigo_anoLectivo'], 'desconto' => $desconto]);
             }
-          } //FIM IF DO DIPLOMADO  
+          } //FIM IF DO DIPLOMADO
 
         }
       }
@@ -2281,43 +1790,19 @@ class DividaService
   }
 
   public function DividasTodosAnos($numero_matricula, $tipo)
-  { 
-    $aluno = $this->alunoRepository->dadosAlunoPorMatricula($numero_matricula);
-    $pagamentoOutubro = $this->pagouOutubro($aluno->codigo_inscricao); //outubro de 2020-2021
-    $dividasNovaVersao = $this->dividasNovaVersao($numero_matricula);
-
-    $outrosServicos = $this->dividaOutrosServicos($numero_matricula);  
-    $dividaAntiga = $this->DividasAntigas($numero_matricula); // anterior ao ano 2020
-    
-    $dividas = $dividasNovaVersao->mergeRecursive($outrosServicos);
-    
-    $dividasRecurso = $this->dividaOutrosServicos($numero_matricula);
-  
-    if ($tipo == 2) {
-      $dividas = sizeof($dividasNovaVersao->mergeRecursive($outrosServicos));
-      if ($pagamentoOutubro) { // regra orientada. Se o estudante ja pagou outubro de 2020, o sistema não deve lhe cobrar divida de anos anteriores a 2020
-        $dividas = sizeof($dividasNovaVersao);
-      }
-      if (sizeOf($outrosServicos) > 0) {
-        $dividas = $dividas + sizeOf($outrosServicos);
-      }
-    }
-    
-    return $dividas;
-  }
-
-  public function DividasTodosAnosAPI($numero_matricula, $tipo)
   {
-
     $aluno = $this->alunoRepository->dadosAlunoPorMatricula($numero_matricula);
     $pagamentoOutubro = $this->pagouOutubro($aluno->codigo_inscricao); //outubro de 2020-2021
-    $dividasNovaVersao = $this->dividasNovaVersaoAPI($numero_matricula);
+
+    $dividasNovaVersao = $this->dividasNovaVersao($numero_matricula);
+    // dd("Passou");
 
     $outrosServicos = $this->dividaOutrosServicos($numero_matricula);
+    $dividaAntiga = $this->DividasAntigas($numero_matricula); // anterior ao ano 2020
+
     $dividas = $dividasNovaVersao->mergeRecursive($outrosServicos);
 
-
-    return $dividasNovaVersao;
+    $dividasRecurso = $this->dividaOutrosServicos($numero_matricula);
 
     if ($tipo == 2) {
       $dividas = sizeof($dividasNovaVersao->mergeRecursive($outrosServicos));
