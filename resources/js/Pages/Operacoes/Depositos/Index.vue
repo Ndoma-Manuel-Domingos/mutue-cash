@@ -26,7 +26,7 @@
                           <select v-model="operador" class="form-control">
                             <option value="">TODOS</option>
                             <option v-for="item in utilizadores" :key="item" :value=item.utilizadores.codigo_importado>
-                              {{ item.utilizadores.nome }} {{ item.utilizadores.codigo_importado }}
+                              {{ item.utilizadores.nome ?? '' }}
                             </option>
                           </select>
                         </div>
@@ -122,7 +122,7 @@
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
                       <td>{{ item.forma_pagamento.descricao }}</td>
-                      <td>{{ item.user.nome }}</td>
+                      <td>{{ item.user ? item.user.nome : '' }}</td>
                       <td>{{ item.ano_lectivo.Designacao }}</td>
                       <td>{{ item.created_at }}</td>
                       <td>
@@ -130,11 +130,10 @@
                           <i class="fas fa-print "></i>
                           Imprimir
                         </Link>
-                        
-                        <Link class="btn-sm btn-success mx-1" @click="editarItem(item)">
+                        <!-- <Link class="btn-sm btn-success mx-1" @click="editarItem(item)">
                           <i class="fas fa-edit "></i>
                           Editar
-                        </Link>
+                        </Link> -->
                       </td>
                     </tr>
                   </tbody>
@@ -278,132 +277,7 @@
         </div>
       </div>
     </div>
-    
-    
-    <div class="modal fade" id="modalDepositoEdit">
-      <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Novo Deposito</h4>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <form action="" @submit.prevent="submit">
-            <div class="modal-body py-3">
-              <div class="row">
-                <div class="col-12 col-md-12 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Matricula</label>
-                    <div class="input-group">
-                      <input
-                        class="form-control"
-                        v-model="form.codigo_matricula"
-                        type="search"
-                        placeholder="Search"
-                        aria-label="Search"
-                      />
-                      <div class="input-group-append">
-                        <button
-                          class="btn btn-info"
-                          @click="pesqisar_estudante"
-                        >
-                          <i class="fas fa-search fa-fw"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div
-                      v-if="form.errors.codigo_matricula"
-                      class="text-danger"
-                    >
-                      {{ form.errors.codigo_matricula }}
-                    </div>
-                  </div>
-                </div>
 
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Nome Completo</label>
-                    <input
-                      type="text"
-                      v-model="form.nome_estudante"
-                      disabled
-                      class="form-control"
-                      placeholder="Verificar o Nome Completo"
-                    />
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Bilhete</label>
-                    <input
-                      type="text"
-                      v-model="form.bilheite_estudante"
-                      disabled
-                      class="form-control"
-                      placeholder="Verificar o Nome Completo"
-                    />
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Curso</label>
-                    <input
-                      type="text"
-                      v-model="form.curso_estudante"
-                      disabled
-                      class="form-control"
-                      placeholder="Verificar o Nome Completo"
-                    />
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Valor a depositar</label>
-                    <div class="input-group">
-                      <input
-                        type="text"
-                        v-model="form.valor_a_depositar"
-                        class="form-control"
-                        placeholder="informe o valor a depositar"
-                      />
-                      <div class="input-group-append">
-                        <button type="button" class="btn btn-info">kz</button>
-                      </div>
-                    </div>
-                    <div
-                      v-if="form.errors.valor_a_depositar"
-                      class="text-danger"
-                    >
-                      {{ form.errors.valor_a_depositar }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer justify-content-between">
-              <button
-                type="button"
-                class="btn btn-default"
-                data-dismiss="modal"
-              >
-                Fechar
-              </button>
-              <button type="submit" class="btn btn-primary">Salvar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-    
   </MainLayouts>
 </template>
   
@@ -560,7 +434,6 @@
     editarItem(item) 
     {   
       this.form.clearErrors();
-      $('#modalDepositoEdit').modal('show');
       
       // this.form.clearErrors();
       // this.form.codigo_matricula = item.codigo_matricula_id,

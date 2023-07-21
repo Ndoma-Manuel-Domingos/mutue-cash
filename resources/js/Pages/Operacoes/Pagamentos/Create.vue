@@ -1368,13 +1368,14 @@ export default {
         }
       }
     },
-
+  
     pegaPropina: function () {
     //   this.loading = true;
       this.getUltimaPrestacaoPorAnoLectivo();
       this.getPrimeiraPrestacaoPorAnoLectivo();
       this.getPrestacoes();
-
+      
+      this.$Progress.start();
       axios
         .get(`/pagamentos-estudantes/propina/${this.codigo_matricula}`, {
           params: { ano: this.anoLectivo.Codigo },
@@ -1430,14 +1431,18 @@ export default {
           this.descontoDaPreinscricao = this.propina.Preco * (this.desconto_preinscricao / 100);
 
           this.loading = false;
+          
+          this.$Progress.finish();
         })
         .catch((error) => {
           //console.log(error);
           //  toastr.warning('Houve uma falha ao carregar os dados!...');
+          this.$Progress.fail();
         });
     },
 
     pegaBolseiro: function () {
+      this.$Progress.start();
       axios
         .get(`/estudante/pega-bolseiro/${this.codigo_matricula}`, {
           params: { ano_lectivo: this.anoLectivo.Codigo },
@@ -1447,19 +1452,27 @@ export default {
           this.desconto_bolseiro =
             this.propina.Preco * (this.bolseiro.desconto / 100);
           this.mesesBolsa();
+          this.$Progress.finish();
         })
-        .catch((error) => {});
+        .catch((error) => {
+          this.$Progress.fail();
+        });
     },
 
     mesesBolsa: async function () {
+      this.$Progress.start();
       await axios
         .get(`/estudante/prestacoes-por-bolsa-semestre`, {
           params: { ano_lectivo: this.anoLectivo.Codigo, codigo_matricula: this.codigo_matricula },
         })
         .then((response) => {
           this.meses_bolsa = response.data;
+          
+          this.$Progress.finish();
         })
-        .catch((error) => {});
+        .catch((error) => {
+          this.$Progress.fail();
+        });
     },
 
     imprimirFatura: function (codigo_fatura) {
@@ -1475,82 +1488,6 @@ export default {
       let val = (value / 1).toFixed(3).replace(".", ",");
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     validar: function () {
@@ -1580,22 +1517,31 @@ export default {
 
 
     async getUltimaPrestacaoPorAnoLectivo() {
-      await axios
-        .get(`/pagamentos-estudantes/ultima-prestacao-por-ano/${this.anoLectivo.Codigo}/${this.codigo_matricula}`)
-        .then((response) => {
-          this.ultima_prestacao = response.data;
-        })
-        .catch((error) => {
-        });
+     this.$Progress.start();
+     await axios
+     .get(`/pagamentos-estudantes/ultima-prestacao-por-ano/${this.anoLectivo.Codigo}/${this.codigo_matricula}`)
+     .then((response) => {
+        this.ultima_prestacao = response.data;
+        this.$Progress.finish();
+      })
+      .catch((error) => {
+        this.$Progress.fail();
+      });
     },
+    
+    
     async getPrimeiraPrestacaoPorAnoLectivo() {
+      
+      this.$Progress.start();
       await axios
         .get(`/pagamentos-estudantes/primeira-prestacao-por-ano/${this.anoLectivo.Codigo}/${this.codigo_matricula}`)
         .then((response) => {
           this.primeira_prestacao = response.data.primeira_prestacao; //luanda
           this.prazo_desconto_ano_todo = response.data.prazo_desconto_ano_todo; //luanda
+          this.$Progress.finish();
         })
         .catch((error) => {
+          this.$Progress.fail();
         });
     },
 
@@ -1979,8 +1925,10 @@ export default {
     },
 
     AllClean: function (key) {
+      this.$Progress.start();
       this.tabela.splice(key);
       this.total_adicionado = 0;
+      this.$Progress.finish();
     },
 
     remove: function (key) {
@@ -1990,23 +1938,30 @@ export default {
 
     pegaFinalista: function () {
       //alert(this.anoLectivo.Codigo)
+      this.$Progress.start();
       axios
         .get(`/estudante/pega-finalista/${this.codigo_matricula}`, { params: { ano_lectivo: this.anoLectivo.Codigo } })
         .then((response) => {
           this.cadeiras = response.data;
+          this.$Progress.finish();
         })
         .catch((error) => {
+          this.$Progress.fail();
         });
     },
 
     getRefer: function () {
+      this.$Progress.start();
+  
       axios
         .get(`/estudante/referencias-nao-pagas/${this.codigo_matricula}`)
         .then((response) => {
           this.referencias = response.data;
           this.numero_fatura = this.referencias.codigo_fatura;
+          this.$Progress.finish();
         })
-        .catch((error) => {
+        .catch((error) => { 
+          this.$Progress.fail();
         });
     },
 
@@ -2161,12 +2116,14 @@ export default {
     },
 
     verificaConfirmacaoNoAnoLectivoCorrente: function () {
-      this.loading = true;
+      this.$Progress.start();
       axios.get(`/estudante/verifica-confirmacao-no-ano-corrente/${this.codigo_matricula}`)
       .then((response) => {
         this.verifica_confirmacao_no_ano_corrente = response.data;
+        this.$Progress.finish();
       })
         .catch((error) => {
+        this.$Progress.fail();
         });
     },
   },
