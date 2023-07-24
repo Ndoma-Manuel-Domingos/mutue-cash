@@ -64,7 +64,6 @@ Route::group(["middleware" => "auth"], function () {
     
     Route::get('/fatura/diversos/{factura_id}', [PagamentosController::class, 'imprimirFaturaDiversos']);
     
-    
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
 
 

@@ -141,8 +141,14 @@ class DepositoController extends Controller
         $preinscricao->update();
         
         //sucesso
-        return redirect()->back()->with('data', $create);
-
+        // return redirect()->back()->with();
+        
+        // Retorne a resposta em JSON
+        return response()->json([
+            'message' => 'Deposito realizado com sucesso!',
+            'data' => $create
+        ]);
+        
 
     }
     

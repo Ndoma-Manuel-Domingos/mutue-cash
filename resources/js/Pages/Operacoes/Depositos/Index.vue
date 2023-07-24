@@ -113,8 +113,8 @@
                       <th>Matricula</th>
                       <th>Estudante</th>
                       <th>Saldo depositado</th>
-                      <th>Saldo apos Movimento</th>
-                      <th>Forma Pagamento</th>
+                      <th>Saldo após Movimento</th>
+                      <!-- <th>Forma Pagamento</th> -->
                       <th>Operador</th>
                       <th>Ano Lectivo</th>
                       <th>Data</th>
@@ -130,14 +130,13 @@
                       </td>
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
-                      <td>{{ item.forma_pagamento.descricao }}</td>
+                      <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
                       <td>{{ item.user ? item.user.nome : '' }}</td>
                       <td>{{ item.ano_lectivo.Designacao }}</td>
                       <td>{{ item.created_at }}</td>
-                      <td>
-                        <Link class="btn-sm btn-primary" @click="imprimirComprovativo(item)">
-                          <i class="fas fa-print "></i>
-                          Imprimir
+                      <td class="text-center">
+                        <Link @click="imprimirComprovativo(item)">
+                          <i class="fas fa-print text-danger"></i>
                         </Link>
                         <!-- <Link class="btn-sm btn-success mx-1" @click="editarItem(item)">
                           <i class="fas fa-edit "></i>
@@ -374,8 +373,58 @@
       this.contemLetras = regexLetras.test(this.form.valor_a_depositar);
     },
 
-    submit() {
+    // submit() {
     
+    //   if (this.contemLetras) {
+    //     Swal.fire({
+    //       title: "Atenção",
+    //       text: "O valor a depositar não pode conter letras!",
+    //       icon: "warning",
+    //       confirmButtonColor: "#3d5476",
+    //       confirmButtonText: "Ok",
+    //       onClose: () => { },
+    //     });
+    //     return;
+    //   }
+    
+    //   if (this.form.valor_a_depositar < 5000) {
+    //     Swal.fire({
+    //       title: "Atenção",
+    //       text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",
+    //       icon: "warning",
+    //       confirmButtonColor: "#3d5476",
+    //       confirmButtonText: "Ok",
+    //       onClose: () => { },
+    //     });
+    //     return;
+    //   }
+    
+    //   this.$Progress.start();
+      
+    //   if (this.isUpdate) {
+      
+    //   } else {
+    //     this.form.post(route("mc.depositos.store"), {
+    //       preverseScroll: true,
+    //       onSuccess: (data) => {
+    //         console.log(data)
+    //         this.form.reset();
+    //         this.$Progress.finish();
+    //         sweetSuccess("Deposito realizado com sucesso!");
+    //         $("#modalDeposito").modal("hide");
+    //       },
+    //       onError: (errors) => {
+    //         sweetError("Não foi possível fazer o deposito!");
+    //         this.$Progress.fail();
+    //       },
+    //     });
+    //   }
+    // },
+    
+    async submit() {
+    
+      this.$Progress.start();
+          
       if (this.contemLetras) {
         Swal.fire({
           title: "Atenção",
@@ -385,6 +434,7 @@
           confirmButtonText: "Ok",
           onClose: () => { },
         });
+        this.$Progress.fail();
         return;
       }
     
@@ -397,56 +447,38 @@
           confirmButtonText: "Ok",
           onClose: () => { },
         });
+        this.$Progress.fail();
         return;
       }
-      
-      // if (this.form.valor_a_depositar > 1000000) {
-      //   Swal.fire({
-      //     title: 'Atenção?',
-      //     text: "O Valor a depositar é superior a 1.000.000,00 Kz, Deseja continuar com este deposito!",
-      //     icon: 'warning',
-      //     showCancelButton: true,
-      //     confirmButtonColor: '#3085d6',
-      //     cancelButtonColor: '#d33',
-      //     confirmButtonText: 'Sim, desejo continuar!'
-      //   }).then((result) => {
-      //     if (result.isConfirmed) {
-      //       this.contemDeposito = true;
-      //     }else {
-      //       this.contemDeposito = false;
-      //     }
-      //   })
-        
-      //   return this.contemDeposito;
-      // }
-      
-      // if(!this.contemDeposito){
-      
-      //   alert(this.contemDeposito)
-      
-      //   return
-      // }
     
-      this.$Progress.start();
-      
       if (this.isUpdate) {
-      
+        
       } else {
-        this.form.post(route("mc.depositos.store"), {
-          preverseScroll: true,
-          onSuccess: (data) => {
-            // console.log(data)
+        
+        try {
+  
+            // Faça uma requisição POST para o backend Laravel
+            const response = await axios.post('/depositos/store', this.form);
+            
+            // A resposta do Laravel estará disponível em response.data
+            console.log(response.data.data.codigo);
+            
             this.form.reset();
             this.$Progress.finish();
-            sweetSuccess("Deposito realizado com sucesso!");
+            sweetSuccess(response.data.message);
             $("#modalDeposito").modal("hide");
-          },
-          onError: (errors) => {
-            sweetError("Não foi possível fazer o deposito!");
-            this.$Progress.fail();
-          },
-        });
+            
+            this.imprimirComprovativo(response.data.data);
+            
+            // Faça algo com a resposta, se necessário
+        } catch (error) {
+          // Lide com erros, se houver
+          console.error(error);
+          sweetError("Não foi possível fazer o deposito!");
+          this.$Progress.fail();
+        }
       }
+    
     },
 
     pesqisar_estudante(e) {

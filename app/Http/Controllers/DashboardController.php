@@ -37,15 +37,17 @@ class DashboardController extends Controller
         
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
             
-            $valor_deposito = Deposito::sum('valor_depositar');
-            $totalPagamentos = Pagamento::where('estado', 1)->sum('valor_depositado');
+            $valor_deposito = Deposito::where('data_movimento', '=', Carbon::parse(date('Y-m-d')))->sum('valor_depositar');
+            $totalPagamentos = Pagamento::where('estado', 1)->where('DataRegisto', '=', Carbon::parse(date('Y-m-d')))->sum('valor_depositado');
             
         }else {
         
-            $valor_deposito = Deposito::where('created_by', $user->codigo_importado)->sum('valor_depositar');
-            $totalPagamentos = Pagamento::where('estado', 1)->where('fk_utilizador', $user->codigo_importado)->sum('valor_depositado');
+            $valor_deposito = Deposito::where('data_movimento', '=', Carbon::parse(date('Y-m-d')))->where('created_by', $user->codigo_importado)->sum('valor_depositar');
+            $totalPagamentos = Pagamento::where('estado', 1)->where('DataRegisto', '=', Carbon::parse(date('Y-m-d')))->where('fk_utilizador', $user->codigo_importado)->sum('valor_depositado');
         
         }
+        
+        
         
         
         $header = [

@@ -22,7 +22,7 @@
 
     <header class="clearfix">
         <div id="logo">
-            <img src="img/logo.png">
+            <img src="{{ public_path('images/logotipo.png') }}">
         </div>
         <div id="company" style="font-size: 10px;">
             <h2 class="name">Universidade Metodista</h2>
@@ -38,8 +38,8 @@
     <div style="border-bottom: 0px solid black;">
 
         <h5 style="background-color: lightgray;">
-            @if ($aluno->valor_depositado > 0)
-                <center>COMPROVATIVO DE PAGAMENTO - FACTURA/RECIBO</center>
+            @if ($aluno->ValorEntregue > 0 || ($aluno->estado > 0 && $aluno->estado <= 2))
+                <center>FACTURA RECIBO</center>
                   
             @else
                 <center>FACTURA</center>
@@ -85,8 +85,7 @@
                         <th style="text-align: right;padding: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;</th>
                         @endif
                     @else
-                        <th style="text-align: left;padding: 1px; background-color: lightgray;">Valor Depositado:
-                            {{ number_format($aluno->valor_depositado, 2, ',', '.') }}</th>
+                        <th style="text-align: left;padding: 1px; background-color: lightgray;"></th>
                         <th style="text-align: right;padding: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;</th>
                     @endif
                     <th
@@ -96,8 +95,7 @@
                 </tr>
 
                 <tr>
-                    <th style="text-align: left;padding: 1px;background-color: lightgray;"> Moeda: KZ <br> Saldo da
-                        Conta: {{ number_format($aluno->saldo, 2, ',', '.') }}<br>
+                    <th style="text-align: left;padding: 1px;background-color: lightgray;"> Moeda: KZ
 
                     </th>
                     <th style="text-align: right;padding: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;</th>
@@ -235,7 +233,7 @@
                       Valor por prestação<br>
                       Total de prestações<br>
                   @endif
-                  Saldo de Movimento<br>
+                  Saldo após o Movimento<br>
                   <span>&nbsp;</span>
               </th>
               <th style="text-align:right;padding: 0px;font-size:9px;">
@@ -251,7 +249,8 @@
                             {{ number_format(0, 2, ',', '.') }}<br>
                         @endif
                     @else
-                    {{ number_format($aluno->valor_depositado, 2, ',', '.') }}<br>
+
+                    {{ ($aluno->ValorEntregue > 0) ? number_format($aluno->ValorEntregue, 2, ',', '.') :  number_format($total_apagar, 2, ',', '.')}}<br>
                     @endif
 
                     @if ($aluno->negociacao)

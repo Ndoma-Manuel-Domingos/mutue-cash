@@ -1259,7 +1259,7 @@ class PagamentosController extends Controller
             $fatura['Referencia'] = $referencia;
             $fatura['ValorAPagar'] = $valor_apagar;
             $fatura['Desconto'] = $desconto_total;
-            $fatura['ValorEntregue'] = $data1['valor_depositado'];
+            $fatura['ValorEntregue'] = $valor_apagar;
             $fatura['TotalMulta'] = $multa;
             $fatura['ano_lectivo'] = $ano;
             $fatura['obs'] = "Pagamento feito a cash";
@@ -1356,6 +1356,7 @@ class PagamentosController extends Controller
                         'CodigoFactura' => $codigo_fatura,
                         'Quantidade' => 1,
                         'Total' => $value1['Total'],
+                        'valor_pago' => $value1['Total'],
                         'Mes' => $mes,
                         'estado' => 1,
                         'mes_temp_id' => $value1['mes_temp_id'],

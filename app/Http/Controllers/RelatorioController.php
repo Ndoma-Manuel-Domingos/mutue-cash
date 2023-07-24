@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AnoLectivo;
+use App\Models\Deposito;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\Pagamento;
@@ -37,6 +38,9 @@ class RelatorioController extends Controller
             $request->ano_lectivo = $ano->Codigo;
         }
         
+        $valor_deposito = 0;
+        $totalPagamentos = 0;
+        
         
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
         
@@ -58,9 +62,10 @@ class RelatorioController extends Controller
             ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
             ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
-            ->paginate(10)
+            ->select( 'tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
+            ->paginate(7)
             ->withQueryString();   
+    
             
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
             
@@ -86,12 +91,16 @@ class RelatorioController extends Controller
             ->where('fk_utilizador', $user->codigo_importado)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
-            ->paginate(10)
+            ->paginate(7)
             ->withQueryString();    
             
             $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function($query){
                 $query->where('codigo_importado', auth()->user()->codigo_importado);
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+            
+            
+            $valor_deposito = Deposito::where('data_movimento', '=', Carbon::parse(date('Y-m-d')))->where('created_by', $user->codigo_importado)->sum('valor_depositar');
+            $totalPagamentos = Pagamento::where('estado', 1)->where('DataRegisto', '=', Carbon::parse(date('Y-m-d')))->where('fk_utilizador', $user->codigo_importado)->sum('valor_depositado');
 
         }
 
@@ -102,7 +111,8 @@ class RelatorioController extends Controller
         })->get();
 
 
-        
+        $data['valor_deposito'] = $valor_deposito;
+        $data['totalPagamentos'] = $totalPagamentos;
 
         return Inertia::render('Relatorios/FechoCaixa/Operador', $data);
     }

@@ -6,68 +6,110 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><!DOCTYPE html>
-        <title>RECIBO COMPROVATIVO</title>
-    
-        <style type="text/css">
+        <title>COMPROVATIVO DO DEPOSITO</title>
+        
+        <link rel="stylesheet" href="css/style_matricula.css" media="all" />
+        
+        <style>
             *{
-                margin: 0;
-                padding: 0;
-                -webkit-box-sizing: border-box;
-                box-sizing: border-box;
                 font-family: Arial, Helvetica, sans-serif;
-                text-align: left;
-            }
-            body{
-                padding: 20px;
-                font-family: Arial, Helvetica, sans-serif;
-            }
-
-            h1{
-                font-size: 15pt;
-                margin-bottom: 10px;
-            }
-            h2{
-                font-size: 12pt;
-            }
-            p{
-                /* margin-bottom: 20px; */
-                line-height: 25px;
-                font-size: 10pt;
-                text-align: justify;
-            }
-            strong{
-                font-size: 10pt;
-            }
-
-            table{
-                width: 100%;
-                text-align: left;
-                border-spacing: 2;	
-                margin-bottom: 10px;
-                /* border: 1px solid rgb(0, 0, 0); */
-                font-size: 10pt;
-            }
-            thead{
-                background-color: #fdfdfd;
-                font-size: 10px;
-            }
-            td{
-                border-bottom: 1px solid rgb(255, 255, 255);
-            }
-            th, td{
-                padding: 6px;
-                font-size: 10px;
-                margin: 0;
                 padding: 0;
-            }
-            strong{
-                font-size: 10px;
+                margin: 0;
             }
         </style>
+    
     </head>
 <body>
 
-@include('pdf.estudantes.header')
+    <header class="clearfix">
+        <div id="logo">
+            <img src="{{ public_path('images/logotipo.png') }}">
+        </div>
+        <div id="company" style="font-size: 10px;">
+            <h2 class="name">Universidade Metodista</h2>
+            <div>Rua Nossa Senhora da Muxima Nº 10.<br>Bairro Kinaxixi, Luanda.</div>
+            <div>+244 947716133/+244 942364667</div>
+            <div><a href="mailto:geral@uma.co.ao">geral@uma.co.ao</a></div>
+            <div>NIF: 5401150865</div>
+        </div>
+        </div>
+    </header>
+    
+    
+    <div style="border-bottom: 0px solid black;">
+        <h5 style="background-color: lightgray;padding: 10px;text-align: center">
+            COMPROVATIVO DO DEPOSITO
+        </h5>
+        <div style="text-align: right;font-size:10px;"><i>Ano Lectivo: {{ $item->ano_lectivo->Designacao }}</i></div>
+        <table style="font-size:10px;width: 100%" >
+            <thead>
+                <tr>
+                    {{--   --}}
+                    {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
+                    <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
+                        Nº Deposito: {{ $item->codigo ?? '' }}</th>
+                    <th style="text-align: left;padding: 4px; background-color: lightgray;">
+                        Mº Matricula: {{ $item->codigo_matricula_id ?? '' }}
+                    </th>
+                </tr>
+                
+                <tr>
+                    {{-- <th style="text-align: left;padding: 4px; background-color: lightgray;"></th>  --}}
+                    {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
+                    <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
+                        Data Movimento: {{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}
+                    </th>
+                    
+                    <th style="text-align: left;padding: 4px; background-color: lightgray;">
+                        Estudante: {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? '' }}
+                    </th>
+                </tr>
+                
+                <tr>
+                    {{-- <th style="text-align: left;padding: 4px; background-color: lightgray;"></th>  --}}
+                    {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
+                    <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
+                        Operador: {{ $item->user->nome ?? '' }}</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    
+    <table style="font-size: 10px!important;">
+        <thead>
+          <tr style="">
+           <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 0px;">Nº</th>
+            <!--th class="wd-40p">Valor</th-->
+             {{-- <th
+                style="text-align: left!important;background-color: #2e306e; color:white;font-size:10px; border:solid 1px white; padding: 0px;">
+                Descrição&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </th> --}}
+            <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Valor Depositado</th>
+            <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Valor após deposito</th>
+            <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Saldo Dispoível</th>
+            {{-- <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 0px;">Multa</th>
+            <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 0px;">Desc.</th>
+            <th style="background-color: #2e306e; color:white;border:solid 1px white; padding: 0px;">Total</th> --}}
+          </tr>
+        </thead>
+        
+        <tbody style="text-align: center!important">
+            <th style="text-align: right!important;font-size: 11px!important;">1</th>
+            <td style="text-align: right!important;font-size: 11px!important;">{{ number_format($item->valor_depositar ?? 0, 2, ',', '.') }} kz </td>
+            <td style="text-align: right!important;font-size: 11px!important;">{{ number_format($item->saldo_apos_movimento ?? 0, 2, ',', '.') }} kz</td>
+            <td style="text-align: right!important;font-size: 11px!important;">{{ number_format($item->matricula->admissao->preinscricao->saldo ?? 0, 2, ',', '.') }} kz </td>
+        </tbody>
+        
+    </table>
+    
+    
+    <footer style="width: 100%; left: -10px; font-size: 10px!important;">
+        Documento processado pelo software MUTUE CASH - Gestão Universitária, desenvolvido pela Mutue - Soluções Tecnológicas
+        Inteligentes.</td>
+
+    </footer>
+
+{{-- @include('pdf.estudantes.header')
 
 <main>
 
@@ -108,7 +150,7 @@
             </tr>     
         </tbody>
     </table> 
-</main>
+</main> --}}
 
 </body>
 </html>

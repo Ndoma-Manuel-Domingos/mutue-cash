@@ -18,7 +18,7 @@
             <div class="small-box bg-info">
               <div class="inner">
                 <h4>{{ formatValor(total_depositado ?? 0) }}</h4>
-                <p>Total Valor Depositado.</p>
+                <p>Total Valor Depositado - Diário .</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -33,7 +33,7 @@
             <div class="small-box bg-info">
               <div class="inner">
                 <h4>{{ formatValor(total_pagamento ?? 0) }}</h4>
-                <p>Total de Pagamentos.</p>
+                <p>Total de Pagamentos - Diário.</p>
               </div>
               <div class="icon">
                 <i class="ion ion-stats-bars"></i>

@@ -96,11 +96,76 @@
             </div>
           </div>
         </div>
+        
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h4>{{ formatValor(0) }}</h4>
+                <p>Valor Cash</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-bag"></i>
+              </div>
+              <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+              ></Link>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h4>{{ formatValor(valor_deposito) }}</h4>
+                <p>Total Valor Depositos</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-bag"></i>
+              </div>
+              <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+              ></Link>
+            </div>
+          </div>
+          
+          
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h4>{{ formatValor(totalPagamentos) }}</h4>
+                <p>Valor Pagamentos</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-bag"></i>
+              </div>
+              <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+              ></Link>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h4>{{ formatValor(0) }}</h4>
+                <p>Valor Saldos</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-bag"></i>
+              </div>
+              <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+              ></Link>
+            </div>
+          </div>
+        </div>
 
         <div class="row">
           <div class="col-12 col-md-12">
             <div class="card">
               <div class="card-header">
+              
+              
                 <button
                   class="btn btn-success float-right mr-1"
                   type="button"
@@ -173,7 +238,7 @@ import Paginacao from "../../../Shared/Paginacao";
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["items", "ano_lectivos", "utilizadores", "servicos"],
+  props: ["items", "ano_lectivos", "utilizadores", "servicos", "valor_deposito", "totalPagamentos"],
   components: { Link, Paginacao },
   data() {
     return {
