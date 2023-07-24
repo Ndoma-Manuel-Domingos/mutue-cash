@@ -181,7 +181,7 @@
                         @change="faturaByReference"
                         v-model="numero_fatura_nao_paga"
                       >
-                        <option value="">Selecione Facturas a Pagar</option>
+                        <option disabled>Selecione Facturas a Pagar</option>
                         <option
                           v-for="item in referencias_nao_pagas"
                           :key="item.codigo_fatura"
@@ -550,10 +550,10 @@
                   <tbody>
                     <tr>
                       <td>{{ formatPrice(estudante.saldo) }}</td>
-                      <td v-if="formatPrice(estudante.saldo) - formatPrice(total_adicionado) < 0">
-                        {{ formatPrice(estudante.saldo) - formatPrice(total_adicionado) }}
+                      <td v-if="estudante.saldo >= total_adicionado">
+                        {{ formatPrice(0)}}
                       </td>
-                      <td v-else>{{ formatPrice(0) }}</td>
+                      <td v-else>{{ formatPrice(valor_por_depositar) }}</td>
                       <td>{{ formatPrice(total_adicionado) }}</td>
                     </tr>
                   </tbody>
@@ -657,11 +657,15 @@
                     </div> -->
 
                     <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label">Valor a depositar</label>
+                      class="col-12 col-md-6 mb-3">
+                      <label for="" class="form-label">Valor entregue</label>
                       <input
+                        type="text"
+                        class="form-control"
+                        v-model="pagamento.valor_depositado"
+                        placeholder="Ex: 12346"
+                      />
+                      <!-- <input
                         v-if="ativar_editar_valor == 1"
                         type="text"
                         class="form-control"
@@ -676,7 +680,7 @@
                         v-model="pagamento.valor_depositado"
                         :disabled="ativar_editar_valor == 0"
                         placeholder="Ex: 12346"
-                      />
+                      /> -->
                     </div>
 
                     <!-- <div class="col-12 col-md-4 mb-3">
@@ -990,16 +994,16 @@ export default {
     total_adicionado(val) {
       if (val) {
         if (this.estudante.saldo >= 0 && this.estudante.saldo < this.total_adicionado ) {
-            this.pagamento.valor_depositado = this.total_adicionado - this.estudante.saldo;
+            this.pagamento.valor_depositado = this.formatPrice(this.total_adicionado - this.estudante.saldo);
             this.valor_por_depositar = this.total_adicionado - this.estudante.saldo;
-            this.estudante.saldo = 0;
+            // this.estudante.saldo = 0;
         }else{
           if (this.estudante.saldo >= this.total_adicionado) {
 
-            this.pagamento.valor_depositado = this.estudante.saldo - this.total_adicionado;
+            this.pagamento.valor_depositado = this.formatPrice(this.estudante.saldo - this.total_adicionado);
             this.valor_por_depositar = this.estudante.saldo - this.total_adicionado;
           } else {
-            this.pagamento.valor_depositado = this.total_adicionado;
+            this.pagamento.valor_depositado = this.formatPrice(this.total_adicionado);
             this.valor_por_depositar = this.total_adicionado;
           }
         }
@@ -1012,7 +1016,7 @@ export default {
     // this.pegaUltimoMes();
   },
 
-  methods: {
+    methods: {
     onTalaoChange(e) {
       this.talao_banco = e.target.files[0];
     },
@@ -1368,13 +1372,13 @@ export default {
         }
       }
     },
-  
+
     pegaPropina: function () {
     //   this.loading = true;
       this.getUltimaPrestacaoPorAnoLectivo();
       this.getPrimeiraPrestacaoPorAnoLectivo();
       this.getPrestacoes();
-      
+
       this.$Progress.start();
       axios
         .get(`/pagamentos-estudantes/propina/${this.codigo_matricula}`, {
@@ -1431,7 +1435,7 @@ export default {
           this.descontoDaPreinscricao = this.propina.Preco * (this.desconto_preinscricao / 100);
 
           this.loading = false;
-          
+
           this.$Progress.finish();
         })
         .catch((error) => {
@@ -1467,7 +1471,7 @@ export default {
         })
         .then((response) => {
           this.meses_bolsa = response.data;
-          
+
           this.$Progress.finish();
         })
         .catch((error) => {
@@ -1528,10 +1532,10 @@ export default {
         this.$Progress.fail();
       });
     },
-    
-    
+
+
     async getPrimeiraPrestacaoPorAnoLectivo() {
-      
+
       this.$Progress.start();
       await axios
         .get(`/pagamentos-estudantes/primeira-prestacao-por-ano/${this.anoLectivo.Codigo}/${this.codigo_matricula}`)
@@ -1952,7 +1956,7 @@ export default {
 
     getRefer: function () {
       this.$Progress.start();
-  
+
       axios
         .get(`/estudante/referencias-nao-pagas/${this.codigo_matricula}`)
         .then((response) => {
@@ -1960,7 +1964,7 @@ export default {
           this.numero_fatura = this.referencias.codigo_fatura;
           this.$Progress.finish();
         })
-        .catch((error) => { 
+        .catch((error) => {
           this.$Progress.fail();
         });
     },
@@ -1984,25 +1988,10 @@ export default {
     },
 
     registarFatura: function () {
-      if (this.pagamento.forma_pagamento == 'POR REFERÊNCIA') {
-        if (this.total_adicionado < this.pagamento.valor_depositado) {
-
-          //alert()
-          Swal.fire({
-            title: "Dados Incorrectos",
-            text: "Valor inválido! Informa um valor menor ou igual ao total a pagar. Se quer acumular saldo use a opção de carregar saldo!",
-            icon: "error",
-            confirmButtonColor: "#3d5476",
-            confirmButtonText: "Ok",
-          });
-          document.getElementById("btn").disabled = false;
-          return false;
-        }
-      }
       if (
         (this.pagamento.valor_depositado == null ||
           this.pagamento.valor_depositado == 0) &&
-        Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado) && this.pagamento.forma_pagamento != 'POR REFERÊNCIA'
+        Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
       ) {
         Swal.fire({
           title: "Dados Incorrectos",
@@ -2014,25 +2003,24 @@ export default {
 
         document.getElementById("btn").disabled = false;
       } else if (
-        this.opcoes == 2 &&
         this.pagamento.valor_depositado > 0 &&
         this.estudante.saldo > 0 &&
-        Math.ceil(this.pagamento.valor_depositado + this.estudante.saldo) < this.total_adicionado && this.pagamento.forma_pagamento != 'POR REFERÊNCIA'
+        Math.ceil(this.pagamento.valor_depositado + this.estudante.saldo) < this.total_adicionado
       ) {
 
         Swal.fire({
           title: "Dados Incorrectos",
-          text: "O Valor Inserido é Inferior ao Valor a Pagar =" + this.total_adicionado,
+          text: "O Valor entregue é Inferior ao Valor a Pagar =" + this.total_adicionado,
           icon: "error",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
         });
 
         document.getElementById("btn").disabled = false;
-      } else if (this.valor_por_depositar != null && (this.opcoes == 1 || this.opcoes == 2) && (this.pagamento.valor_depositado != this.valor_por_depositar)) {
+      } else if (this.valor_por_depositar != null && (this.opcoes == 1 || this.opcoes == 2) && (this.pagamento.valor_depositado < this.valor_por_depositar)) {
         Swal.fire({
           title: "Dados Incorrectos",
-          text: "O Valor Inserido não corresponde ao valor da factura, deve ser igual a " + (this.valor_por_depositar) + ' kzs',
+          text: "O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " + (this.valor_por_depositar) + ' kzs',
           icon: "error",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok"
@@ -2060,7 +2048,6 @@ export default {
         formData.append("pagamento", pagamento);
         formData.append("referencia", referencia);
         formData.append("fonte", 2);// fonte de requisicao
-
 
         axios
           .post("/pagamentos-estudantes/fatura/diversos/create/" +
