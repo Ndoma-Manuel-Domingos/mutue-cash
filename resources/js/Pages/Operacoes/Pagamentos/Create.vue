@@ -247,14 +247,14 @@
                             {{ ano.Designacao }}
                           </option>
                         </template>
-                        <template v-else-if="codigo_tipo_candidatura == 2 && opcoes == 1">
+                        <template v-else-if="codigo_tipo_candidatura ==2 && opcoes == 1">
                           <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo">
-                            {{ ano.Designacao }}
+                            {{ano.Designacao}}
                           </option>
                         </template>
-                        <template  v-else-if="codigo_tipo_candidatura == 3 && opcoes == 1">
+                        <template  v-else-if="codigo_tipo_candidatura ==3 && opcoes == 1">
                           <option v-for="ano in anosLectivos" :value="ano" :key="ano.Codigo">
-                            {{ ano.Designacao }} 
+                            {{ano.Designacao}} 
                           </option>
                         </template>
                       </select>
