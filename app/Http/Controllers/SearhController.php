@@ -76,7 +76,7 @@ class SearhController extends Controller
                 'tb_preinscricao.codigo_tipo_candidatura',
                 'tb_cursos.Designacao'
             )->first();
-            
+
             if ($resultado->codigo_tipo_candidatura == 1) {
                 $ano_lectivo = $this->anoAtualPrincipal->index();
             } else {
@@ -124,7 +124,7 @@ class SearhController extends Controller
                 'tb_preinscricao.Saldo as saldo',
                 'tb_preinscricao.codigo_tipo_candidatura as tipo_candidatura'
             )->where('tb_preinscricao.user_id', $aluno->admissao->preinscricao->user_id)->first();
-            
+
         return Response()->json($dados);
     }
 
@@ -133,7 +133,7 @@ class SearhController extends Controller
         $ano_lectivo = null;
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
-        
+
         $dados = DB::table('tb_preinscricao')
             ->join('tb_admissao', 'tb_admissao.pre_incricao', 'tb_preinscricao.Codigo')
             ->join('tb_matriculas', 'tb_matriculas.Codigo_Aluno', 'tb_admissao.codigo')
@@ -141,7 +141,7 @@ class SearhController extends Controller
             ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')
             ->join('tb_cursos as tb_curso_matricula', 'tb_curso_matricula.Codigo', '=', 'tb_matriculas.Codigo_Curso')
             ->select('tb_preinscricao.codigo_tipo_candidatura as tipo_candidatura')->where('tb_preinscricao.user_id', $aluno->admissao->preinscricao->user_id)->first();
-        
+
         if ($dados->tipo_candidatura == 1) {
             $ano_lectivo = $this->anoAtualPrincipal->index();
         } else {
@@ -369,7 +369,7 @@ class SearhController extends Controller
         $verificaPagamentoMarco = $this->alunoRepository->verificaPagamentoMarco($codigo_anoLectivo, $aluno->preinscricao);
 
         $anosLectivo = $this->anoLectivoService->AnosLectivo((int)$codigo_anoLectivo);
-    
+
         $todos_meses_pagos = null;
         if ((int)$anosLectivo->Designacao <= 2019 && $anosLectivo->Designacao != $this->anoLectivoCorrente->cicloMestrado()->Designacao && $anosLectivo->Designacao != $this->anoLectivoCorrente->cicloDoutoramento()->Designacao) {
             $todos_meses_pagos = DB::table('tb_pagamentosi')->join('tb_pagamentos', 'tb_pagamentos.Codigo', 'tb_pagamentosi.Codigo_Pagamento')->where('tb_pagamentos.Codigo_PreInscricao', $this->alunoRepository->dadosAlunoLogado($aluno->admissao->preinscricao->user_id)->codigo_inscricao)->where('tb_pagamentosi.Ano', $anosLectivo->Designacao)->where('tb_pagamentosi.mes_id', '!=', null)->pluck('mes_id');
@@ -522,7 +522,7 @@ class SearhController extends Controller
                 }
             }
         }
-        
+
         return Response()->json($anosLectivos);
     }
 
@@ -1204,8 +1204,13 @@ class SearhController extends Controller
 
     public function ciclos()
     {
-        $data['ciclo_mestrado'] = $this->anoAtualPrincipal->cicloMestrado();
-        $data['ciclo_doutoramento'] = $this->anoAtualPrincipal->cicloDoutoramento();
+        $data['ciclo_mestrado'] = DB::table('tb_ano_lectivo')
+        ->where('Designacao', 'Ciclo Mestrado')->select('Codigo', 'Designacao')
+        ->get();
+
+        $data['ciclo_doutoramento'] = DB::table('tb_ano_lectivo')
+        ->where('Designacao', 'Ciclo Doutoramento')->select('Codigo', 'Designacao')
+        ->get();
 
         return Response()->json($data);
     }

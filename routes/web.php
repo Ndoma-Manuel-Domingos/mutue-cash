@@ -40,7 +40,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/depositos/pdf', [DepositoController::class, 'pdf']);
     Route::get('/depositos/excel', [DepositoController::class, 'excel']);
     Route::get('/depositos/imprimir-comprovativo', [DepositoController::class, 'imprimir']);
-    
+
     Route::get('/pagamentos', [PagamentosController::class, 'index'])->name('mc.pagamentos.index');
     Route::get('/pagamentos/criar', [PagamentosController::class, 'create'])->name('mc.pagamentos.create');
     Route::get('/pagamentos/pdf', [PagamentosController::class, 'pdf']);
@@ -60,17 +60,18 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/pagamentos-estudantes/fatura-by-reference', [PagamentosController::class, 'faturaByReference'])->name('mc.fatura-by-reference');
 
     Route::post('/pagamentos-estudantes/pagamento/diversos/create/{codigo?}', [PagamentosController::class, 'salvarPagamentosDiversos'])->name('mc.pagamento-diversos-create');
+
     Route::post('/pagamentos-estudantes/fatura/diversos/create/{numero_matricula?}', [PagamentosController::class, 'faturaDiversos'])->name('mc.pagamento-fatura-diversos-create');
-    
+
     Route::get('/fatura/diversos/{factura_id}', [PagamentosController::class, 'imprimirFaturaDiversos']);
-    
+
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
 
 
     Route::get('/banco-formaPagamento', [SearhController::class, 'bancosFormaPagamento'])->name('mc.banco-formas-pagamento');
 
     Route::get('/aluno/{id_user}', [SearhController::class, 'pegaAluno']);
-    
+
     Route::get('/saldo/{id_user}', [SearhController::class, 'pegaAluno']);
 
     Route::get('/get-ano-lectivo/{id_user}', [SearhController::class, 'pegaAnolectivo']);
