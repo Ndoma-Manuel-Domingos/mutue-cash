@@ -28,31 +28,75 @@ class DepositoController extends Controller
     {
     
         $user = auth()->user();
+                 
+         // utilizadores validadores
+         // utilizadores adiministrativos
+         // utilizadores área financeira
+         // utilizadores tesouraria
+         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+        
+        
+        $total_depositado = 0;
        
-        $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
-            $query->where('created_at', '>=' ,Carbon::parse($value) );
-        })->when($request->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
-        })->when($request->operador, function($query, $value){
-            $query->where('created_by', $value);
-        })
-        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
-        ->orderBy('codigo', 'desc')
-        ->paginate(10)
-        ->withQueryString();
-        
-        
-        // utilizadores validadores
-        // utilizadores adiministrativos
-        // utilizadores área financeira
-        // utilizadores tesouraria
-        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
-        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
-        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
-        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
-
-        $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        if($user->tipo_grupo->grupo->designacao == "Administrador"){
+            
+            $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
+                 $query->where('created_at', '>=' ,Carbon::parse($value) );
+             })->when($request->data_final, function($query, $value){
+                 $query->where('created_at', '<=' ,Carbon::parse($value));
+             })->when($request->operador, function($query, $value){
+                 $query->where('created_by', $value);
+             })
+             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+             ->orderBy('codigo', 'desc')
+             ->paginate(10)
+             ->withQueryString();
+             
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })->sum('valor_depositar');
     
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        
+        }else {
+                
+            $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
+            ->where('created_by', $user->codigo_importado)
+            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+            ->orderBy('codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+            
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
+            ->where('created_by', $user->codigo_importado)
+            ->sum('valor_depositar');
+            
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function($query){
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        }
+        
+        $data['total_depositado'] = $valor_deposito;
+        
         return Inertia::render('Operacoes/Depositos/Index', $data);
     }
     
@@ -97,8 +141,14 @@ class DepositoController extends Controller
         $preinscricao->update();
         
         //sucesso
-        return redirect()->back()->with('data', $create);
-
+        // return redirect()->back()->with();
+        
+        // Retorne a resposta em JSON
+        return response()->json([
+            'message' => 'Deposito realizado com sucesso!',
+            'data' => $create
+        ]);
+        
 
     }
     
