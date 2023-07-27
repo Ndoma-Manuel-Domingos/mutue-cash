@@ -88,6 +88,35 @@
               <p>Fecho Caixa Operador</p>
             </Link>
           </li>
+          
+          <li class="nav-item" title="EXTRATOS DOS DEPOSITOS">
+            <Link
+              :href="route('mc.extrato-depositos.index')"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Relatorios/FechoCaixa/Extrato-Depositos',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Extrato depositos</p>
+            </Link>
+          </li>
+          
+          <li class="nav-item" title="EXTRATOS DOS PAGAMENTOS">
+            <Link
+              :href="route('mc.extrato-pagamentos.index')"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Relatorios/FechoCaixa/Extrato-Pagamentos',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Extrato Pagamentos</p>
+            </Link>
+          </li>
+          
         </ul>
       </li>
 

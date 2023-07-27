@@ -117,6 +117,31 @@ class RelatorioController extends Controller
         return Inertia::render('Relatorios/FechoCaixa/Operador', $data);
     }
     
+    public function extratoDeposito(Request $request)
+    {
+        $user = auth()->user();
+        
+        $ano = AnoLectivo::where('status', '1')->first();
+        
+        $data['items'] = Deposito::paginate(7)
+        ->withQueryString();
+
+        return Inertia::render('Relatorios/FechoCaixa/Extrato-Depositos', $data);
+    
+    }
+    
+    public function extratoPagamento(Request $request)
+    {
+        $user = auth()->user();
+        
+        $ano = AnoLectivo::where('status', '1')->first();
+        
+        $data['items'] = Pagamento::paginate(7)
+        ->withQueryString();
+
+        return Inertia::render('Relatorios/FechoCaixa/Extrato-Pagamentos', $data);
+    }
+    
     
     public function pdf()
     {

@@ -50,6 +50,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/relatorios/fecho-caixa/operador', [RelatorioController::class, 'fechoCaixaOperador'])->name('mc.fecho-caixa-operador.index');
     Route::get('/relatorios/fecho-caixa/operador/pdf', [RelatorioController::class, 'pdf'])->name('mc.fecho-caixa-operador.pdf');
     Route::get('/relatorios/fecho-caixa/operador/excel', [RelatorioController::class, 'excel'])->name('mc.fecho-caixa-operador.excel');
+    Route::get('/relatorios/extrato-depositos', [RelatorioController::class, 'extratoDeposito'])->name('mc.extrato-depositos.index');
+    Route::get('/relatorios/extrato-pagamentos', [RelatorioController::class, 'extratoPagamento'])->name('mc.extrato-pagamentos.index');
 
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search'])->name('mc.searh-estudante.index');
