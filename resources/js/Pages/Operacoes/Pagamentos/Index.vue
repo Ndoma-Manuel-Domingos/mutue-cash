@@ -140,8 +140,11 @@
                       <td class="text-center">
                         <a @click="detalhes(item.Codigo)" class="text-primary"><i class="fas fa-eye"></i></a>
                       </td>
-                      <td class="text-center">
+                      <td class="text-center" v-if="item.factura">
                         <a class="text-danger" href="" @click.prevent="imprimirFatura(item.codigo_factura)"><i class="fas fa-print"></i></a>
+                      </td>
+                      <td class="text-center" v-else>
+                        <a class="text-secondary" href=""><i class="fas fa-print"></i></a>
                       </td>
                     </tr>
                   </tbody>
@@ -161,11 +164,11 @@
             </div>
           </div>
         </div>
-        
+
         <div class="modal fade" id="modal_pagamento">
           <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
-              
+
               <div class="modal-header">
                 <h5 class="modal-title">Detalhes de pagamento</h5>
                 <button
@@ -177,14 +180,14 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              
+
               <div class="modal-body">
                 <div class="table-responsive">
                   <table class="table-sm text-nowrap">
                     <tbody>
                       <tr> <th>Nº da factura: {{ pagamento.codigo_factura }}</th> </tr>
                       <tr> <th>1 pagamento(s) efectuado(s)</th> </tr>
-                      <tr> <th>Data da factura: {{ DataFactura }}</th> </tr> 
+                      <tr> <th>Data da factura: {{ DataFactura }}</th> </tr>
                       <tr> <th>Valor total a pagar: {{ formatValor(pagamento.Totalgeral) }} </th> </tr>
                       <tr> <th>Valor pago pelo serviço: {{ formatValor(pagamento.Totalgeral) }} </th> </tr>
                       <tr> <th>Valor em dívida: {{ formatValor(0) }} </th> </tr>
@@ -192,11 +195,11 @@
                   </table>
                 </div>
               </div>
-            
+
               <div class="modal-header bg-info py-1">
                 <h6 class="modal-title">Pagamento</h6>
               </div>
-              
+
               <div class="modal-body">
                 <div class="table-responsive">
                   <table class="table-sm table-bordered table-hover text-nowrap" style="width: 100%;">
@@ -209,13 +212,13 @@
                         <th>Estado</th>
                         <th>Data da validação</th>
                         <th>Anexo</th>
-                        <th>Ver recibo</th>
+                        <!-- <th>Ver recibo</th> -->
                         <th>Feito com saldo</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td>{{ items_pagamento.length }}</td> 
+                        <td>{{ items_pagamento.length }}</td>
                         <td>{{ pagamento.Codigo }}</td>
                         <td>{{ pagamento.DataRegisto }}</td>
                         <td class="text-center">{{ formatValor(pagamento.valor_depositado) }}</td>
@@ -226,18 +229,18 @@
                         <td class="text-center" ><span class="text-success">Validado</span></td>
                         <td class="text-center">{{ pagamento.updated_at }}</td>
                         <td class="text-center"><a :href="'https://mutue.ao/storage/documentos/'+pagamento.nome_documento" target="_blink"><i class="fas fa-paperclip"></i></a></td>
-                        <td class="text-center"><a href="" @click.prevent="imprimirFatura(pagamento.codigo_factura)"><i class="fas fa-print"></i></a></td>
+                        <!-- <td class="text-center"><a href="" @click.prevent="imprimirFatura(pagamento.codigo_factura)"><i class="fas fa-print"></i></a></td> -->
                         <td class="text-center"> Não</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
-              
+
               <div class="modal-header bg-info py-1">
                 <h6 class="modal-title">Items do Pagamento</h6>
               </div>
-              						
+
               <div class="modal-body">
                 <div class="table-responsive">
                   <table class="table-sm table-bordered table-hover text-nowrap" style="width: 100%;">
@@ -254,7 +257,7 @@
                     </thead>
                     <tbody>
                       <tr v-for="(item, index) in items_pagamento" :key="item">
-                        <td>{{ index + 1 }}</td> 
+                        <td>{{ index + 1 }}</td>
                         <td>{{ item.servico.Descricao }}</td>
                         <td>{{ item.mes_temps ? item.mes_temps.designacao : ( item.mes ? item.mes.mes : '#') }}</td>
                         <td>{{ formatValor(item.Valor_Pago) }}</td>
@@ -266,19 +269,19 @@
                   </table>
                 </div>
               </div>
-              
+
               <div class="modal-footer justify-content-between">
               </div>
-              
+
             </div>
           </div>
         </div>
-        
+
       </div>
     </div>
   </MainLayouts>
 </template>
-  
+
 <script>
 import { sweetSuccess, sweetError } from "../../../components/Alert";
 import Paginacao from "../../../Shared/Paginacao";
@@ -295,10 +298,10 @@ export default {
       ano_lectivo: "",
 
       params: {},
-      
+
       pagamento: [],
       items_pagamento: [],
-      
+
     };
   },
   watch: {
@@ -351,9 +354,9 @@ export default {
         console.log(response);
           this.pagamento = response.data.data;
           this.items_pagamento = response.data.items;
-          
+
           $("#modal_pagamento").modal("show");
-          
+
         })
         .catch((error) => {});
     },
@@ -365,8 +368,8 @@ export default {
       }).format(atual);
       return valorFormatado;
     },
-    
-        
+
+
     imprimirFatura(codigo_fatura) {
       window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
     },
@@ -388,6 +391,5 @@ export default {
   },
 };
 </script>
-  
-  
-  
+
+

@@ -7,7 +7,7 @@
     <title>Factura</title>
 
     <link rel="stylesheet" href="css/style_matricula.css" media="all" />
-    
+
     <style>
         *{
             font-family: Arial, Helvetica, sans-serif;
@@ -40,7 +40,7 @@
         <h5 style="background-color: lightgray;">
             @if ($aluno->ValorEntregue > 0 || ($aluno->estado > 0 && $aluno->estado <= 2))
                 <center>FACTURA RECIBO</center>
-                  
+
             @else
                 <center>FACTURA</center>
             @endif
@@ -53,7 +53,7 @@
                 <tr>
                     @if ($aluno->valor_depositado > 0)
                         <th style="text-align: left;padding: 1px; background-color: lightgray;"><b>Recibo:
-                        </b>{{ $aluno->numero_fatura }}</th> 
+                        </b>{{ $aluno->numero_fatura }}</th>
                     @else
                         <th style="text-align: left;padding: 1px; background-color: lightgray;"><b>Factura:
                         </b>{{ $aluno->numero_fatura }}</th>
@@ -111,7 +111,7 @@
                         @endif
                     </th>
                 </tr>
-                
+
                 @if($pagamento)
                 <tr>
                     <th style="text-align: left;padding: 1px; background-color: lightgray;"><b>Entidade:
@@ -185,11 +185,11 @@
                       </td>
                   @endif
                   <?php
-                  
+
                   $desconto = 0;
-                  
+
                   $desconto = $fatura->preco>0 ? (($fatura->desconto / $fatura->preco) * 100):0;
-                  
+
                   ?>
                   <th style="">{{ number_format($fatura->preco, 2, ',', '.') }}</th>
                   <th style="">{{ isset($fatura->qtd) }}</th>
@@ -206,9 +206,9 @@
     <table style="margin-right:0px">
       <thead>
           <tr>
-                @if($pagamento)   
+                @if($pagamento)
                <th style="text-align:left;padding: 0px;font-size:9px;">
-                    <h3>PAGAMENTO POR REFERÊNCIA</h3> 
+                    <h3>PAGAMENTO POR REFERÊNCIA</h3>
                     ENTIDADE:  <b>{{$pagamento->ENTITY_ID}}</b><br>
                     REFERÊNCIA: <b>{{$pagamento->REFERENCE}}</b><br>
                     MONTANTE: <b>{{number_format($pagamento->AMOUNT,2,",",".")}} KZs</b><br>
@@ -220,7 +220,7 @@
                   IBAN: IBAN: AO06004000002761513810122<br>
                   KEVE: AKZ 133241110001
                 </th>
-                @endif   
+                @endif
 
               <th style="text-align:left;padding: 0px;font-size:9px;"></th>
               <th style="text-align:left;padding: 0px;font-size:9px;">Total da Factura<br>
@@ -241,7 +241,7 @@
                     {{ number_format($aluno->multa, 2, ',', '.') }}<br>
                     {{ number_format($aluno->desconto, 2, ',', '.') }}<br>
                     {{ number_format($total_apagar, 2, ',', '.') }}<br>
-                    
+
                     @if($pagamento)
                         @if($pagamento->Status=='PAID')
                             {{ number_format($aluno->valor_depositado, 2, ',', '.') }}<br>
@@ -270,6 +270,7 @@
           </tr>
       </tbody>
     </table>
+
     @if(isset($pagamentos))
         <div style="font-size: 10px;">
             <p> <strong>PAGAMENTOS PARCELARES POR REFERÊNCIA</strong></p>
@@ -291,7 +292,7 @@
                     @foreach($pagamentos as $item=> $pagamento)
                     <tr>
                         <td style=""> {{++$item}}</td>
-                        <td style="text-align: left!important;font-size: 11px!important;" >  
+                        <td style="text-align: left!important;font-size: 11px!important;" >
                             {{$pagamento->REFERENCE}}
                         </td>
                         <th style="">{{$pagamento->ENTITY_ID}}</th>
@@ -329,15 +330,13 @@
             base64_encode(
                 QrCode::format('png')
                     ->size(200)
-                    ->generate('https://mutue.ao/dados-validacao?numero=' . $aluno->numero_fatura . '&tipo=1'),).'">'; 
+                    ->generate('https://mutue.ao/dados-validacao?numero=' . $aluno->numero_fatura . '&tipo=1'),).'">';
         ?>
     </div>
 
-
     <footer style="width: 100%; left: -10px; font-size: 10px!important;">
-        Documento processado pelo software MUTUE - Gestão Universitária, desenvolvido pela Mutue - Soluções Tecnológicas
+        Documento processado pelo software MUTUE CASH - Gestão Universitária, desenvolvido pela Mutue - Soluções Tecnológicas
         Inteligentes.</td>
-
     </footer>
 
 </body>

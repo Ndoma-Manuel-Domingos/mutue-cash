@@ -98,6 +98,7 @@ class PagamentosController extends Controller
 
         $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
 
+
         return Inertia::render('Operacoes/Pagamentos/Index', $data);
     }
 
@@ -153,8 +154,10 @@ class PagamentosController extends Controller
         ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
         ->leftjoin('tb_cursos', 'tb_matriculas.Codigo_Curso', '=', 'tb_cursos.Codigo')
         ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
+        ->leftjoin('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'tb_pagamentos.AnoLectivo')
+        ->where('tb_pagamentos.estado', 1)
         ->orderBy('tb_pagamentos.Codigo', 'desc')
-        ->select('factura.ValorAPagar', 'factura.DataFactura', 'tb_pagamentos.AnoLectivo', 'tb_pagamentos.codigo_factura', 'tb_pagamentos.Codigo', 'tb_pagamentos.valor_depositado', 'tb_pagamentos.DataRegisto', 'tb_pagamentos.estado', 'tb_pagamentos.nome_documento', 'tb_pagamentos.updated_at', 'Nome_Completo', 'tb_pagamentos.Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso')
+        ->select('factura.Codigo as fact_codigo', 'factura.ValorAPagar', 'factura.DataFactura', 'tb_pagamentos.AnoLectivo', 'tb_pagamentos.codigo_factura', 'tb_pagamentos.Codigo', 'tb_pagamentos.valor_depositado', 'tb_pagamentos.DataRegisto', 'tb_pagamentos.estado', 'tb_pagamentos.nome_documento', 'tb_pagamentos.updated_at', 'Nome_Completo', 'tb_pagamentos.Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso')
         ->findOrFail($id);
 
         if($pagamento->AnoLectivo >= 2 AND $pagamento->AnoLectivo <= 15){
@@ -2131,10 +2134,10 @@ class PagamentosController extends Controller
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($fatura->CodigoMatricula);
 
-        if ($fatura->codigo_descricao == 5) {
-            $id = base64_encode(base64_encode(base64_encode($id)));
-            return redirect('estudante/fatura/negociacao/show/' . $id);
-        }
+        // if ($fatura->codigo_descricao == 5) {
+        //     $id = base64_encode(base64_encode(base64_encode($id)));
+        //     return redirect('estudante/fatura/negociacao/show/' . $id);
+        // }
 
         $id_aluno = $aluno->admissao->preinscricao->user_id;
         $data['aluno'] = DB::table('tb_preinscricao')

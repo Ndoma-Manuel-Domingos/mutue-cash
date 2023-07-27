@@ -487,9 +487,9 @@ class SearhController extends Controller
             if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
                 $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ultimo_ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
             } elseif ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 2) {
-                $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ultimo_ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
+                $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ultimo_ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
             } else {
-                $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ultimo_ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->orderBy('Designacao', 'DESC')->get();
+                $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ultimo_ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
             }
         } else {
 
@@ -516,9 +516,9 @@ class SearhController extends Controller
                 if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
                     $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
                 } elseif ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 2) {
-                    $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
+                    $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
                 } else {
-                    $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->orderBy('Designacao', 'DESC')->get();
+                    $anosLectivos = DB::table('tb_ano_lectivo')->select('*')->where('Designacao', '>=', $ano_letivo_designacao->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloMestrado()->Designacao)->where('Designacao', '!=', $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)->orderBy('Designacao', 'DESC')->get();
                 }
             }
         }

@@ -7,9 +7,9 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><!DOCTYPE html>
         <title>COMPROVATIVO DO DEPOSITO</title>
-        
+
         <link rel="stylesheet" href="css/style_matricula.css" media="all" />
-        
+
         <style>
             *{
                 font-family: Arial, Helvetica, sans-serif;
@@ -17,7 +17,7 @@
                 margin: 0;
             }
         </style>
-    
+
     </head>
 <body>
 
@@ -34,8 +34,8 @@
         </div>
         </div>
     </header>
-    
-    
+
+
     <div style="border-bottom: 0px solid black;">
         <h5 style="background-color: lightgray;padding: 10px;text-align: center">
             COMPROVATIVO DO DEPOSITO
@@ -52,19 +52,19 @@
                         Mº Matricula: {{ $item->codigo_matricula_id ?? '' }}
                     </th>
                 </tr>
-                
+
                 <tr>
                     {{-- <th style="text-align: left;padding: 4px; background-color: lightgray;"></th>  --}}
                     {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
                     <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
                         Data Movimento: {{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}
                     </th>
-                    
+
                     <th style="text-align: left;padding: 4px; background-color: lightgray;">
                         Estudante: {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? '' }}
                     </th>
                 </tr>
-                
+
                 <tr>
                     {{-- <th style="text-align: left;padding: 4px; background-color: lightgray;"></th>  --}}
                     {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
@@ -74,7 +74,7 @@
             </thead>
         </table>
     </div>
-    
+
     <table style="font-size: 10px!important;">
         <thead>
           <tr style="">
@@ -92,17 +92,17 @@
             <th style="background-color: #2e306e; color:white;border:solid 1px white; padding: 0px;">Total</th> --}}
           </tr>
         </thead>
-        
+
         <tbody style="text-align: center!important">
             <th style="text-align: right!important;font-size: 11px!important;">1</th>
             <td style="text-align: right!important;font-size: 11px!important;">{{ number_format($item->valor_depositar ?? 0, 2, ',', '.') }} kz </td>
             <td style="text-align: right!important;font-size: 11px!important;">{{ number_format($item->saldo_apos_movimento ?? 0, 2, ',', '.') }} kz</td>
             <td style="text-align: right!important;font-size: 11px!important;">{{ number_format($item->matricula->admissao->preinscricao->saldo ?? 0, 2, ',', '.') }} kz </td>
         </tbody>
-        
+
     </table>
-    
-    
+
+
     <footer style="width: 100%; left: -10px; font-size: 10px!important;">
         Documento processado pelo software MUTUE CASH - Gestão Universitária, desenvolvido pela Mutue - Soluções Tecnológicas
         Inteligentes.</td>
@@ -114,13 +114,13 @@
 <main>
 
     <table class="table table-stripeds" style="">
-        
+
         <thead>
-            
+
             <tr style="background-color: #3F51B5;color: #ffffff">
                 <th colspan="9" style="font-size: 10pt;padding: 10px">COMPROVATIVO DO DEPOSITO</th>
             </tr>
-        
+
             <tr style="background-color: #3F51B5;color: #ffffff">
                 <th style="text-align: center;padding: 4px 2px" >Nº Deposito</th>
                 <th style="text-align: center;padding: 4px 2px" >Matricula</th>
@@ -133,7 +133,7 @@
                 <th style="text-align: center;padding: 4px 2px" >Data</th>
             </tr>
         </thead>
-        
+
         <tbody>
             <tr>
                 <td style="text-align: center;">{{ $item->codigo ?? '' }}</td>
@@ -147,9 +147,9 @@
                 <td style="text-align: center;">{{ $item->user->nome ?? '' }}</td>
                 <td style="text-align: center;">{{ $item->ano_lectivo->Designacao ?? '' }}</td>
                 <td style="text-align: center;">{{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}</td>
-            </tr>     
+            </tr>
         </tbody>
-    </table> 
+    </table>
 </main> --}}
 
 </body>
