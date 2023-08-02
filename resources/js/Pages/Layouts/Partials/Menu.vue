@@ -58,6 +58,62 @@
 
         </ul>
       </li>
+      
+      <li class="nav-item" title="MOVIMENTOS">
+        <a
+          href="#"
+          class="nav-link"
+          :class="{ active: $page.component.startsWith('Operacoes/Movimentos') }"
+        >
+          <i class="nav-icon fas fa-box"></i>
+          <p>
+            Movimentos
+            <i class="right fas fa-angle-left"></i>
+          </p>
+        </a>
+        <ul class="nav nav-treeview">
+          <li class="nav-item" title="ABERTURA DO CAIXA">
+            <Link
+              :href="route('mc.movimentos-abertura-caixa')"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Operacoes/Movimentos/Abertura',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Abertura Caixa</p>
+            </Link>
+          </li>
+          <li class="nav-item" title="FECHO DE CAIXA">
+            <Link
+              :href="route('mc.movimentos-fecho-caixa')"
+              class="nav-link"
+              :class="{
+                active: $page.component == 'Operacoes/Movimentos/Fecho',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Fecho do Caixa</p>
+            </Link>
+          </li>
+          
+          <li class="nav-item" title="VALIDAR FECHO DE CAIXA">
+            <Link
+              :href="route('mc.movimentos-validar-fecho-caixa')"
+              class="nav-link"
+              :class="{
+                active: $page.component == 'Operacoes/Movimentos/ValidarFechoCaixa',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Validar Fecho do Caixa</p>
+            </Link>
+          </li>
+
+        </ul>
+      </li>
+      
 
       <li class="nav-item">
         <a
@@ -88,6 +144,35 @@
               <p>Fecho Caixa Operador</p>
             </Link>
           </li>
+          
+          <li class="nav-item" title="EXTRATOS DOS DEPOSITOS">
+            <Link
+              :href="route('mc.extrato-depositos.index')"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Relatorios/FechoCaixa/Extrato-Depositos',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Extrato depositos</p>
+            </Link>
+          </li>
+          
+          <li class="nav-item" title="EXTRATOS DOS PAGAMENTOS">
+            <Link
+              :href="route('mc.extrato-pagamentos.index')"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Relatorios/FechoCaixa/Extrato-Pagamentos',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Extrato Pagamentos</p>
+            </Link>
+          </li>
+          
         </ul>
       </li>
 

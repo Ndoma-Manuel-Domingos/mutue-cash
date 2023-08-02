@@ -1130,12 +1130,12 @@ export default {
             this.saldo_aluno = response.data.dados.saldo;
 
             (this.mostrar_dados_estudante = true),
-            this.pegaPropina();
             this.pegaAnoLectivo();
+            this.getAnosLectivosEstudante();
+            this.pegaPropina();
             this.pegaAluno();
             this.getTodasRefer();
             this.pegaSaldo();
-            this.getAnosLectivosEstudante();
             this.getCiclos();
             this.pegaServicos();
             this.pegarDescricaoBolseiro();

@@ -175,8 +175,7 @@ class SearhController extends Controller
             ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
             ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
             ->join('tb_grade_curricular_aluno_avaliacoes', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular_aluno_avaliacoes.codigo')
-            ->where('tb_preinscricao.user_id', (int)$aluno->admissao->preinscricao->user_id)->select('tb_matriculas.Codigo AS matricula')->first();
-
+            ->where('tb_preinscricao.user_id', $aluno->admissao->preinscricao->user_id)->select('tb_matriculas.Codigo AS matricula')->first();
 
         $anoCorrente = $this->anoAtualPrincipal->index();
         $ano = $request->get('ano');
@@ -188,8 +187,7 @@ class SearhController extends Controller
             ->select('Codigo', 'Designacao')
             ->first();
 
-        $bolseiro = $this->bolsaService->BolsaPorSemestreCemPorCento($matricula_aluno->matricula, $anoLectivo->Codigo, 1);
-
+        $bolseiro = $this->bolsaService->BolsaPorSemestreCemPorCento($codigo_matricula, $anoLectivo->Codigo, 1);
 
         $candidato = DB::table('tb_preinscricao')
             ->select('Codigo', 'polo_id', 'AlunoCacuaco', 'Curso_Candidatura')

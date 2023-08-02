@@ -250,7 +250,7 @@
                         @endif
                     @else
 
-                    {{ ($aluno->ValorEntregue > 0) ? number_format($aluno->ValorEntregue, 2, ',', '.') :  number_format($total_apagar, 2, ',', '.')}}<br>
+                    {{ ($aluno->ValorEntregue > 0) ? number_format($aluno->ValorEntregue, 2, ',', '.') :  number_format(0, 2, ',', '.')}}<br>
                     @endif
 
                     @if ($aluno->negociacao)
@@ -332,6 +332,16 @@
                     ->size(200)
                     ->generate('https://mutue.ao/dados-validacao?numero=' . $aluno->numero_fatura . '&tipo=1'),).'">';
         ?>
+    </div>
+
+    <div >
+        <br>
+        <br><br><br>
+        <p style="text-align:center;">Assinatura<br><br>
+            __________________________ <br><br>
+            {{$pagamento_utilizador->nome}}
+
+        </p>
     </div>
 
     <footer style="width: 100%; left: -10px; font-size: 10px!important;">

@@ -5,9 +5,10 @@ import { createApp, h } from 'vue'
 import { App, createInertiaApp } from '@inertiajs/inertia-vue3'
 import MainLayouts from './Pages/Layouts/MainLayouts'
 import VueProgressBar from "@aacassandra/vue3-progressbar";
-import { ZiggyVue } from 'ziggy';
+// import { ZiggyVue } from 'ziggy';
 import { Ziggy } from './ziggy';
 import { InertiaProgress } from '@inertiajs/progress'
+import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 
 import Highcharts from 'highcharts';
 import VueChartkick from 'vue-chartkick'
