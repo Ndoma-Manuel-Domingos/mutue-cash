@@ -242,7 +242,7 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["caixa", "operador", "movimento"],
+  props: ["caixa", "operador", "movimento", 'utilizadores'],
   components: {
     Link,
   },
@@ -330,6 +330,21 @@ export default {
         Swal.fire({
           title: "Atenção",
           text: "Total Valor arrecadado em pagamentos invalido!",
+          icon: "warning",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+          onClose: () => {},
+        });
+        this.$Progress.fail();
+        return;
+      }
+      
+      if (
+        this.form.valor_abertura != this.movimento.valor_abertura
+      ) {
+        Swal.fire({
+          title: "Atenção",
+          text: "O total valor abertura e o valor informe em abertura não conferem!",
           icon: "warning",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",

@@ -15,6 +15,58 @@
     
     <div class="content">
       <div class="container-fluid">
+      
+        <div class="row">
+          <div class="col-12 col-md-12">
+            <div class="card">
+              <form action="">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-12 col-md-3">
+                      <div class="form-group">
+                        <label for="">Operadores</label>
+                        <select v-model="operador" class="form-control">
+                          <option value="">TODOS</option>
+                          <option
+                            v-for="item in utilizadores"
+                            :key="item"
+                            :value="item.utilizadores.codigo_importado"
+                          >
+                            {{ item.utilizadores.nome }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                      <div class="form-group">
+                        <label for="">Data Inicio</label>
+                        <input
+                          type="date"
+                          placeholder="informe do Inicio"
+                          class="form-control"
+                          v-model="data_inicio"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                      <div class="form-group">
+                        <label for="">Data Final</label>
+                        <input
+                          type="date"
+                          placeholder="informe do final"
+                          class="form-control"
+                          v-model="data_final"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
 
         <div class="row">
           <div class="col-12 col-md-12">
@@ -112,7 +164,7 @@
 
   
   export default {
-    props: ["items"],
+    props: ["items", "utilizadores"],
     components: { Link, Paginacao },
     data() {
       return { 

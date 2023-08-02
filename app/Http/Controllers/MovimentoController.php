@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Caixa;
+use App\Models\Grupo;
+use App\Models\GrupoUtilizador;
 use App\Models\MovimentoCaixa;
 use App\Models\User;
 use App\Models\Utilizador;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -157,14 +160,30 @@ class MovimentoController extends Controller
     
     public function validarFechoCaixa(Request $request)
     {
-        $movimentos = MovimentoCaixa::with(['operador', 'caixa'])->where('status', 'fechado')
-        // ->whereIn('status_admin', ['pendente', 'nao validado'])
+    
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+        
+        $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])
+        ->with('utilizadores')
+        ->get();
+            
+        $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
+            $query->where('created_at', '>=' ,Carbon::parse($value) );
+        })->when($request->data_final, function($query, $value){
+            $query->where('created_at', '<=' ,Carbon::parse($value));
+        })->when($request->operador, function($query, $value){
+            $query->where('operador_id', $value);
+        })->with(['operador', 'caixa'])->where('status', 'fechado')
         ->orderBy('codigo', 'desc')
         ->paginate(10)
         ->withQueryString();
         
         $header = [
             "items" => $movimentos,
+            "utilizadores" => $utilizadores,
             "operador" => Utilizador::where('codigo_importado', Auth::user()->codigo_importado)->first()
         ];
     

@@ -64,7 +64,7 @@
               <div class="col-lg-12 col-12 col-md-12">
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>{{ formatValor(total_pagamento + total_depositado ?? 0) }}</h4>
+                    <h4>{{ formatValor((+total_depositado)+(+total_pagamento)) }}</h4>
                     <p>Total Valor arrecadado.</p>
                   </div>
                   <div class="icon">
@@ -181,6 +181,13 @@ export default {
           this.$Progress.fail();
         },
       });
+    },
+    
+    somarNumeros(numero1, numero2) {
+      // Realiza a soma dos números
+      var soma = parseInt(numero1) + parseInt(numero2);
+    
+      return soma;
     },
 
     formatValor(atual) {
