@@ -67,24 +67,24 @@ class PagamentosController extends Controller
     {
         $user = auth()->user();
 
-        $ano = AnoLectivo::where('status', '1')->first();
-
-        if(!$request->ano_lectivo){
-            $request->ano_lectivo = $ano->Codigo;
-        }
-
-        $data['items'] = Pagamento::with('factura')->when($request->data_inicio, function($query, $value){
+        $data['items'] = Pagamento::with('factura')
+        ->when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
-        })->when($request->data_final, function($query, $value){
+        })
+        ->when($request->data_final, function($query, $value){
             $query->where('created_at', '<=' ,Carbon::parse($value));
-        })->when($request->operador, function($query, $value){
+        })
+        ->when($request->operador, function($query, $value){
             $query->where('fk_utilizador', $value);
-        })->when($request->ano_lectivo, function($query, $value){
+        })
+        ->when($request->ano_lectivo, function($query, $value){
             $query->where('AnoLectivo', $value);
         })
+        ->where('forma_pagamento', 6)
         ->orderBy('tb_pagamentos.Codigo', 'desc')
         ->paginate(10)
         ->withQueryString();
+        
 
         $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
          // utilizadores validadores
@@ -96,7 +96,7 @@ class PagamentosController extends Controller
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
 
-        $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
 
 
         return Inertia::render('Operacoes/Pagamentos/Index', $data);
@@ -119,6 +119,7 @@ class PagamentosController extends Controller
         })->when($request->ano_lectivo, function($query, $value){
             $query->where('tb_pagamentos.AnoLectivo', $value);
         })
+        ->where('forma_pagamento', 6)
         ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
         ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
         ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')

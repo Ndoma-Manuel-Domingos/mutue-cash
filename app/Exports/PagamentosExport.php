@@ -90,6 +90,7 @@ class PagamentosExport implements FromCollection,
         })->when($this->ano_lectivo, function($query, $value){
             $query->where('tb_pagamentos.AnoLectivo', $value);
         })
+        ->where('forma_pagamento', 6)
         ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
         ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
         ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')

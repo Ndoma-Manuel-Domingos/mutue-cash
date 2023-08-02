@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositoController;
+use App\Http\Controllers\MovimentoController;
 use App\Http\Controllers\PagamentosController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\SearhController;
@@ -40,6 +41,18 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/depositos/pdf', [DepositoController::class, 'pdf']);
     Route::get('/depositos/excel', [DepositoController::class, 'excel']);
     Route::get('/depositos/imprimir-comprovativo', [DepositoController::class, 'imprimir']);
+    
+    Route::get('/movimentos/abertura-caixa', [MovimentoController::class, 'abertura'])->name('mc.movimentos-abertura-caixa');
+    Route::post('/movimentos/abertura-caixa', [MovimentoController::class, 'aberturaStore'])->name('mc.movimentos-abertura-caixa-store');
+    Route::get('/movimentos/fecho-caixa', [MovimentoController::class, 'fecho'])->name('mc.movimentos-fecho-caixa');
+    Route::post('/movimentos/fecho-caixa', [MovimentoController::class, 'fechoStore'])->name('mc.movimentos-fecho-caixa-store');
+    Route::get('/movimentos/imprimir-comprovativo', [DepositoController::class, 'imprimir']);
+    Route::get('/movimentos/validar-fecho', [MovimentoController::class, 'validarFechoCaixa'])->name('mc.movimentos-validar-fecho-caixa');
+    
+    Route::get('/movimentos/validar-fecho/{id}/validar', [MovimentoController::class, 'validarFechoCaixaAdmin']);
+    Route::get('/movimentos/validar-fecho/{id}/cancelar', [MovimentoController::class, 'cancelarFechoCaixaAdmin']);
+    Route::get('/movimentos/confirmar-senhar-admin/{id}', [MovimentoController::class, 'confirmarSenhaAdmin']);
+    
 
     Route::get('/pagamentos', [PagamentosController::class, 'index'])->name('mc.pagamentos.index');
     Route::get('/pagamentos/criar', [PagamentosController::class, 'create'])->name('mc.pagamentos.create');

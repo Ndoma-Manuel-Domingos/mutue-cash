@@ -3,10 +3,10 @@
     <div class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0">Depositos</h1>
+          <div class="col-sm-8">
+            <h1 class="m-0">Depósito de valores efetuados no período de {{ data_inicio }} a {{ data_final }}</h1>
           </div>
-          <div class="col-sm-6"></div>
+          <div class="col-sm-4"></div>
         </div>
       </div>
     </div>
@@ -307,8 +307,8 @@
         isUpdate: false,
         itemId: null,
         
-        data_inicio: "",
-        data_final: "",
+        data_inicio: new Date().toISOString().substr(0, 10),
+        data_final: new Date().toISOString().substr(0, 10),
         operador: "",
         
         depositos: [],
@@ -326,6 +326,14 @@
           curso_estudante: null,
         }),
     };
+  },
+  
+  mounted() {
+    
+    this.params.data_inicio = this.data_inicio;
+    this.params.data_final = this.data_final;
+  
+    this.updateData();
   },
 
   watch: {
