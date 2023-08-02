@@ -26,10 +26,13 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
 use App\Models\AnoLectivo;
+use App\Models\Caixa;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
+use App\Models\MovimentoCaixa;
 use App\Models\PagamentoItems;
 use App\Models\Utilizador;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PagamentosController extends Controller
@@ -852,12 +855,32 @@ class PagamentosController extends Controller
                     'saldo_apos_movimento'=> $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
                     'created_by'=> auth()->user()->codigo_importado,
                 ];
+                
                 $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
 
                 $response['codigo_pagamento'] = $id_pag;
+                
+                $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+                if(!$caixas){
+                    return response()->json([
+                        'message' => 'Deposito realizado com sucesso!',
+                    ], 401);
+                }
+                  
+                $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+                        
+                $update = MovimentoCaixa::findOrFail($movimento->codigo);
+                $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
+                $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                $update->update();
+                
+                
                 DB::commit();
             }
         }
+
+        
 
 
 

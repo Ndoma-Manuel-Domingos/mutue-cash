@@ -133,7 +133,7 @@
                   <div class="row">
                     <div class="form-group col-12 col-md-6">
                       <label for="valor_abertura" class="form-label"
-                        >TOTAL VALOR ABERTURA</label
+                        >VALOR DE ABERTURA</label
                       >
                       <input
                         type="number"
@@ -151,11 +151,11 @@
 
                     <div class="form-group col-12 col-md-3">
                       <label for="valor_depositado" class="form-label"
-                        >TOTAL VALOR DEPOSITADO</label
+                        >TOTAL DE DEPÓSITOS</label
                       >
                       <input
-                        type="number"
-                        placeholder="TOTAL VALOR DEPOSITADO"
+                        type="text"
+                        placeholder="TOTAL DE DEPÓSITOS"
                         id="valor_depositado"
                         v-model="form.valor_depositado"
                         class="form-control"
@@ -169,11 +169,11 @@
 
                     <div class="form-group col-12 col-md-3">
                       <label for="valor_pagamento" class="form-label"
-                        >TOTAL VALOR PAGAMENTO</label
+                        >TOTAL DE PAGAMENTOS</label
                       >
                       <input
-                        type="number"
-                        placeholder="TOTAL VALOR PAGAMENTO"
+                        type="text"
+                        placeholder="TOTAL DE PAGAMENTOS"
                         id="valor_pagamento"
                         v-model="form.valor_pagamento"
                         class="form-control"
@@ -249,9 +249,9 @@ export default {
   data() {
     return {
       form: this.$inertia.form({
-        valor_depositado: 0,
-        valor_pagamento: 0,
-        valor_abertura: 0,
+        valor_depositado: this.movimento ? this.movimento.valor_arrecadado_depositos : '',
+        valor_pagamento: this.movimento ? this.movimento.valor_arrecadado_pagamento : '',
+        valor_abertura: this.movimento ? this.movimento.valor_abertura : '',
         caixa_id: this.caixa ? this.caixa.codigo : '',
         operador_id: this.operador.codigo_importado ?? '',
         movimento_id: this.movimento ? this.movimento.codigo : '',

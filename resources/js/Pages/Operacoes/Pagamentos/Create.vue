@@ -745,7 +745,7 @@
                   class="btn btn-primary"
                   style="float: right;"
                 >
-                  <i class="fa fa-paper-plane" aria-hidden="true" v-if="botao"></i> Enviar Pagamento
+                  <i class="fa fa-paper-plane" aria-hidden="true" v-if="botao"></i> Salvar Pagamento
                 </button>
 
                 <button

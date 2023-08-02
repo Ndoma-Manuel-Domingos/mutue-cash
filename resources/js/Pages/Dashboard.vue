@@ -94,7 +94,6 @@
                         <div class="form-group col-12 col-md-12">
                           <label class="form-label form-label-sm" for="ano_lectivo">Anos Lectivos</label>
                           <select v-model="ano_lectivo" id="ano_lectivo" class="form-control ">
-                            <option value="">Todos</option>
                             <option :value="ano.Codigo" v-for="ano in ano_lectivos" :key="ano.Codigo">
                             {{ ano.Designacao }}
                             </option>
@@ -126,14 +125,14 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["total_depositado", "total_pagamento", "ano_lectivos"],
+  props: ["total_depositado", "total_pagamento", "ano_lectivos", "ano_lectivo_activo_id"],
   components: {
     Link,
   },
   data() {
     return {
       
-      ano_lectivo: "",
+      ano_lectivo: this.ano_lectivo_activo_id,
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
       

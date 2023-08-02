@@ -98,7 +98,8 @@
             </Link>
           </li>
           
-          <li class="nav-item" title="VALIDAR FECHO DE CAIXA">
+          
+          <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.type_user == 'Administrador'">
             <Link
               :href="route('mc.movimentos-validar-fecho-caixa')"
               class="nav-link"
@@ -198,15 +199,15 @@
   </nav>
 </template>
 
-<script>
-import { Link } from "@inertiajs/inertia-vue3";
-export default {
-  components: {
-    Link,
-  },
-};
-</script>
+<script setup>
+  import { computed } from "vue";
+  import { usePage } from "@inertiajs/inertia-vue3";
+  import { Link } from "@inertiajs/inertia-vue3";
 
+  const user = computed(() => {
+    return usePage().props.value.auth.user;
+  });
+</script>
 
 <style>
 .nav-pills .nav-link.active,
@@ -215,3 +216,5 @@ export default {
   background-color: #52c7ed;
 }
 </style>
+
+

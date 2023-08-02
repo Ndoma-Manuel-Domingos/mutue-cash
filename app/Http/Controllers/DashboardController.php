@@ -26,6 +26,9 @@ use Spatie\Permission\Models\Permission;
 
 class DashboardController extends Controller
 {
+
+    use TraitHelpers;
+    
     public function __construct()
     {
         $this->middleware('auth');
@@ -34,6 +37,8 @@ class DashboardController extends Controller
     public function dashboard(Request $request)
     {
         $user = auth()->user();
+        
+        $request->ano_lectivo = $this->anoLectivoActivo();
         
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
             
@@ -87,7 +92,10 @@ class DashboardController extends Controller
         $header = [
             "total_depositado" => $valor_deposito,
             'total_pagamento' => $totalPagamentos,
+            'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
+            
             "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+            
         ];
         
         return Inertia::render('Dashboard', $header);

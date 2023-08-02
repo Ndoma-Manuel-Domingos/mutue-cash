@@ -34,8 +34,8 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4 class="text-uppercase">{{ movimento.status }}</h4>
-                <p>Estado do Caixa: {{ movimento.caixa.nome ?? '' }}</p>
+                <h4 class="text-uppercase">{{ movimento.caixa.nome ?? '' }}</h4>
+                <p class="text-uppercase">{{ movimento.status ?? '' }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -49,8 +49,8 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4>{{ formatValor(movimento.valor_abertura) }}</h4>
-                <p>Valor Abertura</p>
+                <h4 class="text-uppercase">Valor de Abertura</h4>
+                <p>{{ formatValor(movimento.valor_abertura) }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -64,8 +64,8 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4>{{ formatValor(movimento.valor_arrecadado_depositos) }}</h4>
-                <p>Total Valor arrecadado Deposito</p>
+                <h4 class="text-uppercase">Total de Depósitos</h4>
+                <p>{{ formatValor(movimento.valor_arrecadado_depositos) }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -79,8 +79,8 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</h4>
-                <p>Total Valor arrecadado Pagamento</p>
+                <h4 class="text-uppercase">Total de Pagamentos</h4>
+                <p>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -94,8 +94,8 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4>{{ formatValor(movimento.valor_arrecadado_total) }}</h4>
-                <p>Total Valor arrecadado</p>
+                <h4 class="text-uppercase">Total arrecadado</h4>
+                <p>{{ formatValor(movimento.valor_arrecadado_total) }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -119,7 +119,7 @@
                         >VALOR INICIAL</label
                       >
                       <input
-                        type="number"
+                        type="text"
                         placeholder="VALOR INICIAL"
                         id="valor_inicial"
                         v-model="form.valor_inicial"
