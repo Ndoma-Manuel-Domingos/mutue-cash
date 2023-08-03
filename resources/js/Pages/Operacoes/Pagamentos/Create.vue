@@ -643,7 +643,7 @@
                   class="btn btn-primary"
                   style="float: right;"
                 >
-                  <i class="fa fa-paper-plane" aria-hidden="true" v-if="botao"></i> Enviar Pagamento
+                  <i class="fa fa-paper-plane" aria-hidden="true" v-if="botao"></i> Salvar Pagamento
                 </button>
 
                 <button
@@ -933,12 +933,9 @@ export default {
             if(this.valor_por_depositar == this.pagamento.valor_depositado){
                 this.troco = 0;
             }else{
-                this.troco = this.pagamento.valor_depositado - this.total_adicionado;
+                this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
             }
             // else{
-
-
-
             //     this.troco = this.fatura.ValorAPagar - this.valor_por_depositar;
             // }
         }
@@ -1065,12 +1062,12 @@ export default {
             this.saldo_aluno = response.data.dados.saldo;
 
             (this.mostrar_dados_estudante = true),
-            this.pegaPropina();
             this.pegaAnoLectivo();
+            this.getAnosLectivosEstudante();
+            this.pegaPropina();
             this.pegaAluno();
             this.getTodasRefer();
             this.pegaSaldo();
-            this.getAnosLectivosEstudante();
             this.getCiclos();
             this.pegaServicos();
             this.pegarDescricaoBolseiro();

@@ -459,7 +459,7 @@ class DividaService
                   $desconto = 0;
                   $total = $mes['total'];
                 }
-                $desconto_finalista = $this->pegar_finalista($mes['codigo_anoLectivo']);
+                $desconto_finalista = $this->pegar_finalista($mes['codigo_anoLectivo'], $codigo_matricula);
 
                 //dd($confirmacao);
                 $collection->push(['codGradeCurricular' => '', 'codFacturaOutrosServicos' => '', 'valor' => $mes['valor'], 'multa' => $mes['multa'], 'total' => $total, 'servico' => $mes['servico'], 'mes_propina' => $mes['mes_propina'], 'mes_temp_id' => null, 'n_prestacao' => $mes['codigo_mes'], 'ano_lectivo' => $mes['ano'], 'taxa_multa' => 10, 'taxa_desconto' => $taxa_desconto, 'bolsa' => $bolsa, 'codigo_propina' => $mes['codigo_propina'], 'codigo_anoLectivo' => $mes['codigo_anoLectivo'], 'desconto' => $desconto]);
@@ -504,7 +504,7 @@ class DividaService
           if ($propina && (!$bolseiro || ($bolseiro && $bolseiro->desconto != 100))) {
             foreach ($arrayMesesNPagos as $key => $mes) {
 
-              $desconto_finalista = $this->pegar_finalista($confirmacao->ultimoAnoInscritoId);
+              $desconto_finalista = $this->pegar_finalista($confirmacao->ultimoAnoInscritoId, $codigo_matricula);
 
               //dd($confirmacao);
 
@@ -783,18 +783,18 @@ class DividaService
     }
   }
 
-  public function pegar_finalista($ano_lectivo)
+  public function pegar_finalista($ano_lectivo, $codigo_matricula)
   {
 
-    $ultimo_ano_lecivo = $this->anoLectivoService->getUltimoAnoLectivoInscrito()->Codigo;
-    $id = auth::user()->id;
+    $ultimo_ano_lecivo = $this->anoLectivoService->getUltimoAnoLectivoInscrito($codigo_matricula)->Codigo;
+    $id = auth()->user()->id;
     $collection = collect([]);
 
 
     $cadeirasRestantes = 0;
     $aluno = DB::table('tb_matriculas')
       ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
-      ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')->where('tb_preinscricao.user_id', $id)->select('tb_matriculas.Codigo as matricula', 'tb_matriculas.Codigo_Curso as curso_matricula', 'tb_preinscricao.Curso_Candidatura as curso_preinscricao')->first();
+      ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')->where('tb_matriculas.Codigo', $codigo_matricula)->select('tb_matriculas.Codigo as matricula', 'tb_matriculas.Codigo_Curso as curso_matricula', 'tb_preinscricao.Curso_Candidatura as curso_preinscricao')->first();
 
 
     $planoCurricular = DB::table('tb_grade_curricular')
@@ -1547,7 +1547,7 @@ class DividaService
     if (!$diplomado) {
       if ($confirmacao) {
         $mesesPagos = $this->mesesPagosPorAnoPropina($confirmacao->ano_lectivo_id, $aluno->codigo_inscricao);
-        $mesesNaoPagos = $this->getPrestacoesPorAnoLectivo($confirmacao->ano_lectivo_id, $mesesPagos->pluck('codigo_mes'));
+        $mesesNaoPagos = $this->getPrestacoesPorAnoLectivo($confirmacao->ano_lectivo_id, $mesesPagos->pluck('codigo_mes'), $codigo_matricula);
         $propina = $this->propinaAluno($aluno->codigo_inscricao, $aluno->AlunoCacuaco, $confirmacao->ano_lectivo_id); //  propina do curso do aluno
         // $bolseiro = $this->bolsaService->Bolsa($codigo_matricula, $confirmacao->ano_lectivo_id);
         $bolseiro = $this->bolsaService->BolsaPorSemestre1($codigo_matricula, $confirmacao->ano_lectivo_id, 1);
@@ -1557,7 +1557,7 @@ class DividaService
         $taxaMultaMeses = $this->mesesPagarPropina->mesesPagar(date('Y-m-d'), 1, $mes = 0, $confirmacao->ano_lectivo_id, $codigo_matricula);
         $arrayMesesNPagos = json_decode($mesesNaoPagos, true);
 
-        $desconto_finalista = $this->pegar_finalista($confirmacao->ano_lectivo_id);
+        $desconto_finalista = $this->pegar_finalista($confirmacao->ano_lectivo_id, $codigo_matricula);
 
         if ($propina && (!$bolseiro || ($bolseiro && ($bolseiro->desconto > 0 && $bolseiro->desconto < 100)))) {
 
@@ -1719,7 +1719,7 @@ class DividaService
     if (!$diplomado) {
       if ($confirmacao) {
         $mesesPagos = $this->mesesPagosPorAnoPropina($confirmacao->ano_lectivo_id, $aluno->codigo_inscricao);
-        $mesesNaoPagos = $this->getPrestacoesPorAnoLectivo($confirmacao->ano_lectivo_id, $mesesPagos->pluck('codigo_mes'));
+        $mesesNaoPagos = $this->getPrestacoesPorAnoLectivo($confirmacao->ano_lectivo_id, $mesesPagos->pluck('codigo_mes'),$codigo_matricula);
         $propina = $this->propinaAluno($aluno->codigo_inscricao, $aluno->AlunoCacuaco, $confirmacao->ano_lectivo_id); //  propina do curso do aluno
         // $bolseiro = $this->bolsaService->Bolsa($codigo_matricula, $confirmacao->ano_lectivo_id);
         $bolseiro = $this->bolsaService->BolsaPorSemestre1($codigo_matricula, $confirmacao->ano_lectivo_id, 1);

@@ -26,6 +26,9 @@ use Spatie\Permission\Models\Permission;
 
 class DashboardController extends Controller
 {
+
+    use TraitHelpers;
+    
     public function __construct()
     {
         $this->middleware('auth');
@@ -35,24 +38,64 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         
+        $request->ano_lectivo = $this->anoLectivoActivo();
+        
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
             
-            $valor_deposito = Deposito::where('data_movimento', '=', Carbon::parse(date('Y-m-d')))->sum('valor_depositar');
-            $totalPagamentos = Pagamento::where('estado', 1)->where('DataRegisto', '=', Carbon::parse(date('Y-m-d')))->sum('valor_depositado');
+            $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
+                $query->where("ano_lectivo_id" ,$value);
+            })->when($request->data_inicio, function($query, $value){
+                $query->where("data_movimento", ">=",Carbon::parse($value));
+            })->when($request->data_final, function($query, $value){
+                $query->where("data_movimento", "<=",Carbon::parse($value));
+            })
+            ->where('data_movimento', '=', Carbon::parse(date('Y-m-d')))
+            ->sum('valor_depositar');
+            
+            $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
+                $query->where("AnoLectivo" ,$value);
+            })->when($request->data_inicio, function($query, $value){
+                $query->where("DataRegisto", ">=",Carbon::parse($value));
+            })->when($request->data_final, function($query, $value){
+                $query->where("DataRegisto", "<=",Carbon::parse($value));
+            })
+            ->where('estado', 1)
+            ->where('forma_pagamento', 6)
+            ->sum('valor_depositado');
             
         }else {
         
-            $valor_deposito = Deposito::where('data_movimento', '=', Carbon::parse(date('Y-m-d')))->where('created_by', $user->codigo_importado)->sum('valor_depositar');
-            $totalPagamentos = Pagamento::where('estado', 1)->where('DataRegisto', '=', Carbon::parse(date('Y-m-d')))->where('fk_utilizador', $user->codigo_importado)->sum('valor_depositado');
+            $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
+                $query->where("ano_lectivo_id" ,$value);
+            })->when($request->data_inicio, function($query, $value){
+                $query->where("data_movimento", ">=",Carbon::parse($value));
+            })->when($request->data_final, function($query, $value){
+                $query->where("data_movimento", "<=",Carbon::parse($value));
+            })
+            ->where('created_by', $user->codigo_importado)
+            ->sum('valor_depositar');
+            
+            $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
+                $query->where("AnoLectivo" ,$value);
+            })->when($request->data_inicio, function($query, $value){
+                $query->where("DataRegisto", ">=",Carbon::parse($value));
+            })->when($request->data_final, function($query, $value){
+                $query->where("DataRegisto", "<=",Carbon::parse($value));
+            })
+            ->where('estado', 1)
+            ->where('forma_pagamento', 6)
+            ->where('fk_utilizador', $user->codigo_importado)
+            ->sum('valor_depositado');
         
         }
         
-        
-        
-        
         $header = [
             "total_depositado" => $valor_deposito,
-            'total_pagamento' => $totalPagamentos
+            'total_pagamento' => $totalPagamentos,
+            'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
+            
+            "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+            
         ];
         
         return Inertia::render('Dashboard', $header);

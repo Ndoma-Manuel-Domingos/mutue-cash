@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Exports\DepositosExport;
+use App\Models\Caixa;
 use App\Models\Deposito;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\Matricula;
+use App\Models\MovimentoCaixa;
 use App\Models\PreInscricao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -111,9 +113,18 @@ class DepositoController extends Controller
             'valor_a_depositar.required' => "Valor a depositar Invalido!",
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
+        
+        $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        if(!$caixas){
+            return response()->json([
+                'message' => 'Deposito realizado com sucesso!',
+            ], 401);
+        }
+        
+        $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
                 
         $resultado = Matricula::where('tb_matriculas.Codigo', $request->codigo_matricula)
-        // ->orWhere('tb_preinscricao.Bilhete_Identidade',  $request->codigo_matricula)
         ->join('tb_admissao', 'tb_matriculas.Codigo_Aluno', '=', 'tb_admissao.Codigo')
         ->join('tb_preinscricao', 'tb_admissao.pre_incricao', '=', 'tb_preinscricao.Codigo')
         ->select('tb_preinscricao.Codigo','tb_preinscricao.saldo_anterior','tb_preinscricao.saldo')
@@ -127,7 +138,7 @@ class DepositoController extends Controller
             'canal_cominucacao_id' => 1,
             'valor_depositar' => $request->valor_a_depositar,
             'saldo_apos_movimento' => $saldo_apos_movimento,
-            'forma_pagamento_id' => 2,
+            'forma_pagamento_id' => 6,
             'data_movimento' => date("Y-m-d"),
             'ano_lectivo_id' => $this->anoLectivoActivo(),
             'created_by' => Auth::user()->codigo_importado,
@@ -139,6 +150,12 @@ class DepositoController extends Controller
         $preinscricao->saldo_anterior = $preinscricao->saldo;
         $preinscricao->saldo += $request->valor_a_depositar;
         $preinscricao->update();
+        
+        
+        $update = MovimentoCaixa::findOrFail($movimento->codigo);
+        $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $request->valor_a_depositar;
+        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $request->valor_a_depositar;
+        $update->update();
         
         //sucesso
         // return redirect()->back()->with();

@@ -69,25 +69,26 @@
 
 @include('pdf.estudantes.header')
 
+<h5 style="text-align: center; text-transform: uppercase">Lista de depósitos</h5><br>
 <main>
-
     <table class="table table-stripeds" style="">
-        
         <thead>
-            <tr style="background-color: #a1a4b9;color: #ffffff;">
-                <th colspan="3" style="padding: 5px;">Data Inicio:</th>
-                <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
-            </tr>
-            
-            <tr style="background-color: #a1a4b9;color: #ffffff;">
-                <th colspan="3" style="padding: 5px;">Data Final:</th>
-                <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
-            </tr>
-            
-            
-            <tr style="background-color: #3F51B5;color: #ffffff;padding: 7px">
-                <th colspan="9">Total: <strong>{{ count($items) }}</strong></th>
-            </tr>
+            @if($requests && $requests['data_final'])
+                <tr style="background-color: #a1a4b9;color: #ffffff;">
+                    <th colspan="3" style="padding: 5px;">Data Inicio:</th>
+                    <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
+                </tr>
+                
+                <tr style="background-color: #a1a4b9;color: #ffffff;">
+                    <th colspan="3" style="padding: 5px;">Data Final:</th>
+                    <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
+                </tr>
+                
+                
+                <tr style="background-color: #3F51B5;color: #ffffff;padding: 7px">
+                    <th colspan="9">Total: <strong>{{ count($items) }}</strong></th>
+                </tr>
+            @endif
             
             <tr style="background-color: #3F51B5;color: #ffffff">
                 <th style="text-align: center;padding: 4px 2px" >Nº Deposito</th>

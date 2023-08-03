@@ -26,10 +26,13 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
 use App\Models\AnoLectivo;
+use App\Models\Caixa;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
+use App\Models\MovimentoCaixa;
 use App\Models\PagamentoItems;
 use App\Models\Utilizador;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PagamentosController extends Controller
@@ -68,24 +71,24 @@ class PagamentosController extends Controller
     {
         $user = auth()->user();
 
-        $ano = AnoLectivo::where('status', '1')->first();
-
-        if(!$request->ano_lectivo){
-            $request->ano_lectivo = $ano->Codigo;
-        }
-
-        $data['items'] = Pagamento::with('factura')->when($request->data_inicio, function($query, $value){
+        $data['items'] = Pagamento::with('factura')
+        ->when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
-        })->when($request->data_final, function($query, $value){
+        })
+        ->when($request->data_final, function($query, $value){
             $query->where('created_at', '<=' ,Carbon::parse($value));
-        })->when($request->operador, function($query, $value){
+        })
+        ->when($request->operador, function($query, $value){
             $query->where('fk_utilizador', $value);
-        })->when($request->ano_lectivo, function($query, $value){
+        })
+        ->when($request->ano_lectivo, function($query, $value){
             $query->where('AnoLectivo', $value);
         })
+        ->where('forma_pagamento', 6)
         ->orderBy('tb_pagamentos.Codigo', 'desc')
         ->paginate(10)
         ->withQueryString();
+
 
         $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
          // utilizadores validadores
@@ -97,7 +100,7 @@ class PagamentosController extends Controller
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
 
-        $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
 
 
         return Inertia::render('Operacoes/Pagamentos/Index', $data);
@@ -120,6 +123,7 @@ class PagamentosController extends Controller
         })->when($request->ano_lectivo, function($query, $value){
             $query->where('tb_pagamentos.AnoLectivo', $value);
         })
+        ->where('forma_pagamento', 6)
         ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
         ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
         ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
@@ -864,11 +868,42 @@ class PagamentosController extends Controller
                         return Response()->json($e->getMessage());
                     }
                 }
+                $deposito = DB::table('tb_valor_alunos')
+                    ->where('codigo_matricula_id', $codigo_matricula)
+                    ->orderBy('codigo', 'DESC')->first();
+
+                $dados_deposito = [
+                    'codigo_matricula_id'=> $codigo_matricula,
+                    'valor_depositar'=> $novo_saldo,
+                    'saldo_apos_movimento'=> $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
+                    'created_by'=> auth()->user()->codigo_importado,
+                ];
+
+                $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
 
                 $response['codigo_pagamento'] = $id_pag;
+
+                $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+                if(!$caixas){
+                    return response()->json([
+                        'message' => 'Deposito realizado com sucesso!',
+                    ], 401);
+                }
+
+                $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+                $update = MovimentoCaixa::findOrFail($movimento->codigo);
+                $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
+                $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                $update->update();
+
+
                 DB::commit();
             }
         }
+
+
 
 
 

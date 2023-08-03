@@ -3,10 +3,10 @@
     <div class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0">Depositos</h1>
+          <div class="col-sm-8">
+            <h1 class="m-0">Depósito de valores efetuados no período de {{ data_inicio }} a {{ data_final }}</h1>
           </div>
-          <div class="col-sm-6"></div>
+          <div class="col-sm-4"></div>
         </div>
       </div>
     </div>
@@ -307,8 +307,8 @@
         isUpdate: false,
         itemId: null,
         
-        data_inicio: "",
-        data_final: "",
+        data_inicio: new Date().toISOString().substr(0, 10),
+        data_final: new Date().toISOString().substr(0, 10),
         operador: "",
         
         depositos: [],
@@ -320,12 +320,20 @@
         form: this.$inertia.form({
           codigo_matricula: null,
           // falta ser paramentrizado 5000
-          valor_a_depositar: 5000,
+          valor_a_depositar: 0,
           nome_estudante: null,
           bilheite_estudante: null,
           curso_estudante: null,
         }),
     };
+  },
+  
+  mounted() {
+    
+    this.params.data_inicio = this.data_inicio;
+    // this.params.data_final = this.data_final;
+  
+    this.updateData();
   },
 
   watch: {
@@ -473,8 +481,8 @@
             // Faça algo com a resposta, se necessário
         } catch (error) {
           // Lide com erros, se houver
-          console.error(error);
-          sweetError("Não foi possível fazer o deposito!");
+          console.log(error);
+          sweetError("Primeiro deves fazer abertura do caixa");
           this.$Progress.fail();
         }
       }

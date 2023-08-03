@@ -121,7 +121,6 @@
                       <th>Nº Factura</th>
                       <th>Valor a pagar</th>
                       <th>Valor pago</th>
-                      <th>Falta pagar</th>
                       <th>Data da factura</th>
                       <th>Saldo Restante</th>
                       <th class="text-center">Ver detalhes</th>
@@ -134,7 +133,6 @@
                       <td>{{ item.codigo_factura }}</td>
                       <td>{{ formatValor(item.valor_depositado) }}</td>
                       <td>{{ formatValor(item.valor_depositado)  }}</td>
-                      <td>{{ formatValor(0) }}</td>
                       <td>{{ item.factura ? item.factura.DataFactura : '' }}</td>
                       <td> {{ formatValor(0) }}</td>
                       <td class="text-center">
