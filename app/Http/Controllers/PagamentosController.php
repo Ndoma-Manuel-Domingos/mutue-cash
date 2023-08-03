@@ -311,6 +311,7 @@ class PagamentosController extends Controller
 
     public function salvarPagamentosDiversos(Request $request, $codigo_matricula)
     {
+
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
 
         $id = $aluno->admissao->preinscricao->Codigo;
@@ -832,26 +833,37 @@ class PagamentosController extends Controller
                     $this->MultaValorDivida($codigo, $codigoDaFatura, $data['DataBanco'], $total);
                 }
 
-                try {
-                     $novo_saldo = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
+                if($data['switch_troco'] == false){
 
-                    DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco'=>$novo_saldo]);
-                    DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->update(['saldo' => $novo_saldo]);
-                } catch (\Illuminate\Database\QueryException $e) {
-                    DB::rollback();
-                    return Response()->json($e->getMessage());
+                    try {
+                        $novo_saldo = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
+
+                        DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco'=>$novo_saldo]);
+                        DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->update(['saldo' => $novo_saldo]);
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        DB::rollback();
+                        return Response()->json($e->getMessage());
+                    }
+                    $deposito = DB::table('tb_valor_alunos')
+                        ->where('codigo_matricula_id', $codigo_matricula)
+                        ->orderBy('codigo', 'DESC')->first();
+
+                    $dados_deposito = [
+                        'codigo_matricula_id'=> $codigo_matricula,
+                        'valor_depositar'=> $novo_saldo,
+                        'saldo_apos_movimento'=> $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
+                        'created_by'=> auth()->user()->codigo_importado,
+                    ];
+                    $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
+                }else{
+                    try {
+                        $novo_saldo = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
+                        DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco'=>$novo_saldo]);
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        DB::rollback();
+                        return Response()->json($e->getMessage());
+                    }
                 }
-                $deposito = DB::table('tb_valor_alunos')
-                    ->where('codigo_matricula_id', $codigo_matricula)
-                    ->orderBy('codigo', 'DESC')->first();
-
-                $dados_deposito = [
-                    'codigo_matricula_id'=> $codigo_matricula,
-                    'valor_depositar'=> $novo_saldo,
-                    'saldo_apos_movimento'=> $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
-                    'created_by'=> auth()->user()->codigo_importado,
-                ];
-                $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
 
                 $response['codigo_pagamento'] = $id_pag;
                 DB::commit();

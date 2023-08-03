@@ -1,6 +1,5 @@
 require('./bootstrap');
 
-
 import { createApp, h } from 'vue'
 import { App, createInertiaApp } from '@inertiajs/inertia-vue3'
 import MainLayouts from './Pages/Layouts/MainLayouts'
@@ -17,6 +16,8 @@ import InfiniteLoading from "v3-infinite-loading";
 import "v3-infinite-loading/lib/style.css";
 // import Select2Component
 import Select2 from 'vue3-select2-component';
+import VueCurrencyInput from 'vue-currency-input';
+
 
 Chartkick.options = {
   colors: ["#b00", "#666"]
@@ -66,7 +67,7 @@ createInertiaApp({
     createApp({ render: () => h(App, props) })
       .use(plugin)
       .use(VueProgressBar, options)
-      .use(ZiggyVue, Ziggy) 
+      .use(ZiggyVue, Ziggy)
       .use(VueChartkick, { adapter: Highcharts })
       .component("infinite-loading", InfiniteLoading)
       .component('Select2', Select2)

@@ -32,6 +32,7 @@
         "v3-infinite-loading": "^1.2.2",
         "vue": "^3.2.36",
         "vue-chartkick": "^1.1.0",
+        "vue-currency-input": "^1.22.3",
         "vue-multiselect": "^2.1.7",
         "vue3-select2-component": "^0.1.7"
     }
