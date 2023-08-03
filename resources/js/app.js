@@ -17,7 +17,6 @@ import InfiniteLoading from "v3-infinite-loading";
 import "v3-infinite-loading/lib/style.css";
 // import Select2Component
 import Select2 from 'vue3-select2-component';
-import VueCurrencyInput from 'vue-currency-input';
 
 
 Chartkick.options = {
