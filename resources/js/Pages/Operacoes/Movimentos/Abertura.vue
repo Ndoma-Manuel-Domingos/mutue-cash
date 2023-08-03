@@ -79,8 +79,22 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4 class="text-uppercase">Total de Pagamentos</h4>
+                <h4 class="text-uppercase">Total de Pag. Facturado</h4>
                 <p>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-bag"></i>
+              </div>
+              <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+              ></Link>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h4 class="text-uppercase">Total de Pag. Recebido</h4>
+                <p>{{ formatValor(0) }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
