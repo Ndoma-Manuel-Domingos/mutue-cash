@@ -132,7 +132,7 @@
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
                       <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
                       <td>{{ item.user ? item.user.nome : '' }}</td>
-                      <td>{{ item.ano_lectivo.Designacao }}</td>
+                      <td>{{ item.ano_lectivo ? item.ano_lectivo.Designacao: '' }}</td>
                       <td>{{ item.created_at }}</td>
                       <td class="text-center">
                         <Link @click="imprimirComprovativo(item)">

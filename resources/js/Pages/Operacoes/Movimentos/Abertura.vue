@@ -80,7 +80,7 @@
             <div class="small-box bg-info">
               <div class="inner">
                 <h4 class="text-uppercase">Total de Pag. Facturado</h4>
-                <p>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</p>
+                <p>{{ formatValor(movimento.valor_facturado_pagamento) }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
@@ -94,7 +94,7 @@
             <div class="small-box bg-info">
               <div class="inner">
                 <h4 class="text-uppercase">Total de Pag. Recebido</h4>
-                <p>{{ formatValor(0) }}</p>
+                <p>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>

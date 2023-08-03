@@ -573,97 +573,8 @@
                   enctype="multipart/form-data"
                 >
                   <div class="row">
-                    <!-- <div class="col-12 col-md-6 mb-3">
-                      <label for="" class="form-label"
-                        >Forma de Pagamento</label
-                      >
-                      <select
-                        v-model="pagamento.forma_pagamento"
-                        @change="pegaBancos"
-                        id="forma_pagamento"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      >
-                        <option value="">Selecione</option>
-                        <option
-                          :value="item.descricao"
-                          v-for="item in forma_pagamentos"
-                          :key="item.Codigo"
-                        >
-                          {{ item.descricao }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label"
-                        >Contas Movimentada</label
-                      >
-                      <select
-                        v-model="pagamento.ContaMovimentada"
-                        id="conta_movimentada"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      >
-                        <option
-                          :value="item.codigo"
-                          v-for="(item, index) in bancos"
-                          :key="index"
-                        >
-                          {{ item.descricao }}
-                        </option>
-                      </select>
-                    </div> -->
 
                     <!-- <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label"
-                        >Nº Operação de Bancária</label
-                      >
-                      <input
-                        type="text"
-                        v-model="pagamento.N_Operacao_Bancaria"
-                        class="form-control"
-                        placeholder="Ex: 12346"
-                        :disabled="isFormDisabled"
-                      />
-                    </div>
-
-                    <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label"
-                        >Nº Operação de Bancária 2</label
-                      >
-                      <input
-                        type="text"
-                        v-model="pagamento.N_Operacao_Bancaria2"
-                        class="form-control"
-                        placeholder="Ex: 12346"
-                        :disabled="isFormDisabled"
-                      />
-                    </div> -->
-
-                    <!-- <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label">Data do Banco</label>
-                      <input
-                        type="date"
-                        v-model="pagamento.DataBanco"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      />
-                    </div> -->
-
-                    <div
                       class="col-12 col-md-6 mb-3">
                       <label for="" class="form-label">Valor entregue</label>
                       <input
@@ -672,55 +583,42 @@
                         v-model="pagamento.valor_depositado"
                         placeholder="Ex: 12346"
                       />
-                      <!-- <input
-                        v-if="ativar_editar_valor == 1"
+                    </div> -->
+                    <div
+                      class="col-12 col-md-6 mb-3">
+                      <label for="" class="form-label">Valor entregue</label>
+                      <input
                         type="text"
                         class="form-control"
-                        v-model="pagamento.valor_depositado"
+                        v-model="valor_depositado_tese"
                         placeholder="Ex: 12346"
                       />
-                      <input
-                        :readonly="ativar_editar_valor == 0"
-                        v-else
-                        class="form-control"
-                        type="text"
-                        v-model="pagamento.valor_depositado"
-                        :disabled="ativar_editar_valor == 0"
-                        placeholder="Ex: 12346"
-                      /> -->
+                        <!-- <currency-input hidden  currency="USD" locale="de" type="text"
+                            class="validate hide" v-model="valor_depositado_tese" placeholder=""
+                        /> -->
+                    </div>
+                    <div
+                        class="col-12 col-md-6 mb-3">
+                        <label for="" class="form-label">Entregar Troco?</label>
+                        <input
+                            class="form-control"
+                            type="checkbox"
+                            v-model="switch1"
+                        />
                     </div>
 
-                    <!-- <div class="col-12 col-md-4 mb-3">
-                      <label
-                        for=""
-                        class="form-label"
-                        v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                        >Anexo</label
-                      >
+                    <div
+                        v-if="switch1 == true"
+                      class="col-12 col-md-6 mb-3">
+                      <label for="" class="form-label">Troco</label>
                       <input
-                        type="file"
+                        type="text"
+                        disabled
                         class="form-control"
-                        :disabled="isFormDisabled"
-                        v-on:change="onTalaoChange"
-                        id="anexo"
-                        accept="application/pdf,image/jpeg,image/png"
+                        v-model="troco"
+                        placeholder="Ex: 12346"
                       />
-                    </div> -->
-
-                    <!-- <div
-                      class="col-12 col-md-12 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label">Observação</label>
-                      <textarea
-                        v-model="pagamento.Observacao"
-                        cols="30"
-                        rows="2"
-                        placeholder="Observação"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      ></textarea>
-                    </div> -->
+                    </div>
 
                     <div
                       class="col-12 col-md-12"
@@ -771,10 +669,12 @@
 <script>
 import Swal from "sweetalert2";
 import { sweetSuccess, sweetError } from "../../../components/Alert";
+// import VueChartkick from "vue-chartkick";
 export default {
   props: ["forma_pagamentos"],
   data() {
     return {
+        switch1: false,
       codigo_matricula: null,
       codigo_tipo_candidatura: null,
       ano_lectivo_id: null,
@@ -809,6 +709,7 @@ export default {
 
       total_adicionado: 0,
       valor_por_depositar: 0,
+      troco: 0,
 
       talao_banco: null,
       opcoes: 1,
@@ -897,6 +798,7 @@ export default {
       desconto_outubro: 0,
       mes_seguinte_novo: "",
       ultimo_mes_novo: "",
+      valor_depositado_tese: 0,
 
       meses_temp_lista: [],
       mes_id: "",
@@ -965,6 +867,7 @@ export default {
 
   watch: {
     fatura(val) {
+        this.pagamento.valor_depositado = this.valor_depositado_tese;
       if (val) {
         if (this.fatura.descricao_factura == 5) {
           if (
@@ -1001,23 +904,42 @@ export default {
     },
 
     total_adicionado(val) {
-      if (val) {
-        if (this.estudante.saldo >= 0 && this.estudante.saldo < this.total_adicionado ) {
-            this.pagamento.valor_depositado = this.total_adicionado - this.estudante.saldo;
-            this.valor_por_depositar = this.total_adicionado - this.estudante.saldo;
-            // this.estudante.saldo = 0;
-        }else{
-          if (this.estudante.saldo >= this.total_adicionado) {
 
-            this.pagamento.valor_depositado = this.estudante.saldo - this.total_adicionado;
-            this.valor_por_depositar = this.estudante.saldo - this.total_adicionado;
-          } else {
-            this.pagamento.valor_depositado = this.total_adicionado;
-            this.valor_por_depositar = this.total_adicionado;
-          }
+        if (val) {
+            this.pagamento.valor_depositado = this.valor_depositado_tese;
+            if (this.estudante.saldo >= 0 && this.estudante.saldo < this.total_adicionado ) {
+                this.pagamento.valor_depositado = this.total_adicionado - this.estudante.saldo;
+                this.valor_depositado_tese = this.pagamento.valor_depositado;
+                this.valor_por_depositar = this.total_adicionado - this.estudante.saldo;
+                // this.estudante.saldo = 0;
+            }else{
+                if (this.estudante.saldo >= this.total_adicionado) {
+
+                    this.pagamento.valor_depositado = this.estudante.saldo - this.total_adicionado;
+                    this.valor_depositado_tese = this.pagamento.valor_depositado;
+                    this.valor_por_depositar = this.estudante.saldo - this.total_adicionado;
+                } else {
+                    this.pagamento.valor_depositado = this.total_adicionado;
+                    this.valor_depositado_tese = this.pagamento.valor_depositado;
+                    this.valor_por_depositar = this.total_adicionado;
+                }
+            }
         }
-      }
     },
+
+    valor_depositado_tese(val){
+        this.pagamento.valor_depositado = this.valor_depositado_tese;
+        if(val){
+            if(this.valor_por_depositar == this.pagamento.valor_depositado){
+                this.troco = 0;
+            }else{
+                this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
+            }
+            // else{
+            //     this.troco = this.fatura.ValorAPagar - this.valor_por_depositar;
+            // }
+        }
+    }
   },
 
   mounted(){
@@ -1030,7 +952,17 @@ export default {
       this.talao_banco = e.target.files[0];
     },
 
+    findIgnorar(item){
+        if(item == false){
+            this.descricaoparametro = "Não"
+        }else{
+            this.descricaoparametro = "Sim"
+        }
+    },
+
     registarPagamento: function () {
+
+        this.pagamento.switch_troco = this.switch1;
 
       if (this.pagamento.forma_pagamento == "POR REFERÊNCIA") {
         if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
@@ -1993,6 +1925,7 @@ export default {
     },
 
     registarFatura: function () {
+        this.pagamento.switch_troco = this.switch1;
       if (
         (this.pagamento.valor_depositado == null ||
           this.pagamento.valor_depositado == 0) &&
