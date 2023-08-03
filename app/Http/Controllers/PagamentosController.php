@@ -861,7 +861,7 @@ class PagamentosController extends Controller
                     $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
                 }else{
                     try {
-                        $novo_saldo = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
+                        $novo_saldo = ($data['valor_depositado']) - $fatura_paga->ValorAPagar;
                         DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco'=>$novo_saldo]);
                     } catch (\Illuminate\Database\QueryException $e) {
                         DB::rollback();

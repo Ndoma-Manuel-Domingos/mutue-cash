@@ -598,8 +598,9 @@
                         /> -->
                     </div>
                     <div
+                        v-if="condicao_troco == true"
                         class="col-12 col-md-6 mb-3">
-                        <label for="" class="form-label">Entregar Troco?</label>
+                        <label for="" class="form-label">Salvar troco como saldo?</label>
                         <input
                             class="form-control"
                             type="checkbox"
@@ -608,7 +609,7 @@
                     </div>
 
                     <div
-                        v-if="switch1 == true"
+                        v-if="condicao_troco == true"
                       class="col-12 col-md-6 mb-3">
                       <label for="" class="form-label">Troco</label>
                       <input
@@ -686,6 +687,7 @@ export default {
       bilheite_estudante: null,
       saldo_aluno: 0,
       saldo: 0,
+      condicao_troco: false,
 
       mostrar_dados_estudante: false,
 
@@ -934,10 +936,14 @@ export default {
                 this.troco = 0;
             }else{
                 this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
+                if((this.pagamento.valor_depositado - this.total_adicionado) > 0){
+                    this.condicao_troco = true;
+                }
             }
             // else{
             //     this.troco = this.fatura.ValorAPagar - this.valor_por_depositar;
             // }
+
         }
     }
   },
