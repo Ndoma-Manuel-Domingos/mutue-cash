@@ -322,8 +322,8 @@ class PagamentosController extends Controller
         $codigo = $aluno->admissao->preinscricao->Codigo;
         $data = json_decode($request->pagamento, true);
         $fonte = json_decode($request->fonte, true);
+        $switch_troco = json_decode($request->switch_troco, true);
         $codigoDaFatura = json_decode($request->codigo_fatura, true);
-
         $saldo_novo = DB::table('tb_preinscricao')
             ->where('tb_preinscricao.Codigo', $codigo)
             ->select('saldo')->first();
@@ -665,9 +665,9 @@ class PagamentosController extends Controller
                             ->first();
                     }
 
+
                     $data['Data'] = date('Y-m-d');
                     $data['AnoLectivo'] = $fact_aluno->ano_lectivo;
-
                     $data['Totalgeral'] = $fact_aluno->ValorAPagar;
                     $data['Codigo_PreInscricao'] = $codigo;
                     $data['DataRegisto'] = date('Y-m-d H:i:s');
@@ -684,6 +684,7 @@ class PagamentosController extends Controller
                         DB::rollback();
                         return Response()->json($e->getMessage());
                     }
+
 
                     $ultimo_pag = DB::table('tb_pagamentos')->where('Codigo', $id_pag)->first();
                 } catch (\Illuminate\Database\QueryException $e) {
@@ -837,7 +838,7 @@ class PagamentosController extends Controller
                     $this->MultaValorDivida($codigo, $codigoDaFatura, $data['DataBanco'], $total);
                 }
 
-                if($data['switch_troco'] == false){
+                if($switch_troco){
 
                     try {
                         $novo_saldo = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
@@ -861,7 +862,7 @@ class PagamentosController extends Controller
                     $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
                 }else{
                     try {
-                        $novo_saldo = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
+                        $novo_saldo = ($data['valor_depositado']) - $fatura_paga->ValorAPagar;
                         DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco'=>$novo_saldo]);
                     } catch (\Illuminate\Database\QueryException $e) {
                         DB::rollback();

@@ -967,9 +967,6 @@ export default {
     },
 
     registarPagamento: function () {
-
-        this.pagamento.switch_troco = this.switch1;
-
       if (this.pagamento.forma_pagamento == "POR REFERÊNCIA") {
         if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
           //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
@@ -985,7 +982,9 @@ export default {
       var pagamento = JSON.stringify(this.pagamento); //grande  solução.
       //var codigo_fatura=JSON.stringify(this.fatura_id);
       var codigo_fatura = JSON.stringify(this.numero_fatura_nao_paga);
+      var switch1 = JSON.stringify(this.switch1);
       formData.append("pagamento", pagamento);
+      formData.append("switch_troco", switch1);
       formData.append("codigo_fatura", codigo_fatura);
       formData.append("talao_banco", this.talao_banco);
       // formData.append("talao_banco2", this.talao_banco2);
@@ -1931,10 +1930,8 @@ export default {
     },
 
     registarFatura: function () {
-        this.pagamento.switch_troco = this.switch1;
       if (
-        (this.pagamento.valor_depositado == null ||
-          this.pagamento.valor_depositado == 0) &&
+        (this.pagamento.valor_depositado == null) &&
         Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
       ) {
         Swal.fire({
@@ -1947,7 +1944,7 @@ export default {
 
         document.getElementById("btn").disabled = false;
       } else if (
-        this.pagamento.valor_depositado > 0 &&
+        this.pagamento.valor_depositado >= 0 &&
         this.estudante.saldo > 0 &&
         Math.ceil(this.pagamento.valor_depositado + this.estudante.saldo) < this.total_adicionado
       ) {
@@ -1986,10 +1983,12 @@ export default {
         var parametroSaldo = JSON.stringify(this.pagarComSaldo);
         var pagamento = JSON.stringify(this.pagamento); //grande  solução.
         var referencia = JSON.stringify(this.referencia);
+        var switch1 = JSON.stringify(this.switch1);
         formData.append("fatura_item", fatura_item);
         formData.append("anoLectivo", anoLectivo);
         formData.append("parametroSaldo", parametroSaldo);
         formData.append("pagamento", pagamento);
+        formData.append("switch_troco", switch1);
         formData.append("referencia", referencia);
         formData.append("fonte", 2);// fonte de requisicao
 
