@@ -233,6 +233,7 @@
                       Valor por prestação<br>
                       Total de prestações<br>
                   @endif
+                  Troco<br>
                   Saldo após o Movimento<br>
                   <span>&nbsp;</span>
               </th>
@@ -259,6 +260,7 @@
                       {{ number_format($aluno->primeiroValorApagar, 2, ',', '.') }}<br>
                     @endif
                        {{ number_format($aluno->troco, 2, ',', '.') }}<br>
+                       {{ number_format($aluno->saldo, 2, ',', '.') }}<br>
                     <span>&nbsp;</span>
               </th>
 

@@ -24,6 +24,7 @@ class MovimentoCaixa extends Model
         'valor_arrecadado_total',
         'valor_arrecadado_depositos',
         'valor_arrecadado_pagamento',
+        'valor_facturado_pagamento',
         'status',
         'status_admin',
         'created_by',

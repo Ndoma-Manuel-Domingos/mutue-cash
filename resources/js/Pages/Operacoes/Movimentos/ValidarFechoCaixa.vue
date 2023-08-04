@@ -22,6 +22,7 @@
               <form action="">
                 <div class="card-body">
                   <div class="row">
+                  
                     <div class="col-12 col-md-3">
                       <div class="form-group">
                         <label for="">Operadores</label>
@@ -33,6 +34,22 @@
                             :value="item.utilizadores.codigo_importado"
                           >
                             {{ item.utilizadores.nome }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-3">
+                      <div class="form-group">
+                        <label for="caixa_id">Caixas</label>
+                        <select v-model="caixa_id" id="caixa_id" class="form-control">
+                          <option value="">TODOS</option>
+                          <option
+                            v-for="item in caixas"
+                            :key="item.codigo"
+                            :value="item.codigo"
+                          >
+                            {{ item.nome }}
                           </option>
                         </select>
                       </div>
@@ -164,7 +181,7 @@
 
   
   export default {
-    props: ["items", "utilizadores"],
+    props: ["items", "utilizadores", "caixas"],
     components: { Link, Paginacao },
     data() {
       return { 
@@ -172,6 +189,7 @@
         data_inicio: new Date().toISOString().substr(0, 10),
         data_final: new Date().toISOString().substr(0, 10),
         operador: "",
+        caixa_id: "",
         params: {},
     };
   },
@@ -359,11 +377,11 @@
     },
 
     imprimirPDF() {
-      window.open(`/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(`/movimentos/imprimir-pdf?operador_id=${this.operador}&caixa_id=${this.caixa_id}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
     
     imprimirEXCEL() {
-      window.open(`/depositos/excel?data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(`/movimentos/imprimir-excel?operador_id=${this.operador}&caixa_id=${this.caixa_id}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
     
     imprimirComprovativo(item) 

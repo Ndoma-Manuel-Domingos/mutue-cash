@@ -131,16 +131,18 @@
               <div class="card">
                 <div class="card-body">
                   <div class="row">
+                  
                     <div class="form-group col-12 col-md-6">
                       <label for="valor_abertura" class="form-label"
                         >VALOR DE ABERTURA</label
                       >
                       <input
-                        type="number"
+                        type="text"
                         placeholder="TOTAL VALOR ABERTURA"
                         id="valor_abertura"
                         v-model="form.valor_abertura"
                         class="form-control"
+                        @keyup="formatarMoeda()"
                       />
                       <div class="p-0" v-if="form.errors.valor_abertura">
                         <p class="text-danger">
@@ -151,13 +153,14 @@
 
                     <div class="form-group col-12 col-md-6">
                       <label for="valor_depositado" class="form-label"
-                        >TOTAL DE DEPÓSITOS</label
+                        ><Link :href="route('mc.depositos.index')">TOTAL DE DEPÓSITOS</Link></label
                       >
                       <input
                         type="text"
                         placeholder="TOTAL DE DEPÓSITOS"
                         id="valor_depositado"
                         v-model="form.valor_depositado"
+                        @keyup="formatarMoeda()"
                         class="form-control"
                       />
                       <div class="p-0" v-if="form.errors.valor_depositado">
@@ -167,9 +170,9 @@
                       </div>
                     </div>
 
-                    <div class="form-group col-12 col-md-6">
+                    <div class="form-group col-12 col-md-3">
                       <label for="valor_pagamento" class="form-label"
-                        >TOTAL DE PAGAMENTOS</label
+                        ><Link :href="route('mc.pagamentos.index')">TOTAL DE PAGAMENTOS</Link></label
                       >
                       <input
                         type="text"
@@ -177,10 +180,30 @@
                         id="valor_pagamento"
                         v-model="form.valor_pagamento"
                         class="form-control"
+                        @keyup="formatarMoeda()"
                       />
                       <div class="p-0" v-if="form.errors.valor_pagamento">
                         <p class="text-danger">
                           {{ form.errors.valor_pagamento }}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div class="form-group col-12 col-md-3">
+                      <label for="valor_facturado" class="form-label"
+                        ><Link :href="route('mc.pagamentos.index')">TOTAL DE FACTURADO</Link></label
+                      >
+                      <input
+                        type="text"
+                        placeholder="TOTAL DE PAGAMENTOS"
+                        id="valor_facturado"
+                        v-model="form.valor_facturado"
+                        class="form-control"
+                        @keyup="formatarMoeda()"
+                      />
+                      <div class="p-0" v-if="form.errors.valor_facturado">
+                        <p class="text-danger">
+                          {{ form.errors.valor_facturado }}
                         </p>
                       </div>
                     </div>
@@ -225,7 +248,6 @@
                       </div>
                     </div>
                     
-                    
                     <div class="form-group col-12 col-md-12">
                       <label for="observacao" class="form-label">OBSERVAÇÃO</label>
                       <textarea id="observacao" v-model="form.observacao" rows="3" class="form-control" placeholder="OBSERVAÇÃO:"></textarea>
@@ -237,6 +259,7 @@
                 </div>
                 <div class="card-footer">
                   <button type="submit" class="btn-sm btn-info" v-show="caixa">Fechar</button>
+                  <Link v-if="movimento" @click="imprimirComprovativo(movimento)" class="float-right btn-sm btn-primary"><i class="fas fa-print"></i> Imprimr</Link>
                 </div>
               </div>
             </form>
@@ -255,16 +278,19 @@ export default {
   components: {
     Link,
   },
+  
   data() {
     return {
+      text_input: '',
       form: this.$inertia.form({
         valor_depositado: this.movimento ? this.movimento.valor_arrecadado_depositos : '',
         valor_pagamento: this.movimento ? this.movimento.valor_arrecadado_pagamento : '',
+        valor_facturado: this.movimento ? this.movimento.valor_facturado_pagamento : '',
         valor_abertura: this.movimento ? this.movimento.valor_abertura : '',
         caixa_id: this.caixa ? this.caixa.codigo : '',
         operador_id: this.operador.codigo_importado ?? '',
         movimento_id: this.movimento ? this.movimento.codigo : '',
-
+        observacao: "",
       }),
 
       isUpdate: false,
@@ -272,6 +298,14 @@ export default {
       params: {},
     };
   },
+  
+  mounted(){
+    this.form.valor_abertura = this.formatValor(this.form.valor_abertura)
+    this.form.valor_pagamento = this.formatValor(this.form.valor_pagamento)
+    this.form.valor_facturado = this.formatValor(this.form.valor_facturado)
+    this.form.valor_depositado = this.formatValor(this.form.valor_depositado)
+  },
+  
   watch: {
     options: function (val) {
       this.params.page = val.page;
@@ -285,25 +319,62 @@ export default {
       }
       this.updateData();
     },
-
-    // ano_lectivo: function (val) {
-    //   this.params.ano_lectivo = val;
-    //   this.updateData();
-    // },
-    // data_inicio: function (val) {
-    //   this.params.data_inicio = val;
-    //   this.updateData();
-    // },
-    // data_final: function (val) {
-    //   this.params.data_final = val;
-    //   this.updateData();
-    // },
   },
+  
+  
   methods: {
     verificarLetras() {
       // Expressão regular que verifica se a string contém letras (a-zA-Z)
       const regexLetras = /[a-zA-Z]/;
       this.contemLetras = regexLetras.test(this.form.valor_inicial);
+    },
+    
+    formatarMoeda() {
+      // Remover caracteres que não são números
+      let valor = this.form.valor_abertura.replace(/\D/g, '');
+      let valor2 = this.form.valor_depositado.replace(/\D/g, '');
+      let valor3 = this.form.valor_pagamento.replace(/\D/g, '');
+      let valor4 = this.form.valor_facturado.replace(/\D/g, '');
+
+      // Converter o valor para número
+      valor = Number(valor) / 100; // Dividir por 100 para ter o valor em reais
+      valor2 = Number(valor2) / 100; // Dividir por 100 para ter o valor em reais
+      valor3 = Number(valor3) / 100; // Dividir por 100 para ter o valor em reais
+      valor4 = Number(valor4) / 100; // Dividir por 100 para ter o valor em reais
+
+      // Formatar o número para moeda
+      this.form.valor_abertura = valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'AOA'
+      });
+      
+      this.form.valor_depositado = valor2.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'AOA'
+      });
+      
+      this.form.valor_pagamento = valor3.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'AOA'
+      });
+      
+      this.form.valor_facturado = valor4.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'AOA'
+      });
+    },
+    
+    removerFormatacaoAOA(valor) {
+      // Remover caracteres não numéricos, exceto a vírgula
+      const valorNumerico = valor.replace(/[^\d,]/g, '');
+    
+      // Remover vírgulas repetidas, mantendo apenas uma
+      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ',');
+    
+      // Substituir a vírgula por ponto decimal para obter o valor numérico
+      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, '.');
+    
+      return valorNumericoFinal;
     },
 
     async submit() {
@@ -349,7 +420,7 @@ export default {
       }
       
       if (
-        this.form.valor_abertura != this.movimento.valor_abertura
+        this.removerFormatacaoAOA(this.form.valor_abertura) != this.movimento.valor_abertura
       ) {
         Swal.fire({
           title: "Atenção",
@@ -364,7 +435,7 @@ export default {
       }
 
       if (
-        this.form.valor_depositado != this.movimento.valor_arrecadado_depositos
+        this.removerFormatacaoAOA(this.form.valor_depositado) != this.movimento.valor_arrecadado_depositos
       ) {
         Swal.fire({
           title: "Atenção",
@@ -378,7 +449,9 @@ export default {
         return;
       }
 
-      if (this.form.valor_pagamento != this.movimento.valor_arrecadado_pagamento) {
+      if (
+        this.removerFormatacaoAOA(this.form.valor_pagamento) != this.movimento.valor_arrecadado_pagamento
+      ) {
         Swal.fire({
           title: "Atenção",
           text: "O total valor arrecadado em pagamentos e o valor informe em pagamentos não conferem!",
@@ -395,6 +468,10 @@ export default {
       } else {
         try {
           // Faça uma requisição POST para o backend Laravel
+          // this.form.valor_abertura = this.removerFormatacaoAOA(this.form.valor_abertura);
+          // this.form.valor_pagamento = this.removerFormatacaoAOA(this.form.valor_pagamento);
+          // this.form.valor_facturado = this.removerFormatacaoAOA(this.form.valor_facturado);
+          // this.form.valor_depositado = this.removerFormatacaoAOA(this.form.valor_depositado);
           const response = await axios.post("/movimentos/fecho-caixa", this.form);
           
           // A resposta do Laravel estará disponível em response.data
@@ -435,7 +512,10 @@ export default {
       return valorFormatado;
     },
   },
+  
+  
 };
+
 </script>
     
     

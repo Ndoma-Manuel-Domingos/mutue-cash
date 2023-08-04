@@ -122,7 +122,7 @@
         
         <tbody>
             <tr>
-                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 10px 10px;background-color: #ccc;line-height: 25px">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor quaerat saepe quos ratione fuga suscipit nemo facere tenetur aliquam est veritatis, excepturi tempore. Accusamus, qui et. Neque at libero adipisci.</td>
+                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 10px 10px;background-color: #ccc;line-height: 25px">{{ $movimento->observacao ?? "" }}</td>
             </tr>
         </tbody>
    
@@ -130,19 +130,35 @@
     
     
     <table style="margin-top: 60px">
-        @for ($i = 1; $i < 3; $i++)
-            <tbody>
-                <tr>
-                    <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 10px 10px;">{{ $i }}ª Assinatura</td>
-                </tr>
-                <tr>
-                    <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 10px 10px;">____________________________________________________________________</td>
-                </tr>
-            </tbody>
-            
-        @endfor
+        <tbody>
+            <tr>
+                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 0px 10px;"><strong>Operador</strong></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 10px 10px;">____________________________________________________________________</td>
+            </tr>
+            <tr>
+                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 0px 10px;">{{ $movimento->operador->nome ?? '' }}</td>
+            </tr>
+        </tbody>
 
     </table>
+    
+    <table style="margin-top: 30px">
+        
+        <tbody>
+            <tr>
+                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 0px 10px;"><strong>Administrador</strong></td>
+            </tr>
+            <tr>
+                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 10px 10px;">____________________________________________________________________</td>
+            </tr>
+            <tr>
+                <td colspan="5" style="text-align: left;text-transform: uppercase;padding: 0px 10px;">{{ $movimento->operador_admin->nome ?? '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+    
 </main>
 
 </body>

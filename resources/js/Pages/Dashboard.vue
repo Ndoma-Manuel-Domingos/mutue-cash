@@ -19,7 +19,7 @@
             <div class="alert alert-warning alert-dismissible">
               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                 <h5><i class="icon fas fa-info"></i> Atenção!</h5>
-                Os registros presentes são diários, caso quiseres trazer registro semanalmente, mensalmente, anualmente ou todos, usa os filtros que estão no lado direito. 
+                Os registos presentes são diários, caso pretenda ver registos semanal, mensal ou anual, use os filtros que estão no lado direito. 
               </div>
           </div>
         </div>

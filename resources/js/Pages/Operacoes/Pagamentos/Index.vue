@@ -3,10 +3,10 @@
     <div class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0">Pagamentos</h1>
+          <div class="col-sm-8">
+            <h1 class="m-0">Pagamentos de valores efetuados no período de {{ data_inicio }} a {{ data_final }}</h1>
           </div>
-          <div class="col-sm-6"></div>
+          <div class="col-sm-4"></div>
         </div>
       </div>
     </div>
@@ -131,7 +131,7 @@
                     <tr v-for="(item, index) in items.data" :key="item.Codigo">
                       <td>{{ index + 1 }}</td>
                       <td>{{ item.codigo_factura }}</td>
-                      <td>{{ formatValor(item.valor_depositado) }}</td>
+                      <td>{{ formatValor(item.factura.ValorAPagar) }}</td>
                       <td>{{ formatValor(item.valor_depositado)  }}</td>
                       <td>{{ item.factura ? item.factura.DataFactura : '' }}</td>
                       <td> {{ formatValor(0) }}</td>
@@ -290,8 +290,8 @@ export default {
   components: { Link, Paginacao },
   data() {
     return {
-      data_inicio: "",
-      data_final: "",
+      data_inicio: new Date().toISOString().substr(0, 10),
+      data_final: new Date().toISOString().substr(0, 10),
       operador: "",
       ano_lectivo: "",
 
@@ -301,6 +301,13 @@ export default {
       items_pagamento: [],
 
     };
+  },
+  mounted() {
+    
+    this.params.data_inicio = this.data_inicio;
+    // this.params.data_final = this.data_final;
+  
+    this.updateData();
   },
   watch: {
     options: function (val) {

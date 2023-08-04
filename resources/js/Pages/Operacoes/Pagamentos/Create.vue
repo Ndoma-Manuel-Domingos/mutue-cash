@@ -573,97 +573,8 @@
                   enctype="multipart/form-data"
                 >
                   <div class="row">
-                    <!-- <div class="col-12 col-md-6 mb-3">
-                      <label for="" class="form-label"
-                        >Forma de Pagamento</label
-                      >
-                      <select
-                        v-model="pagamento.forma_pagamento"
-                        @change="pegaBancos"
-                        id="forma_pagamento"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      >
-                        <option value="">Selecione</option>
-                        <option
-                          :value="item.descricao"
-                          v-for="item in forma_pagamentos"
-                          :key="item.Codigo"
-                        >
-                          {{ item.descricao }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label"
-                        >Contas Movimentada</label
-                      >
-                      <select
-                        v-model="pagamento.ContaMovimentada"
-                        id="conta_movimentada"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      >
-                        <option
-                          :value="item.codigo"
-                          v-for="(item, index) in bancos"
-                          :key="index"
-                        >
-                          {{ item.descricao }}
-                        </option>
-                      </select>
-                    </div> -->
 
                     <!-- <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label"
-                        >Nº Operação de Bancária</label
-                      >
-                      <input
-                        type="text"
-                        v-model="pagamento.N_Operacao_Bancaria"
-                        class="form-control"
-                        placeholder="Ex: 12346"
-                        :disabled="isFormDisabled"
-                      />
-                    </div>
-
-                    <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label"
-                        >Nº Operação de Bancária 2</label
-                      >
-                      <input
-                        type="text"
-                        v-model="pagamento.N_Operacao_Bancaria2"
-                        class="form-control"
-                        placeholder="Ex: 12346"
-                        :disabled="isFormDisabled"
-                      />
-                    </div> -->
-
-                    <!-- <div
-                      class="col-12 col-md-6 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label">Data do Banco</label>
-                      <input
-                        type="date"
-                        v-model="pagamento.DataBanco"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      />
-                    </div> -->
-
-                    <div
                       class="col-12 col-md-6 mb-3">
                       <label for="" class="form-label">Valor entregue</label>
                       <input
@@ -672,55 +583,44 @@
                         v-model="pagamento.valor_depositado"
                         placeholder="Ex: 12346"
                       />
-                      <!-- <input
-                        v-if="ativar_editar_valor == 1"
+                    </div> -->
+                    <div
+                      class="col-12 col-md-6 mb-3">
+                      <label for="valor_depositado_tese" class="form-label">Valor entregue</label>
+                      <input
                         type="text"
                         class="form-control"
-                        v-model="pagamento.valor_depositado"
+                        id="valor_depositado_tese"
+                        v-model="valor_depositado_tese"
                         placeholder="Ex: 12346"
                       />
-                      <input
-                        :readonly="ativar_editar_valor == 0"
-                        v-else
-                        class="form-control"
-                        type="text"
-                        v-model="pagamento.valor_depositado"
-                        :disabled="ativar_editar_valor == 0"
-                        placeholder="Ex: 12346"
-                      /> -->
+                        <!-- <currency-input hidden  currency="USD" locale="de" type="text"
+                            class="validate hide" v-model="valor_depositado_tese" placeholder=""
+                        /> -->
+                    </div>
+                    <div
+                        v-if="condicao_troco == true"
+                        class="col-12 col-md-6 mb-3">
+                        <label for="" class="form-label">Salvar troco como saldo?</label>
+                        <input
+                            class="form-control"
+                            type="checkbox"
+                            v-model="switch1"
+                        />
                     </div>
 
-                    <!-- <div class="col-12 col-md-4 mb-3">
-                      <label
-                        for=""
-                        class="form-label"
-                        v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                        >Anexo</label
-                      >
+                    <div
+                        v-if="condicao_troco == true"
+                      class="col-12 col-md-6 mb-3">
+                      <label for="" class="form-label">Troco</label>
                       <input
-                        type="file"
+                        type="text"
+                        disabled
                         class="form-control"
-                        :disabled="isFormDisabled"
-                        v-on:change="onTalaoChange"
-                        id="anexo"
-                        accept="application/pdf,image/jpeg,image/png"
+                        v-model="troco"
+                        placeholder="Ex: 12346"
                       />
-                    </div> -->
-
-                    <!-- <div
-                      class="col-12 col-md-12 mb-3"
-                      v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
-                    >
-                      <label for="" class="form-label">Observação</label>
-                      <textarea
-                        v-model="pagamento.Observacao"
-                        cols="30"
-                        rows="2"
-                        placeholder="Observação"
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                      ></textarea>
-                    </div> -->
+                    </div>
 
                     <div
                       class="col-12 col-md-12"
@@ -771,10 +671,12 @@
 <script>
 import Swal from "sweetalert2";
 import { sweetSuccess, sweetError } from "../../../components/Alert";
+// import VueChartkick from "vue-chartkick";
 export default {
   props: ["forma_pagamentos"],
   data() {
     return {
+        switch1: false,
       codigo_matricula: null,
       codigo_tipo_candidatura: null,
       ano_lectivo_id: null,
@@ -786,6 +688,7 @@ export default {
       bilheite_estudante: null,
       saldo_aluno: 0,
       saldo: 0,
+      condicao_troco: false,
 
       mostrar_dados_estudante: false,
 
@@ -809,6 +712,7 @@ export default {
 
       total_adicionado: 0,
       valor_por_depositar: 0,
+      troco: 0,
 
       talao_banco: null,
       opcoes: 1,
@@ -837,17 +741,6 @@ export default {
       desconto_preinscricao: 0,
       descontoDaPreinscricao: 0,
       ano_lectivo_actual: 0,
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -897,6 +790,7 @@ export default {
       desconto_outubro: 0,
       mes_seguinte_novo: "",
       ultimo_mes_novo: "",
+      valor_depositado_tese: 0,
 
       meses_temp_lista: [],
       mes_id: "",
@@ -959,12 +853,16 @@ export default {
   },
 
   created(){
-
     this.getAnoLectivoActual();
+  },
+  
+  mounted(){
+    // this.valor_depositado_tese = this.formatValor(this.valor_depositado_tese)
   },
 
   watch: {
     fatura(val) {
+        this.pagamento.valor_depositado = this.valor_depositado_tese;
       if (val) {
         if (this.fatura.descricao_factura == 5) {
           if (
@@ -1001,37 +899,96 @@ export default {
     },
 
     total_adicionado(val) {
-      if (val) {
-        if (this.estudante.saldo >= 0 && this.estudante.saldo < this.total_adicionado ) {
-            this.pagamento.valor_depositado = this.total_adicionado - this.estudante.saldo;
-            this.valor_por_depositar = this.total_adicionado - this.estudante.saldo;
-            // this.estudante.saldo = 0;
-        }else{
-          if (this.estudante.saldo >= this.total_adicionado) {
 
-            this.pagamento.valor_depositado = this.estudante.saldo - this.total_adicionado;
-            this.valor_por_depositar = this.estudante.saldo - this.total_adicionado;
-          } else {
-            this.pagamento.valor_depositado = this.total_adicionado;
-            this.valor_por_depositar = this.total_adicionado;
-          }
+        if (val) {
+            this.pagamento.valor_depositado = this.valor_depositado_tese;
+            if (this.estudante.saldo >= 0 && this.estudante.saldo < this.total_adicionado ) {
+                this.pagamento.valor_depositado = this.total_adicionado - this.estudante.saldo;
+                this.valor_depositado_tese = this.pagamento.valor_depositado;
+                this.valor_por_depositar = this.total_adicionado - this.estudante.saldo;
+                // this.estudante.saldo = 0;
+            }else{
+                if (this.estudante.saldo >= this.total_adicionado) {
+
+                    this.pagamento.valor_depositado = this.estudante.saldo - this.total_adicionado;
+                    this.valor_depositado_tese = this.pagamento.valor_depositado;
+                    this.valor_por_depositar = this.estudante.saldo - this.total_adicionado;
+                } else {
+                    this.pagamento.valor_depositado = this.total_adicionado;
+                    this.valor_depositado_tese = this.pagamento.valor_depositado;
+                    this.valor_por_depositar = this.total_adicionado;
+                }
+            }
         }
-      }
     },
+
+    valor_depositado_tese(val){
+        
+      this.pagamento.valor_depositado = this.valor_depositado_tese;
+      if(val){
+          if(this.valor_por_depositar == this.pagamento.valor_depositado){
+              this.troco = 0;
+          }else{
+              this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
+              if((this.pagamento.valor_depositado - this.total_adicionado) > 0){
+                  this.condicao_troco = true;
+              }
+          }
+      }
+  }
   },
 
-  mounted(){
-    // this.pegaPropina();
-    // this.pegaUltimoMes();
-  },
 
-    methods: {
+  methods: {
     onTalaoChange(e) {
       this.talao_banco = e.target.files[0];
     },
 
-    registarPagamento: function () {
+    findIgnorar(item){
+        if(item == false){
+            this.descricaoparametro = "Não"
+        }else{
+            this.descricaoparametro = "Sim"
+        }
+    },
+    
+    formatValor(atual) {
+      const valorFormatado = Intl.NumberFormat("pt-br", {
+        style: "currency",
+        currency: "AOA",
+      }).format(atual);
+      return valorFormatado;
+    },
+    
+        
+    formatarMoeda() {
+      // Remover caracteres que não são números
+      let valor = this.valor_depositado_tese.replace(/\D/g, '');
 
+      // Converter o valor para número
+      valor = Number(valor) / 100; // Dividir por 100 para ter o valor em reais
+
+      // Formatar o número para moeda
+      this.valor_depositado_tese = valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'AOA'
+      });
+    },
+    
+    removerFormatacaoAOA(valor) {
+      // Remover caracteres não numéricos, exceto a vírgula
+      const valorNumerico = valor.replace(/[^\d,]/g, '');
+    
+      // Remover vírgulas repetidas, mantendo apenas uma
+      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ',');
+    
+      // Substituir a vírgula por ponto decimal para obter o valor numérico
+      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, '.');
+    
+      return valorNumericoFinal;
+    },
+
+    registarPagamento: function () {
       if (this.pagamento.forma_pagamento == "POR REFERÊNCIA") {
         if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
           //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
@@ -1047,7 +1004,9 @@ export default {
       var pagamento = JSON.stringify(this.pagamento); //grande  solução.
       //var codigo_fatura=JSON.stringify(this.fatura_id);
       var codigo_fatura = JSON.stringify(this.numero_fatura_nao_paga);
+      var switch1 = JSON.stringify(this.switch1);
       formData.append("pagamento", pagamento);
+      formData.append("switch_troco", switch1);
       formData.append("codigo_fatura", codigo_fatura);
       formData.append("talao_banco", this.talao_banco);
       // formData.append("talao_banco2", this.talao_banco2);
@@ -1994,9 +1953,7 @@ export default {
 
     registarFatura: function () {
       if (
-        (this.pagamento.valor_depositado == null ||
-          this.pagamento.valor_depositado == 0) &&
-        Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
+        (this.pagamento.valor_depositado == null) && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
       ) {
         Swal.fire({
           title: "Dados Incorrectos",
@@ -2008,7 +1965,7 @@ export default {
 
         document.getElementById("btn").disabled = false;
       } else if (
-        this.pagamento.valor_depositado > 0 &&
+        this.pagamento.valor_depositado >= 0 &&
         this.estudante.saldo > 0 &&
         Math.ceil(this.pagamento.valor_depositado + this.estudante.saldo) < this.total_adicionado
       ) {
@@ -2047,10 +2004,12 @@ export default {
         var parametroSaldo = JSON.stringify(this.pagarComSaldo);
         var pagamento = JSON.stringify(this.pagamento); //grande  solução.
         var referencia = JSON.stringify(this.referencia);
+        var switch1 = JSON.stringify(this.switch1);
         formData.append("fatura_item", fatura_item);
         formData.append("anoLectivo", anoLectivo);
         formData.append("parametroSaldo", parametroSaldo);
         formData.append("pagamento", pagamento);
+        formData.append("switch_troco", switch1);
         formData.append("referencia", referencia);
         formData.append("fonte", 2);// fonte de requisicao
 
