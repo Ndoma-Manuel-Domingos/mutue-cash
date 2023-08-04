@@ -31,6 +31,10 @@ class MovimentoCaixa extends Model
         'deleted_by',
     ];
     
+    public function operador_admin()
+    {
+        return $this->belongsTo(User::class, 'operador_admin_id', 'codigo_importado');
+    }
         
     public function operador()
     {

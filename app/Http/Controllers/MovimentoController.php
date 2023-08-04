@@ -23,7 +23,8 @@ class MovimentoController extends Controller
         
     public function abertura()
     {
-        $movimento = MovimentoCaixa::with('operador', 'caixa')->where('operador_id', Auth::user()->codigo_importado)
+        $movimento = MovimentoCaixa::with('operador', 'caixa')
+        ->where('operador_id', Auth::user()->codigo_importado)
         ->where('status', 'aberto')
         ->first();
         
@@ -92,7 +93,7 @@ class MovimentoController extends Controller
     public function fecho()
     {
         $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-        
+    
         $movimento = null;
         
         if($caixas){
@@ -155,7 +156,12 @@ class MovimentoController extends Controller
     
     public function imprimir(Request $request)
     {
+        $data['movimento'] = MovimentoCaixa::findOrFail($request->codigo);
         
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.lista-movimentos', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
     }
     
     public function validarFechoCaixa(Request $request)

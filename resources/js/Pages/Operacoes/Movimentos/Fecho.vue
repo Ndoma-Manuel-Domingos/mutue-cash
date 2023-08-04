@@ -126,7 +126,7 @@
           </div> -->
 
         <div class="row">
-          <div class="col-12 col-md-12">
+          <div class="col-12 col-md-8">
             <form action="" @submit.prevent="submit">
               <div class="card">
                 <div class="card-body">
@@ -149,7 +149,7 @@
                       </div>
                     </div>
 
-                    <div class="form-group col-12 col-md-3">
+                    <div class="form-group col-12 col-md-6">
                       <label for="valor_depositado" class="form-label"
                         >TOTAL DE DEPÓSITOS</label
                       >
@@ -167,7 +167,7 @@
                       </div>
                     </div>
 
-                    <div class="form-group col-12 col-md-3">
+                    <div class="form-group col-12 col-md-6">
                       <label for="valor_pagamento" class="form-label"
                         >TOTAL DE PAGAMENTOS</label
                       >
@@ -185,7 +185,7 @@
                       </div>
                     </div>
 
-                    <div class="form-group col-12 col-md-6">
+                    <div class="form-group col-12 col-md-3">
                       <label for="operador_id" class="form-label"
                         >OPERADOR</label
                       >
@@ -207,7 +207,7 @@
                       </div>
                     </div>
 
-                    <div class="form-group col-12 col-md-6">
+                    <div class="form-group col-12 col-md-3">
                       <label for="caixa_id" class="form-label">CAIXA</label>
                       <select
                         v-model="form.caixa_id"
@@ -220,6 +220,15 @@
                           {{ caixa ? caixa.nome : '' }}
                         </option>
                       </select>
+                      <div class="p-0" v-if="form.errors.caixa_id">
+                        <p class="text-danger">{{ form.errors.caixa_id }}</p>
+                      </div>
+                    </div>
+                    
+                    
+                    <div class="form-group col-12 col-md-12">
+                      <label for="observacao" class="form-label">OBSERVAÇÃO</label>
+                      <textarea id="observacao" v-model="form.observacao" rows="3" class="form-control" placeholder="OBSERVAÇÃO:"></textarea>
                       <div class="p-0" v-if="form.errors.caixa_id">
                         <p class="text-danger">{{ form.errors.caixa_id }}</p>
                       </div>

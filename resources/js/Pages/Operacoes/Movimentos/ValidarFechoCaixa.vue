@@ -368,7 +368,7 @@
     
     imprimirComprovativo(item) 
     {
-      window.open(`/depositos/imprimir-comprovativo?codigo=${item.codigo}`, "_blank");
+      window.open(`/movimentos/imprimir-comprovativo?codigo=${item.codigo}`, "_blank");
     }
     
   },
