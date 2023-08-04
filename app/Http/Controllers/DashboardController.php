@@ -44,6 +44,8 @@ class DashboardController extends Controller
             
             $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
                 $query->where("ano_lectivo_id" ,$value);
+            })->when(!$request->data_inicio, function($query, $value){
+                $query->where("data_movimento", "=", date("Y-m-d"));
             })->when($request->data_inicio, function($query, $value){
                 $query->where("data_movimento", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
@@ -54,6 +56,8 @@ class DashboardController extends Controller
             
             $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
                 $query->where("AnoLectivo" ,$value);
+            })->when(!$request->data_inicio, function($query, $value){
+                $query->where("DataRegisto", "=",date('Y-m-d'));
             })->when($request->data_inicio, function($query, $value){
                 $query->where("DataRegisto", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
@@ -67,6 +71,8 @@ class DashboardController extends Controller
         
             $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
                 $query->where("ano_lectivo_id" ,$value);
+            })->when(!$request->data_inicio, function($query, $value){
+                $query->where("data_movimento", "=", date("Y-m-d"));
             })->when($request->data_inicio, function($query, $value){
                 $query->where("data_movimento", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
@@ -77,6 +83,8 @@ class DashboardController extends Controller
             
             $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
                 $query->where("AnoLectivo" ,$value);
+            })->when(!$request->data_inicio, function($query, $value){
+                $query->where("DataRegisto", "=",date('Y-m-d'));
             })->when($request->data_inicio, function($query, $value){
                 $query->where("DataRegisto", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){

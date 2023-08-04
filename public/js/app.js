@@ -32443,7 +32443,6 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     },
     registarPagamento: function registarPagamento() {
       var _this = this;
-      this.pagamento.switch_troco = this.switch1;
       if (this.pagamento.forma_pagamento == "POR REFERÊNCIA") {
         if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
           //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
@@ -32460,7 +32459,9 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       var pagamento = JSON.stringify(this.pagamento); //grande  solução.
       //var codigo_fatura=JSON.stringify(this.fatura_id);
       var codigo_fatura = JSON.stringify(this.numero_fatura_nao_paga);
+      var switch1 = JSON.stringify(this.switch1);
       formData.append("pagamento", pagamento);
+      formData.append("switch_troco", switch1);
       formData.append("codigo_fatura", codigo_fatura);
       formData.append("talao_banco", this.talao_banco);
       // formData.append("talao_banco2", this.talao_banco2);
@@ -33232,8 +33233,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     $(".collapsible").collapsible();
   }), _defineProperty(_methods, "registarFatura", function registarFatura() {
     var _this28 = this;
-    this.pagamento.switch_troco = this.switch1;
-    if ((this.pagamento.valor_depositado == null || this.pagamento.valor_depositado == 0) && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)) {
+    if (this.pagamento.valor_depositado == null && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)) {
       sweetalert2__WEBPACK_IMPORTED_MODULE_0___default().fire({
         title: "Dados Incorrectos",
         text: "Por favor preencha o campo: Valor a Depositar",
@@ -33242,7 +33242,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
         confirmButtonText: "Ok"
       });
       document.getElementById("btn").disabled = false;
-    } else if (this.pagamento.valor_depositado > 0 && this.estudante.saldo > 0 && Math.ceil(this.pagamento.valor_depositado + this.estudante.saldo) < this.total_adicionado) {
+    } else if (this.pagamento.valor_depositado >= 0 && this.estudante.saldo > 0 && Math.ceil(this.pagamento.valor_depositado + this.estudante.saldo) < this.total_adicionado) {
       sweetalert2__WEBPACK_IMPORTED_MODULE_0___default().fire({
         title: "Dados Incorrectos",
         text: "O Valor entregue é Inferior ao Valor a Pagar =" + this.total_adicionado,
@@ -33276,10 +33276,12 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       var parametroSaldo = JSON.stringify(this.pagarComSaldo);
       var pagamento = JSON.stringify(this.pagamento); //grande  solução.
       var referencia = JSON.stringify(this.referencia);
+      var switch1 = JSON.stringify(this.switch1);
       formData.append("fatura_item", fatura_item);
       formData.append("anoLectivo", anoLectivo);
       formData.append("parametroSaldo", parametroSaldo);
       formData.append("pagamento", pagamento);
+      formData.append("switch_troco", switch1);
       formData.append("referencia", referencia);
       formData.append("fonte", 2); // fonte de requisicao
 
@@ -36710,7 +36712,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       }, [_hoisted_31, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" PDF ")])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_32, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("table", _hoisted_33, [_hoisted_34, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("tbody", null, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($props.items.data, function (item, index) {
         return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("tr", {
           key: item.Codigo
-        }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(index + 1), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.codigo_factura), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatValor(item.valor_depositado)), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatValor(item.valor_depositado)), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.factura ? item.factura.DataFactura : ''), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatValor(0)), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", _hoisted_35, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+        }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(index + 1), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.codigo_factura), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatValor(item.factura.ValorAPagar)), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatValor(item.valor_depositado)), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.factura ? item.factura.DataFactura : ''), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.formatValor(0)), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", _hoisted_35, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
           onClick: function onClick($event) {
             return $options.detalhes(item.Codigo);
           },

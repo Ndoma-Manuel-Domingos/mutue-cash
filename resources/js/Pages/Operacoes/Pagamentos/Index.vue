@@ -131,7 +131,7 @@
                     <tr v-for="(item, index) in items.data" :key="item.Codigo">
                       <td>{{ index + 1 }}</td>
                       <td>{{ item.codigo_factura }}</td>
-                      <td>{{ formatValor(item.valor_depositado) }}</td>
+                      <td>{{ formatValor(item.factura.ValorAPagar) }}</td>
                       <td>{{ formatValor(item.valor_depositado)  }}</td>
                       <td>{{ item.factura ? item.factura.DataFactura : '' }}</td>
                       <td> {{ formatValor(0) }}</td>

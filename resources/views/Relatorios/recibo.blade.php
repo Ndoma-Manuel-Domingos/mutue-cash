@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><!DOCTYPE html>
-        <title>COMPROVATIVO DO DEPOSITO</title>
+        <title>COMPROVATIVO DE DEPOSITO</title>
 
         <link rel="stylesheet" href="css/style_matricula.css" media="all" />
 
@@ -38,7 +38,7 @@
 
     <div style="border-bottom: 0px solid black;">
         <h5 style="background-color: lightgray;padding: 10px;text-align: center">
-            COMPROVATIVO DO DEPOSITO
+            COMPROVATIVO DE DEPOSITO
         </h5>
         <div style="text-align: right;font-size:10px;"><i>Ano Lectivo: {{ $item->ano_lectivo->Designacao }}</i></div>
         <table style="font-size:10px;width: 100%" >
@@ -102,6 +102,15 @@
 
     </table>
 
+    <div >
+        <br>
+        <br><br><br>
+        <p style="text-align:center;">Assinatura<br><br>
+            __________________________ <br><br>
+            {{$item->user->nome}}
+
+        </p>
+    </div>
 
     <footer style="width: 100%; left: -10px; font-size: 10px!important;">
         Documento processado pelo software MUTUE CASH - Gestão Universitária, desenvolvido pela Mutue - Soluções Tecnológicas
