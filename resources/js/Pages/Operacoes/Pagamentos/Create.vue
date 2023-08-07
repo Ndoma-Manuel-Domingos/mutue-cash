@@ -593,9 +593,6 @@
                         v-model="valor_depositado_tese"
                         placeholder="Ex: 12346"
                       />
-                        <!-- <currency-input hidden  currency="USD" locale="de" type="text"
-                            class="validate hide" v-model="valor_depositado_tese" placeholder=""
-                        /> -->
                     </div>
                     <div
                         v-if="condicao_troco == true"
@@ -869,38 +866,32 @@ export default {
 
   watch: {
     fatura(val) {
-        this.pagamento.valor_depositado = this.valor_depositado_tese;
       if (val) {
         if (this.fatura.descricao_factura == 5) {
           if (
             this.estudante.saldo >= 0 &&
             this.estudante.saldo < this.metadeValorPagar
           ) {
-            this.pagamento.valor_depositado =
-              this.metadeValorPagar - this.estudante.saldo;
+            this.pagamento.valor_depositado = this.metadeValorPagar - this.estudante.saldo;
+            this.valor_depositado_tese = this.pagamento.valor_depositado;
+
           } else if (this.estudante.saldo >= this.metadeValorPagar) {
-            this.pagamento.valor_depositado =
-              this.estudante.saldo - this.metadeValorPagar;
+
+            this.pagamento.valor_depositado = this.estudante.saldo - this.metadeValorPagar;
+            this.valor_depositado_tese = this.pagamento.valor_depositado;
           }
         } else if (
           this.estudante.saldo >= 0 &&
           this.estudante.saldo < this.fatura.ValorAPagar
         ) {
-          this.pagamento.valor_depositado =
-            this.fatura.ValorAPagar -
-            this.fatura.ValorEntregue -
-            this.estudante.saldo;
-          this.valor_por_depositar =
-            this.fatura.ValorAPagar -
-            this.fatura.ValorEntregue -
-            this.estudante.saldo;
+          this.pagamento.valor_depositado = this.fatura.ValorAPagar - this.fatura.ValorEntregue - this.estudante.saldo;
+          this.valor_depositado_tese = this.pagamento.valor_depositado;
+          this.valor_por_depositar = this.fatura.ValorAPagar - this.fatura.ValorEntregue - this.estudante.saldo;
+
         } else if (this.estudante.saldo >= this.fatura.ValorAPagar) {
-          this.pagamento.valor_depositado =
-            this.estudante.saldo -
-            (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
-          this.valor_por_depositar =
-            this.estudante.saldo -
-            (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
+          this.pagamento.valor_depositado = this.estudante.saldo - (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
+          this.valor_depositado_tese = this.pagamento.valor_depositado;
+          this.valor_por_depositar = this.estudante.saldo - (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
         }
       }
     },

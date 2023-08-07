@@ -317,8 +317,6 @@ class DividaService
       ->where('tb_preinscricao.Codigo', $matricula1->codigo_inscricao)
       ->first();
 
-
-
       $anoCorrente = $this->anoAtualPrincipal->index();
 
       $data['anoAtual'] = $anoCorrente;
@@ -495,6 +493,9 @@ class DividaService
 
           $bolseiro = $this->bolsaService->Bolsa($codigo_matricula, $confirmacao->ultimoAnoInscritoId);
 
+          $bolseiroPrimeiroSemeste = $this->bolsaService->BolsaPorSemestre1($codigo_matricula, $confirmacao->ultimoAnoInscritoId, 1);
+          $bolseiroSegundoSemeste = $this->bolsaService->BolsaPorSemestre2($codigo_matricula, $confirmacao->ultimoAnoInscritoId, 2);
+
           /*$bolseiro = DB::table('tb_bolseiros')->join('tb_tipo_bolsas','tb_tipo_bolsas.codigo','tb_bolseiros.codigo_tipo_bolsa')->where('tb_bolseiros.codigo_matricula', $codigo_matricula)->where('tb_bolseiros.codigo_anoLectivo', $confirmacao->ultimoAnoInscritoId)->where('status',0)->select('*','tb_tipo_bolsas.designacao as tipo_bolsa')->first();*/
           //bolsa status 0- bolsa ativa e status 1 bolsa desativa
           $taxaMultaMeses = $this->mesesPagarPropina->mesesPagar(date('Y-m-d'), 1, $mes = 0, $confirmacao->ultimoAnoInscritoId, $codigo_matricula);
@@ -504,8 +505,14 @@ class DividaService
           if ($propina && (!$bolseiro || ($bolseiro && $bolseiro->desconto != 100))) {
             foreach ($arrayMesesNPagos as $key => $mes) {
 
-              $desconto_finalista = $this->pegar_finalista($confirmacao->ultimoAnoInscritoId, $codigo_matricula);
+                if(($bolseiroPrimeiroSemeste && ($bolseiroPrimeiroSemeste->desconto == 100 || $bolseiroPrimeiroSemeste->desconto == 0)) && $mes['semestre'] == $bolseiroPrimeiroSemeste->semestre){
+                    continue;
+                }
+                if(($bolseiroSegundoSemeste && ($bolseiroSegundoSemeste->desconto == 100 || $bolseiroSegundoSemeste->desconto == 0)) && $mes['semestre'] == $bolseiroSegundoSemeste->semestre){
+                    continue;
+                }
 
+              $desconto_finalista = $this->pegar_finalista($confirmacao->ultimoAnoInscritoId, $codigo_matricula);
               //dd($confirmacao);
 
               $desconto_bolseiro = 0;
@@ -545,7 +552,49 @@ class DividaService
                   $multa = $valorComDesconto * ($mesNPago['taxa'] / 100);
 
                   $total = $valorComDesconto + $multa;
-                } elseif ($aluno && $aluno->desconto > 0) {
+                }elseif (!$bolseiro && $bolseiroPrimeiroSemeste && $bolseiroPrimeiroSemeste->desconto != 100 && $bolseiroPrimeiroSemeste->desconto != 0  && $mes['semestre'] == $bolseiroPrimeiroSemeste->semestre) {
+
+                    $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId,$mes['id'],$semestre);
+
+                    $taxa_desconto = $bolseiroPrimeiroSemeste->desconto;
+
+                    $bolsa = $bolseiroPrimeiroSemeste->tipo_bolsa;
+                    $desconto_bolseiro = $propina->Preco * ($bolseiroPrimeiroSemeste->desconto / 100);
+                    if($bolsaSemestre && $anoLectivo->ordem>=17){
+                      $taxa_desconto = $bolsaSemestre['desconto'];
+                      $desconto_bolseiro = $propina->Preco * ($bolsaSemestre['desconto']/ 100);
+                    }
+                    $desconto = $desconto_bolseiro;
+
+
+                    $valorComDesconto = $propina->Preco - $desconto;
+
+                    $multa = $valorComDesconto * ($mesNPago['taxa'] / 100);
+
+                    $total = $valorComDesconto + $multa;
+                  }
+
+                  elseif (!$bolseiro && $bolseiroSegundoSemeste && $bolseiroSegundoSemeste->desconto != 100 && $bolseiroSegundoSemeste->desconto != 0  && $mes['semestre'] == $bolseiroSegundoSemeste->semestre) {
+
+                    $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId,$mes['id'],$semestre);
+
+                    $taxa_desconto = $bolseiroSegundoSemeste->desconto;
+
+                    $bolsa = $bolseiroSegundoSemeste->tipo_bolsa;
+                    $desconto_bolseiro = $propina->Preco * ($bolseiroSegundoSemeste->desconto / 100);
+                    if($bolsaSemestre && $anoLectivo->ordem>=17){
+                      $taxa_desconto = $bolsaSemestre['desconto'];
+                      $desconto_bolseiro = $propina->Preco * ($bolsaSemestre['desconto']/ 100);
+                    }
+                    $desconto = $desconto_bolseiro;
+
+
+                    $valorComDesconto = $propina->Preco - $desconto;
+
+                    $multa = $valorComDesconto * ($mesNPago['taxa'] / 100);
+
+                    $total = $valorComDesconto + $multa;
+                }elseif ($aluno && $aluno->desconto > 0) {
                   $taxa_desconto = $aluno->desconto;
                   $desconto_preinscricao = $propina->Preco * ($aluno->desconto / 100);
 
