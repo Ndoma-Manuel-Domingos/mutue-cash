@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Caixa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +42,7 @@ class AuthController extends Controller
             }else{
                 Auth::login($user);
                 // LoginAcesso::create([ 'ip' => $request->ip(), 'maquina' => "", 'browser' => $request->userAgent(), 'user_name' => $request->user()->nome, 'outra_informacao' => $request->path(), 'user_id' => $request->user()->pk_utilizador]);
-                return  redirect()->route('mc.dashboard');
+                return redirect()->route('mc.dashboard');
             }
         }
 
@@ -53,6 +54,14 @@ class AuthController extends Controller
 
     public function logout()
     {
+        
+        $verificar_caixa_aberto = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        if($verificar_caixa_aberto){
+            return redirect()->back();
+        }
+        
+    
         Auth::logout();
 
         return Inertia::location('/login');
