@@ -106,6 +106,7 @@ class RelatorioController extends Controller
 
         }
 
+        // dd( $valor_deposito, $totalPagamentos);
         
         $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
         $data['servicos'] = TipoServico::when($request->ano_lectivo, function($query, $value){
@@ -124,6 +125,12 @@ class RelatorioController extends Controller
         $user = auth()->user();
         
         $ano = AnoLectivo::where('status', '1')->first();
+                
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date("Y-m-d");
+        }
 
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
             
@@ -185,17 +192,45 @@ class RelatorioController extends Controller
         
         $ano = AnoLectivo::where('status', '1')->first();
         
-        $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
-            $query->where('DataRegisto', '>=' ,Carbon::parse($value) );
-        })->when($request->data_final, function($query, $value){
-            $query->where('DataRegisto', '<=' ,Carbon::parse($value));
-        })->when($request->codigo_matricula, function($query, $value){
-            $query->where('factura.CodigoMatricula', $value);
-        })
-        ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
-        ->where('forma_pagamento', 6)
-        ->paginate(7)
-        ->withQueryString();
+        
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date("Y-m-d");
+        }        
+        
+        if($user->tipo_grupo->grupo->designacao == "Administrador"){
+        
+            $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
+                $query->where('DataRegisto', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('DataRegisto', '<=' ,Carbon::parse($value));
+            })->when($request->codigo_matricula, function($query, $value){
+                $query->where('factura.CodigoMatricula', $value);
+            })
+            ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
+            ->where('forma_pagamento', 6)
+            ->paginate(7)
+            ->withQueryString();
+
+        }else {
+        
+            $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
+                $query->where('DataRegisto', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('DataRegisto', '<=' ,Carbon::parse($value));
+            })->when($request->codigo_matricula, function($query, $value){
+                $query->where('factura.CodigoMatricula', $value);
+            })
+            ->where('fk_utilizador', $user->codigo_importado)
+            ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
+            ->where('forma_pagamento', 6)
+            ->paginate(7)
+            ->withQueryString();
+            
+        }
+
+        
 
         return Inertia::render('Relatorios/FechoCaixa/Extrato-Pagamentos', $data);
     }
