@@ -29,6 +29,7 @@
         "highcharts": "^11.1.0",
         "infinite-loading-vue3": "^1.0.1",
         "sweetalert2": "^11.4.8",
+        "v-mask": "^2.3.0",
         "v3-infinite-loading": "^1.2.2",
         "vue": "^3.2.36",
         "vue-chartkick": "^1.1.0",

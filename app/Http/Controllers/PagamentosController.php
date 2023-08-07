@@ -70,6 +70,12 @@ class PagamentosController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date("Y-m-d");
+        }
 
         $data['items'] = Pagamento::with('factura')
         ->when($request->data_inicio, function($query, $value){

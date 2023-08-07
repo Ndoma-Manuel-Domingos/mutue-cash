@@ -23,7 +23,6 @@ Chartkick.options = {
   colors: ["#b00", "#666"]
 }
 
-
 const options = {
   color: "#FFD700",
   failedColor: "#C62828",

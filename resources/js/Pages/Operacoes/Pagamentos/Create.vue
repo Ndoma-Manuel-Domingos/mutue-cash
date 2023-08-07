@@ -586,10 +586,11 @@
                     </div> -->
                     <div
                       class="col-12 col-md-6 mb-3">
-                      <label for="" class="form-label">Valor entregue</label>
+                      <label for="valor_depositado_tese" class="form-label">Valor entregue</label>
                       <input
                         type="text"
                         class="form-control"
+                        id="valor_depositado_tese"
                         v-model="valor_depositado_tese"
                         placeholder="Ex: 12346"
                       />
@@ -746,17 +747,6 @@ export default {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
       selecionar: 1,
 
       bordero: "",
@@ -863,8 +853,11 @@ export default {
   },
 
   created(){
-
     this.getAnoLectivoActual();
+  },
+  
+  mounted(){
+    // this.valor_depositado_tese = this.formatValor(this.valor_depositado_tese)
   },
 
   watch: {
@@ -930,30 +923,23 @@ export default {
     },
 
     valor_depositado_tese(val){
-        this.pagamento.valor_depositado = this.valor_depositado_tese;
-        if(val){
-            if(this.valor_por_depositar == this.pagamento.valor_depositado){
-                this.troco = 0;
-            }else{
-                this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
-                if((this.pagamento.valor_depositado - this.total_adicionado) > 0){
-                    this.condicao_troco = true;
-                }
-            }
-            // else{
-            //     this.troco = this.fatura.ValorAPagar - this.valor_por_depositar;
-            // }
-
-        }
-    }
+        
+      this.pagamento.valor_depositado = this.valor_depositado_tese;
+      if(val){
+          if(this.valor_por_depositar == this.pagamento.valor_depositado){
+              this.troco = 0;
+          }else{
+              this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
+              if((this.pagamento.valor_depositado - this.total_adicionado) > 0){
+                  this.condicao_troco = true;
+              }
+          }
+      }
+  }
   },
 
-  mounted(){
-    // this.pegaPropina();
-    // this.pegaUltimoMes();
-  },
 
-    methods: {
+  methods: {
     onTalaoChange(e) {
       this.talao_banco = e.target.files[0];
     },
@@ -964,6 +950,42 @@ export default {
         }else{
             this.descricaoparametro = "Sim"
         }
+    },
+    
+    formatValor(atual) {
+      const valorFormatado = Intl.NumberFormat("pt-br", {
+        style: "currency",
+        currency: "AOA",
+      }).format(atual);
+      return valorFormatado;
+    },
+    
+        
+    formatarMoeda() {
+      // Remover caracteres que não são números
+      let valor = this.valor_depositado_tese.replace(/\D/g, '');
+
+      // Converter o valor para número
+      valor = Number(valor) / 100; // Dividir por 100 para ter o valor em reais
+
+      // Formatar o número para moeda
+      this.valor_depositado_tese = valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'AOA'
+      });
+    },
+    
+    removerFormatacaoAOA(valor) {
+      // Remover caracteres não numéricos, exceto a vírgula
+      const valorNumerico = valor.replace(/[^\d,]/g, '');
+    
+      // Remover vírgulas repetidas, mantendo apenas uma
+      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ',');
+    
+      // Substituir a vírgula por ponto decimal para obter o valor numérico
+      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, '.');
+    
+      return valorNumericoFinal;
     },
 
     registarPagamento: function () {
@@ -1931,8 +1953,7 @@ export default {
 
     registarFatura: function () {
       if (
-        (this.pagamento.valor_depositado == null) &&
-        Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
+        (this.pagamento.valor_depositado == null) && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
       ) {
         Swal.fire({
           title: "Dados Incorrectos",

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ListagemTodosMovimentoExport;
 use App\Models\Caixa;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
@@ -12,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MovimentoController extends Controller
 {
@@ -23,7 +25,8 @@ class MovimentoController extends Controller
         
     public function abertura()
     {
-        $movimento = MovimentoCaixa::with('operador', 'caixa')->where('operador_id', Auth::user()->codigo_importado)
+        $movimento = MovimentoCaixa::with('operador', 'caixa')
+        ->where('operador_id', Auth::user()->codigo_importado)
         ->where('status', 'aberto')
         ->first();
         
@@ -51,6 +54,7 @@ class MovimentoController extends Controller
             'valor_inicial.required' => "Valor de abertura invalido!",
             'valor_inicial.numeric' => "Valor da abertura do caixa deve serve um valor númerico!",
         ]);
+        
         
         $verificar = MovimentoCaixa::where('operador_id', Auth::user()->codigo_importado)
         ->where('status', 'aberto')
@@ -92,7 +96,7 @@ class MovimentoController extends Controller
     public function fecho()
     {
         $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-        
+    
         $movimento = null;
         
         if($caixas){
@@ -113,22 +117,18 @@ class MovimentoController extends Controller
     
     public function fechoStore(Request $request)
     {
-
         $request->validate([
             'operador_id' => 'required',
             'caixa_id' => 'required',
-            'valor_depositado' => 'required|numeric',
-            'valor_pagamento' => 'required|numeric',
-            'valor_abertura' => 'required|numeric',
+            'valor_depositado' => 'required',
+            'valor_pagamento' => 'required',
+            'valor_abertura' => 'required',
         ], [
             'operador_id.required' => "Operador Invalido!",
             'operador_id.required' => "Operador Invalido!",
             'valor_depositado.required' => "Valor Invalido!",
-            'valor_depositado.numeric' => "Valor deve serve um valor númerico!",
             'valor_pagamento.required' => "Valor Invalido!",
-            'valor_pagamento.numeric' => "Valor deve serve um valor númerico!",
             'valor_abertura.required' => "Valor Invalido!",
-            'valor_abertura.numeric' => "Valor deve serve um valor númerico!",
         ]);
         
         $movimento = MovimentoCaixa::findOrFail($request->movimento_id);
@@ -138,6 +138,7 @@ class MovimentoController extends Controller
         $movimento->valor_arrecadado_depositos = $movimento->valor_arrecadado_depositos;
         $movimento->valor_arrecadado_pagamento = $movimento->valor_arrecadado_pagamento;
         $movimento->status = "fechado";
+        $movimento->observacao = $request->observacao;
         $movimento->update();
         
         $caixa = Caixa::findOrFail($movimento->caixa_id);
@@ -155,12 +156,16 @@ class MovimentoController extends Controller
     
     public function imprimir(Request $request)
     {
+        $data['movimento'] = MovimentoCaixa::findOrFail($request->codigo);
         
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.lista-movimentos', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
     }
     
     public function validarFechoCaixa(Request $request)
     {
-    
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
@@ -169,20 +174,35 @@ class MovimentoController extends Controller
         $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])
         ->with('utilizadores')
         ->get();
+        
+        $caixas = Caixa::get();
+        
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date('Y-m-d');
+        }
             
         $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
-        })->when($request->data_final, function($query, $value){
+        })
+        ->when($request->data_final, function($query, $value){
             $query->where('created_at', '<=' ,Carbon::parse($value));
-        })->when($request->operador, function($query, $value){
+        })
+        ->when($request->operador, function($query, $value){
             $query->where('operador_id', $value);
-        })->with(['operador', 'caixa'])->where('status', 'fechado')
+        })
+        ->when($request->caixa_id, function($query, $value){
+            $query->where('caixa_id', $value);
+        })
+        ->with(['operador', 'caixa'])->where('status', 'fechado')
         ->orderBy('codigo', 'desc')
         ->paginate(10)
         ->withQueryString();
         
         $header = [
             "items" => $movimentos,
+            "caixas" => $caixas,
             "utilizadores" => $utilizadores,
             "operador" => Utilizador::where('codigo_importado', Auth::user()->codigo_importado)->first()
         ];
@@ -224,6 +244,38 @@ class MovimentoController extends Controller
             return response()->json($data);
         }
     }
-
+          
+    public function excel(Request $request)
+    {
+        return Excel::download(new ListagemTodosMovimentoExport($request), 'listagem-de-todos-movimentos.xlsx');
+    }
+    
+    public function pdf(Request $request)
+    {
+        $data['items'] = MovimentoCaixa::when($request->data_inicio, function($query, $value){
+            $query->where('created_at', '>=' ,Carbon::parse($value) );
+        })
+        ->when($request->data_final, function($query, $value){
+            $query->where('created_at', '<=' ,Carbon::parse($value));
+        })
+        ->when($request->operador_id, function($query, $value){
+            $query->where('operador_id', $value);
+        })
+        ->when($request->caixa_id, function($query, $value){
+            $query->where('caixa_id', $value);
+        })
+        ->with(['operador', 'caixa'])
+        ->orderBy('codigo', 'desc')
+        ->get();
         
+        $data['requests'] = $request->all('data_inicio', 'data_final');
+        $data['operador'] = User::where('codigo_importado',$request->operador_id)->first();
+        $data['caixa'] = Caixa::find($request->caixa_id);
+        
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.listagem-todos-movimentos', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
+    }
+    
 }
