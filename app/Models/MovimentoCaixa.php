@@ -24,6 +24,7 @@ class MovimentoCaixa extends Model
         'valor_arrecadado_total',
         'valor_arrecadado_depositos',
         'valor_arrecadado_pagamento',
+        'valor_facturado_pagamento',
         'status',
         'status_admin',
         'created_by',
@@ -31,6 +32,10 @@ class MovimentoCaixa extends Model
         'deleted_by',
     ];
     
+    public function operador_admin()
+    {
+        return $this->belongsTo(User::class, 'operador_admin_id', 'codigo_importado');
+    }
         
     public function operador()
     {

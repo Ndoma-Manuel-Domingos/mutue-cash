@@ -132,7 +132,7 @@
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
                       <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
                       <td>{{ item.user ? item.user.nome : '' }}</td>
-                      <td>{{ item.ano_lectivo.Designacao }}</td>
+                      <td>{{ item.ano_lectivo ? item.ano_lectivo.Designacao: '' }}</td>
                       <td>{{ item.created_at }}</td>
                       <td class="text-center">
                         <Link @click="imprimirComprovativo(item)">
@@ -258,7 +258,7 @@
                         v-model="form.valor_a_depositar"
                         class="form-control"
                         placeholder="informe o valor a depositar"
-                        @input="verificarLetras"
+                        @keyup="formatarMoeda()"
                       />
                       <div class="input-group-append">
                         <button type="button" class="btn btn-info">kz</button>
@@ -314,7 +314,6 @@
         depositos: [],
         params: {},
         
-        contemLetras: false,
         contemDeposito: false,
         
         form: this.$inertia.form({
@@ -329,10 +328,9 @@
   },
   
   mounted() {
-    
     this.params.data_inicio = this.data_inicio;
+    this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
     // this.params.data_final = this.data_final;
-  
     this.updateData();
   },
 
@@ -375,78 +373,39 @@
       });
     },
     
-    verificarLetras() {
-      // Expressão regular que verifica se a string contém letras (a-zA-Z)
-      const regexLetras = /[a-zA-Z]/;
-      this.contemLetras = regexLetras.test(this.form.valor_a_depositar);
+    formatarMoeda() {
+      // Remover caracteres que não são números
+      let valor = this.form.valor_a_depositar.replace(/\D/g, '');
+
+      // Converter o valor para número
+      valor = Number(valor) / 100; // Dividir por 100 para ter o valor em reais
+
+      // Formatar o número para moeda
+      this.form.valor_a_depositar = valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'AOA'
+      });
+
+    },
+    
+    removerFormatacaoAOA(valor) {
+      // Remover caracteres não numéricos, exceto a vírgula
+      const valorNumerico = valor.replace(/[^\d,]/g, '');
+    
+      // Remover vírgulas repetidas, mantendo apenas uma
+      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ',');
+    
+      // Substituir a vírgula por ponto decimal para obter o valor numérico
+      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, '.');
+    
+      return valorNumericoFinal;
     },
 
-    // submit() {
-    
-    //   if (this.contemLetras) {
-    //     Swal.fire({
-    //       title: "Atenção",
-    //       text: "O valor a depositar não pode conter letras!",
-    //       icon: "warning",
-    //       confirmButtonColor: "#3d5476",
-    //       confirmButtonText: "Ok",
-    //       onClose: () => { },
-    //     });
-    //     return;
-    //   }
-    
-    //   if (this.form.valor_a_depositar < 5000) {
-    //     Swal.fire({
-    //       title: "Atenção",
-    //       text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",
-    //       icon: "warning",
-    //       confirmButtonColor: "#3d5476",
-    //       confirmButtonText: "Ok",
-    //       onClose: () => { },
-    //     });
-    //     return;
-    //   }
-    
-    //   this.$Progress.start();
-      
-    //   if (this.isUpdate) {
-      
-    //   } else {
-    //     this.form.post(route("mc.depositos.store"), {
-    //       preverseScroll: true,
-    //       onSuccess: (data) => {
-    //         console.log(data)
-    //         this.form.reset();
-    //         this.$Progress.finish();
-    //         sweetSuccess("Deposito realizado com sucesso!");
-    //         $("#modalDeposito").modal("hide");
-    //       },
-    //       onError: (errors) => {
-    //         sweetError("Não foi possível fazer o deposito!");
-    //         this.$Progress.fail();
-    //       },
-    //     });
-    //   }
-    // },
-    
     async submit() {
     
       this.$Progress.start();
-          
-      if (this.contemLetras) {
-        Swal.fire({
-          title: "Atenção",
-          text: "O valor a depositar não pode conter letras!",
-          icon: "warning",
-          confirmButtonColor: "#3d5476",
-          confirmButtonText: "Ok",
-          onClose: () => { },
-        });
-        this.$Progress.fail();
-        return;
-      }
-    
-      if (this.form.valor_a_depositar < 5000) {
+              
+      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < 5000) {
         Swal.fire({
           title: "Atenção",
           text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",
@@ -464,25 +423,24 @@
       } else {
         
         try {
-  
-            // Faça uma requisição POST para o backend Laravel
-            const response = await axios.post('/depositos/store', this.form);
-            
-            // A resposta do Laravel estará disponível em response.data
-            console.log(response.data.data.codigo);
-            
-            this.form.reset();
-            this.$Progress.finish();
-            sweetSuccess(response.data.message);
-            $("#modalDeposito").modal("hide");
-            
-            this.imprimirComprovativo(response.data.data);
-            
+        
+          this.form.valor_a_depositar = this.removerFormatacaoAOA(this.form.valor_a_depositar);
+          // Faça uma requisição POST para o backend Laravel
+          const response = await axios.post('/depositos/store', this.form);
+          
+          this.form.reset();
+          this.$Progress.finish();
+          sweetSuccess(response.data.message);
+          $("#modalDeposito").modal("hide");
+          this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
+          
+          this.imprimirComprovativo(response.data.data);
+          
             // Faça algo com a resposta, se necessário
         } catch (error) {
           // Lide com erros, se houver
-          console.log(error);
           sweetError("Primeiro deves fazer abertura do caixa");
+          this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
           this.$Progress.fail();
         }
       }

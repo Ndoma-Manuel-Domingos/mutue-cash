@@ -13,7 +13,7 @@ import Highcharts from 'highcharts';
 import VueChartkick from 'vue-chartkick'
 // import 'chartkick/chart.js'
 
-import InfiniteLoading from "v3-infinite-loading";
+// import InfiniteLoading from "v3-infinite-loading";
 import "v3-infinite-loading/lib/style.css";
 // import Select2Component
 import Select2 from 'vue3-select2-component';
@@ -22,7 +22,6 @@ import Select2 from 'vue3-select2-component';
 Chartkick.options = {
   colors: ["#b00", "#666"]
 }
-
 
 const options = {
   color: "#FFD700",
@@ -63,13 +62,14 @@ createInertiaApp({
 
     return page
   },
+  
   setup({ el, App, props, plugin }) {
     createApp({ render: () => h(App, props) })
       .use(plugin)
       .use(VueProgressBar, options)
       .use(ZiggyVue, Ziggy)
       .use(VueChartkick, { adapter: Highcharts })
-      .component("infinite-loading", InfiniteLoading)
+      // .component("infinite-loading", InfiniteLoading)
       .component('Select2', Select2)
       .mount(el)
   },

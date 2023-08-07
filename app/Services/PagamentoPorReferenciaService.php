@@ -20,7 +20,7 @@ class PagamentoPorReferenciaService
 
   public function __construct()
   {
-     
+
   }
 /*
    $source_id é igual ao código parcelar da fatura na visão do Mutue. É unique no BE, se enviar duas vezes, te retorna a refencia anterior
@@ -30,7 +30,7 @@ public static  function create($data)
 {
 
 
- 
+
 //Peparando paramentros do Head e Body
 $uuid=\Str::uuid();
 $source_id=$data['source_id'];
@@ -41,8 +41,8 @@ $custumer_name=$data['custumer_name'];//Nome do Aluno
 $endereco=$data['endereco'];
 
 $end_date=Carbon::now()->addDays($data['expira_dentro_de'])->format('Y-m-d');
- 
-     
+
+
 //Timestamp no formato yyyy-MM-dd'T'HH:mm:ss
 $timestamp= str_replace(' ','T',Carbon::now()->format("Y-m-d H:i:s"));  //yyyy-MM-dd'T'HH:mm:ss
 //Data de criação
@@ -109,11 +109,11 @@ $response = $client->request('POST', $endpoint, [
 
 Self::$response=$response->getBody()->getContents();
 
-  
+
 //Retorna um array com detalhes do pagamento por referencia
 return Self::toArray();
 
- 
+
   }
 
 
@@ -124,7 +124,7 @@ return Self::toArray();
 
 public static  function checkStatus($pagamentos_request)
 {
- 
+
 //Peparando paramentros do Head e Body
 $uuid=\Str::uuid();
 //Timestamp no formato yyyy-MM-dd'T'HH:mm:ss
@@ -134,29 +134,29 @@ $created_at=date('Y-m-d');
 $token=env('BE_TOKEN','');
 
 $pagamentos=collect([]);//recebe a lista de pagamentos consultados
-  
+
 $dom = new DOMDocument();
- 
+
 
 		$dom->encoding = 'utf-8';
 
 		$dom->xmlVersion = '1.0';
 
 		$dom->formatOutput = true;
- 
+
       //create envelop
 		$envelop = $dom->createElement('soapenv:Envelope');
-       
+
 		$envelop->setAttribute('xmlns:soapenv', 'http://schemas.xmlsoap.org/soap/envelope/');
 		$envelop->setAttribute('xmlns:pay', 'http://www.bancoeconomico.ao/xsd/paymentrefdetails');
       //Criar soapenvHeader
       $soapenvHeader = $dom->createElement('soapenv:Header');
      //Security node
-      $security=$dom->createElement('wsse:Security'); 
+      $security=$dom->createElement('wsse:Security');
       $security->setAttribute('xmlns:wsse', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd');
       $security->setAttribute('xmlns:wsu', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd');
-  
-     
+
+
       $soapenvHeader->appendChild($security);
       //creat wsse:UsernameToken
       $usernameToken=$dom->createElement('wsse:UsernameToken');
@@ -170,7 +170,7 @@ $dom = new DOMDocument();
       $wssePassword=$dom->createElement('wsse:Password','passwordUMA1');
       $wssePassword->setAttribute('Type','http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText');
       $usernameToken->appendChild($wssePassword);
-      
+
       //Create wsu:Created
       $wsuCreated=$dom->createElement('wsu:Created',$created_at);
       $usernameToken->appendChild($wsuCreated);
@@ -196,10 +196,10 @@ $dom = new DOMDocument();
       $payBRANCH=$dom->createElement('pay:BRANCH','000');
       $payHEADER->appendChild($payBRANCH);
 
-      
+
       $payPASSWORD=$dom->createElement('pay:PASSWORD','?');
       $payHEADER->appendChild($payPASSWORD);
-      
+
       $payINVOKETIMESTAMP=$dom->createElement('pay:INVOKETIMESTAMP',$timestamp);
       $payHEADER->appendChild($payINVOKETIMESTAMP);
 
@@ -238,7 +238,7 @@ $dom->appendChild($envelop);
 
 //Gerar o xml de request
 $xml=$dom->saveXML();
-	
+
 $endpoint = "https://spf-webservices-uat.bancoeconomico.ao:7443/soa-infra/services/SPF/WSI_PaymentRefDetailsQuery/WSI_PaymentRefDetailsQuery";
    $soap_request = $xml;
 
@@ -260,18 +260,18 @@ $endpoint = "https://spf-webservices-uat.bancoeconomico.ao:7443/soa-infra/servic
    curl_setopt($soap_do, CURLOPT_POST,           true );
    curl_setopt($soap_do, CURLOPT_POSTFIELDS,     $soap_request);
    curl_setopt($soap_do, CURLOPT_HTTPHEADER,     $header);
-   
-   
+
+
    $result = curl_exec($soap_do);
-   
-   
+
+
    if($result === false) {
        $err = 'Curl error: ' . curl_error($soap_do);
        curl_close($soap_do);
        print $err;
-       
+
    }else{
-   
+
 //Tratar os dados
 $xml_response= $result;
 
@@ -289,10 +289,10 @@ $data['header_response']=$responseArray['envBody']['PaymentRefDetailsQueryRespon
 //Se é mais de um pagamento
 
 if($pagamentos_request->count()>1){
- 
+
    $detalhes_dos_pagamentos=$responseArray['envBody']['PaymentRefDetailsQueryResponse']['ns0BODY']['ns0Payment_List']['ns0Payment_Details'];
 }else{
-   
+
    $detalhes_dos_pagamentos=$responseArray['envBody']['PaymentRefDetailsQueryResponse']['ns0BODY']['ns0Payment_List'];
 }
 
@@ -308,21 +308,21 @@ foreach ($detalhes_dos_pagamentos as $key => $pagamento) {
       'END_DATE'=>$pagamento["ns0END_DATE"],
       'Status'=>$pagamento["ns0Status"],
       ));
-} 
+}
 } catch (\Exception $ex) {
    //throw $th;
    Log::error($ex->getMessage());
     dd($ex->getMessage());
-   
+
 }
 
 
- 
- 
- 
-} 
 
-return $pagamentos; 
+
+
+}
+
+return $pagamentos;
 }
 
 
@@ -331,7 +331,7 @@ return $pagamentos;
 //Cancelar refencias antes da data de expiração
 public static  function cancelarReferencia($pagamentos_request)
 {
- 
+
 //Peparando paramentros do Head e Body
 $uuid=\Str::uuid();
 //Timestamp no formato yyyy-MM-dd'T'HH:mm:ss
@@ -341,29 +341,29 @@ $created_at=date('Y-m-d');
 $token=env('BE_TOKEN','');
 
 $pagamentos=collect([]);//recebe a lista de pagamentos consultados
-  
+
 $dom = new DOMDocument();
- 
+
 
 		$dom->encoding = 'utf-8';
 
 		$dom->xmlVersion = '1.0';
 
 		$dom->formatOutput = true;
- 
+
       //create envelop
 		$envelop = $dom->createElement('soapenv:Envelope');
-       
+
 		$envelop->setAttribute('xmlns:soapenv', 'http://schemas.xmlsoap.org/soap/envelope/');
 		$envelop->setAttribute('xmlns:pay', 'http://www.bancoeconomico.ao/xsd/paymentrefcancel');
       //Criar soapenvHeader
       $soapenvHeader = $dom->createElement('soapenv:Header');
      //Security node
-      $security=$dom->createElement('wsse:Security'); 
+      $security=$dom->createElement('wsse:Security');
       $security->setAttribute('xmlns:wsse', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd');
       $security->setAttribute('xmlns:wsu', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd');
-  
-     
+
+
       $soapenvHeader->appendChild($security);
       //creat wsse:UsernameToken
       $usernameToken=$dom->createElement('wsse:UsernameToken');
@@ -377,7 +377,7 @@ $dom = new DOMDocument();
       $wssePassword=$dom->createElement('wsse:Password','passwordUMA1');
       $wssePassword->setAttribute('Type','http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText');
       $usernameToken->appendChild($wssePassword);
-      
+
       //Create wsu:Created
       $wsuCreated=$dom->createElement('wsu:Created',$created_at);
       $usernameToken->appendChild($wsuCreated);
@@ -403,10 +403,10 @@ $dom = new DOMDocument();
       $payBRANCH=$dom->createElement('pay:BRANCH','000');
       $payHEADER->appendChild($payBRANCH);
 
-      
+
       $payPASSWORD=$dom->createElement('pay:PASSWORD','?');
       $payHEADER->appendChild($payPASSWORD);
-      
+
       $payINVOKETIMESTAMP=$dom->createElement('pay:INVOKETIMESTAMP',$timestamp);
       $payHEADER->appendChild($payINVOKETIMESTAMP);
 
@@ -445,7 +445,7 @@ $dom->appendChild($envelop);
 
 //Gerar o xml de request
 $xml=$dom->saveXML();
-	
+
 $endpoint = "https://spf-webservices-uat.bancoeconomico.ao:7443/soa-infra/services/SPF/WSI_PaymentRefCancel/WSI_PaymentRefCancel";
    $soap_request = $xml;
 
@@ -467,18 +467,18 @@ $endpoint = "https://spf-webservices-uat.bancoeconomico.ao:7443/soa-infra/servic
    curl_setopt($soap_do, CURLOPT_POST,           true );
    curl_setopt($soap_do, CURLOPT_POSTFIELDS,     $soap_request);
    curl_setopt($soap_do, CURLOPT_HTTPHEADER,     $header);
-   
-   
+
+
    $result = curl_exec($soap_do);
-   
-   
+
+
    if($result === false) {
        $err = 'Curl error: ' . curl_error($soap_do);
        curl_close($soap_do);
        print $err;
-       
+
    }else{
-   
+
 //Tratar os dados
 $xml_response= $result;
 
@@ -489,17 +489,17 @@ $json = json_encode($xml_response);
 $responseArray = collect(json_decode($json,true));
 
 //dd($responseArray);
-/* 
+/*
 try {
    //code...
 $data['header_response']=$responseArray['envBody']['PaymentRefDetailsQueryResponse']['ns0HEADER'];
 //Se é mais de um pagamento
- 
+
 if($pagamentos_request->count()>1){
- 
+
    $detalhes_dos_pagamentos=$responseArray['envBody']['PaymentRefDetailsQueryResponse']['ns0BODY']['ns0Payment_List']['ns0Payment_Details'];
 }else{
-   
+
    $detalhes_dos_pagamentos=$responseArray['envBody']['PaymentRefDetailsQueryResponse']['ns0BODY']['ns0Payment_List'];
 }
 
@@ -515,29 +515,29 @@ foreach ($detalhes_dos_pagamentos as $key => $pagamento) {
       'END_DATE'=>$pagamento["ns0END_DATE"],
       'Status'=>$pagamento["ns0Status"],
       ));
-} 
+}
 } catch (\Exception $ex) {
    //throw $th;
    Log::error($ex->getMessage());
     dd($ex->getMessage());
-   
+
 }
 
  */
- 
- 
- 
-} 
 
-return   true;// $pagamentos; 
+
+
+}
+
+return   true;// $pagamentos;
 }
 
 
 
-  
 
 
-  
+
+
 
 
 protected static function toArray(){
@@ -551,8 +551,8 @@ $xml_response = simplexml_load_string($xml_response);
 $json = json_encode($xml_response);
 $responseArray = collect(json_decode($json,true));
 
- 
- 
+
+
 $detalhes_do_pagamento=$responseArray['envBody']['PaymentRefCreateResponse']['ns0BODY']['ns0Payment_Details'];
 
 
@@ -580,7 +580,7 @@ $data=array(
 
 return $data;//$responseArray['envBody']['PaymentRefCreateResponse']['ns0BODY']['ns0Payment_Details']['ns0REFERENCE'];//pegar referencia.
 
-     
+
 }
 
 

@@ -40,11 +40,18 @@ class DashboardController extends Controller
         
         $request->ano_lectivo = $this->anoLectivoActivo();
         
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date("Y-m-d");
+        }
+        
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
             
             $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
                 $query->where("ano_lectivo_id" ,$value);
-            })->when($request->data_inicio, function($query, $value){
+            })
+            ->when($request->data_inicio, function($query, $value){
                 $query->where("data_movimento", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
                 $query->where("data_movimento", "<=",Carbon::parse($value));
@@ -54,7 +61,8 @@ class DashboardController extends Controller
             
             $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
                 $query->where("AnoLectivo" ,$value);
-            })->when($request->data_inicio, function($query, $value){
+            })
+            ->when($request->data_inicio, function($query, $value){
                 $query->where("DataRegisto", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
                 $query->where("DataRegisto", "<=",Carbon::parse($value));
@@ -67,7 +75,8 @@ class DashboardController extends Controller
         
             $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
                 $query->where("ano_lectivo_id" ,$value);
-            })->when($request->data_inicio, function($query, $value){
+            })
+            ->when($request->data_inicio, function($query, $value){
                 $query->where("data_movimento", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
                 $query->where("data_movimento", "<=",Carbon::parse($value));
@@ -77,7 +86,8 @@ class DashboardController extends Controller
             
             $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
                 $query->where("AnoLectivo" ,$value);
-            })->when($request->data_inicio, function($query, $value){
+            })
+            ->when($request->data_inicio, function($query, $value){
                 $query->where("DataRegisto", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
                 $query->where("DataRegisto", "<=",Carbon::parse($value));
