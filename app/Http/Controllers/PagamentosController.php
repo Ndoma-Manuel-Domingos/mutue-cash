@@ -76,14 +76,14 @@ class PagamentosController extends Controller
         }else{
             $request->data_inicio = date("Y-m-d");
         }
-        
+
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
-        
+
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
-    
+
             $data['items'] = Pagamento::with('factura')
             ->when($request->data_inicio, function($query, $value){
                 $query->where('created_at', '>=' ,Carbon::parse($value) );
@@ -101,9 +101,9 @@ class PagamentosController extends Controller
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
-            
+
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
-        
+
         }else {
             $data['items'] = Pagamento::with('factura')
             ->when($request->data_inicio, function($query, $value){
@@ -122,8 +122,8 @@ class PagamentosController extends Controller
             ->where('forma_pagamento', 6)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(10)
-            ->withQueryString();     
-            
+            ->withQueryString();
+
             $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function($query){
                 $query->where('codigo_importado', auth()->user()->codigo_importado);
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
@@ -344,6 +344,7 @@ class PagamentosController extends Controller
     public function salvarPagamentosDiversos(Request $request, $codigo_matricula)
     {
 
+
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
         $id = $aluno->admissao->preinscricao->Codigo;
         $codigo = $aluno->admissao->preinscricao->Codigo;
@@ -360,14 +361,6 @@ class PagamentosController extends Controller
 
         $data['forma_pagamento'] = 6;
 
-        $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-
-        if(!$caixas){
-            return response()->json([
-                'message' => 'Por valor! faça abertura do caixa para efectuar o pagamento.',
-            ], 401);
-        }
-
         if ($fonte == 2) {
             $codigoDaFatura = $this->codigo_factura_em_curso; // codigo da factura gerada aqui no backend
             $saldo_novo = $this->saldo_actual_estudante;
@@ -381,7 +374,6 @@ class PagamentosController extends Controller
         if (sizeOf($data) > 0) {
             $tamanho = sizeOf($data);
         }
-
 
         //$stra = trim(preg_replace('/\s+/','', $str));
         $data['N_Operacao_Bancaria'] = rand(0, $codigoDaFatura) . time();
@@ -1029,15 +1021,25 @@ class PagamentosController extends Controller
                     }
                 }
 
-                $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+                try {
+                    $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
-                $update = MovimentoCaixa::findOrFail($movimento->codigo);
-                $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
-                $update->valor_facturado_pagamento = $update->valor_arrecadado_pagamento + $fatura_paga->ValorAPagar;
-                $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
-                $update->update();
+                    if(filled($caixas)){
+                        $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
-
+                        $update = MovimentoCaixa::findOrFail($movimento->codigo);
+                        $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
+                        $update->valor_facturado_pagamento = $update->valor_arrecadado_pagamento + $fatura_paga->ValorAPagar;
+                        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                        $update->update();
+                    }else{
+                        $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+                        return response()->json($result, 201);
+                    }
+                } catch (\Illuminate\Database\QueryException $e) {
+                    DB::rollback();
+                    return Response()->json($e->getMessage(), 201);
+                }
             }
         }
 
@@ -1482,6 +1484,13 @@ class PagamentosController extends Controller
 
         DB::beginTransaction();
 
+        $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+        if(blank($caixas)){
+            $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+            return response()->json($result, 201);
+        }
+
         try {
             $anoDesignacao = DB::table('tb_ano_lectivo')
                 ->where('Codigo', $ano)
@@ -1526,8 +1535,8 @@ class PagamentosController extends Controller
 
                     if ($ano == $this->anoAtualPrincipal->index()) {
                         if (blank($incricao_cadeira_ano_corrente) && $aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
-                            $message='Prezado(a) estudante, para fazer o pagamento de propina deve primeiro inscrever-se nas unidades curriculares para este ano lectivo';
-                            return response()->json($message);
+                            $result['message'] = 'Prezado(a) estudante, para fazer o pagamento de propina deve primeiro inscrever-se nas unidades curriculares para este ano lectivo';
+                            return response()->json($result, 201);
                         }
                     }
 
@@ -2121,6 +2130,8 @@ class PagamentosController extends Controller
             }
 
         }
+
+
         if (!$pagmnt_total_com_saldo) {
 
             $this->codigo_factura_em_curso = $codigo_fatura;
