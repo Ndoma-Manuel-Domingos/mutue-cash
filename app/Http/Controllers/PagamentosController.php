@@ -1028,27 +1028,6 @@ class PagamentosController extends Controller
                         }
                     }
                 }
-                // $deposito = DB::table('tb_valor_alunos')
-                //     ->where('codigo_matricula_id', $codigo_matricula)
-                //     ->orderBy('codigo', 'DESC')->first();
-
-                // $dados_deposito = [
-                //     'codigo_matricula_id'=> $codigo_matricula,
-                //     'valor_depositar'=> $novo_saldo,
-                //     'saldo_apos_movimento'=> $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
-                //     'ano_lectivo_id'=> $fatura_paga->ano_lectivo,
-                //     'created_by'=> auth()->user()->codigo_importado,
-                // ];
-
-                // $response['codigo_pagamento'] = $id_pag;
-
-                // $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-
-                // if(!$caixas){
-                //     return response()->json([
-                //         'message' => 'Deposito realizado com sucesso!',
-                //     ], 401);
-                // }
 
                 $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -1546,8 +1525,9 @@ class PagamentosController extends Controller
                     $incricao_cadeira_ano_corrente = DB::table('tb_grade_curricular_aluno')->where('codigo_matricula', $alunoRepository->matricula)->where('codigo_ano_lectivo', $this->anoAtualPrincipal->index())->whereIn('Codigo_Status_Grade_Curricular', [2, 3])->get();
 
                     if ($ano == $this->anoAtualPrincipal->index()) {
-                        if (blank($incricao_cadeira_ano_corrente) && auth()->user()->preinscricao->codigo_tipo_candidatura == 1) {
-                            return response()->json('Prezado(a) estudante, para fazer o pagamento de propina deve primeiro inscrever-se nas unidades curriculares para este ano lectivo', 201);
+                        if (blank($incricao_cadeira_ano_corrente) && $aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
+                            $message='Prezado(a) estudante, para fazer o pagamento de propina deve primeiro inscrever-se nas unidades curriculares para este ano lectivo';
+                            return response()->json($message);
                         }
                     }
 

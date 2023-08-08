@@ -1983,15 +1983,11 @@ export default {
         });
 
         document.getElementById("btn").disabled = false;
-      } else if (
-        this.pagamento.valor_depositado >= 0 &&
-        this.estudante.saldo > 0 &&
-        Math.ceil(this.pagamento.valor_depositado + this.estudante.saldo) < this.total_adicionado
-      ) {
+      } else if (this.valor_por_depositar >= 0 &&this.estudante.saldo > 0 && Math.ceil(this.valor_por_depositar + this.estudante.saldo) < this.total_adicionado) {
 
         Swal.fire({
           title: "Dados Incorrectos",
-          text: "O Valor entregue é Inferior ao Valor a Pagar =" + this.total_adicionado,
+          text: "O Valor entregue é Inferior ao Valor a Pagar =" + this.formatPrice(this.total_adicionado),
           icon: "error",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
