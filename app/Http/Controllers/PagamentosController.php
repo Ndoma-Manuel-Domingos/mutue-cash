@@ -76,37 +76,60 @@ class PagamentosController extends Controller
         }else{
             $request->data_inicio = date("Y-m-d");
         }
-
-        $data['items'] = Pagamento::with('factura')
-        ->when($request->data_inicio, function($query, $value){
-            $query->where('created_at', '>=' ,Carbon::parse($value) );
-        })
-        ->when($request->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
-        })
-        ->when($request->operador, function($query, $value){
-            $query->where('fk_utilizador', $value);
-        })
-        ->when($request->ano_lectivo, function($query, $value){
-            $query->where('AnoLectivo', $value);
-        })
-        ->where('forma_pagamento', 6)
-        ->orderBy('tb_pagamentos.Codigo', 'desc')
-        ->paginate(10)
-        ->withQueryString();
-
-        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
-         // utilizadores validadores
-        // utilizadores adiministrativos
-        // utilizadores área financeira
-        // utilizadores tesouraria
+        
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+        
+        if($user->tipo_grupo->grupo->designacao == "Administrador"){
+    
+            $data['items'] = Pagamento::with('factura')
+            ->when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })
+            ->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })
+            ->when($request->operador, function($query, $value){
+                $query->where('fk_utilizador', $value);
+            })
+            ->when($request->ano_lectivo, function($query, $value){
+                $query->where('AnoLectivo', $value);
+            })
+            ->where('forma_pagamento', 6)
+            ->orderBy('tb_pagamentos.Codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+            
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        
+        }else {
+            $data['items'] = Pagamento::with('factura')
+            ->when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })
+            ->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })
+            ->when($request->operador, function($query, $value){
+                $query->where('fk_utilizador', $value);
+            })
+            ->when($request->ano_lectivo, function($query, $value){
+                $query->where('AnoLectivo', $value);
+            })
+            ->where('fk_utilizador', $user->codigo_importado)
+            ->where('forma_pagamento', 6)
+            ->orderBy('tb_pagamentos.Codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();     
+            
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function($query){
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        }
 
-        $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
-
+        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
 
         return Inertia::render('Operacoes/Pagamentos/Index', $data);
     }
@@ -337,13 +360,13 @@ class PagamentosController extends Controller
 
         $data['forma_pagamento'] = 6;
 
-        // $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
-        // if(!$caixas){
-        //     return response()->json([
-        //         'message' => 'Por valor! faça abertura do caixa para efectuar o pagamento',
-        //     ], 401);
-        // }
+        if(!$caixas){
+            return response()->json([
+                'message' => 'Por valor! faça abertura do caixa para efectuar o pagamento.',
+            ], 401);
+        }
 
         if ($fonte == 2) {
             $codigoDaFatura = $this->codigo_factura_em_curso; // codigo da factura gerada aqui no backend
@@ -1027,13 +1050,13 @@ class PagamentosController extends Controller
                 //     ], 401);
                 // }
 
-                // $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+                $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
-                // $update = MovimentoCaixa::findOrFail($movimento->codigo);
-                // $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
-                // $update->valor_facturado_pagamento = $update->valor_arrecadado_pagamento + $fatura_paga->ValorAPagar;
-                // $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
-                // $update->update();
+                $update = MovimentoCaixa::findOrFail($movimento->codigo);
+                $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
+                $update->valor_facturado_pagamento = $update->valor_arrecadado_pagamento + $fatura_paga->ValorAPagar;
+                $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                $update->update();
 
 
             }

@@ -96,7 +96,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
@@ -112,7 +112,7 @@
               ></Link>
             </div>
           </div>
-          
+
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
@@ -127,8 +127,7 @@
               ></Link>
             </div>
           </div>
-          
-          
+
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
@@ -143,7 +142,7 @@
               ></Link>
             </div>
           </div>
-          
+
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
@@ -164,8 +163,6 @@
           <div class="col-12 col-md-12">
             <div class="card">
               <div class="card-header">
-              
-              
                 <button
                   class="btn btn-success float-right mr-1"
                   type="button"
@@ -232,13 +229,20 @@
   </MainLayouts>
 </template>
   
-  <script>
+<script>
 import { sweetSuccess, sweetError } from "../../../components/Alert";
 import Paginacao from "../../../Shared/Paginacao";
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["items", "ano_lectivos", "utilizadores", "servicos", "valor_deposito", "totalPagamentos"],
+  props: [
+    "items",
+    "ano_lectivos",
+    "utilizadores",
+    "servicos",
+    "valor_deposito",
+    "totalPagamentos",
+  ],
   components: { Link, Paginacao },
   data() {
     return {
