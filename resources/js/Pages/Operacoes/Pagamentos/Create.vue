@@ -592,6 +592,7 @@
                         class="form-control"
                         id="valor_depositado_tese"
                         v-model="valor_depositado_tese"
+                        @keyup="formatarMoeda()"
                         placeholder="Ex: 12346"
                       />
                     </div>
@@ -853,9 +854,9 @@ export default {
     this.getAnoLectivoActual();
   },
   
-  mounted(){
-    // this.valor_depositado_tese = this.formatValor(this.valor_depositado_tese)
-  },
+  // mounted(){
+  //   this.valor_depositado_tese = this.formatValor(this.valor_depositado_tese)
+  // },
 
   watch: {
     fatura(val) {
@@ -914,19 +915,22 @@ export default {
     },
 
     valor_depositado_tese(val){
-        
-      this.pagamento.valor_depositado = this.valor_depositado_tese;
-      if(val){
-          if(this.valor_por_depositar == this.pagamento.valor_depositado){
-              this.troco = 0;
-          }else{
-              this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
-              if((this.pagamento.valor_depositado - this.total_adicionado) > 0){
-                  this.condicao_troco = true;
-              }
-          }
-      }
-  }
+    
+      // this.valor_depositado_tese = this.valor_depositado_tese
+      
+      // this.pagamento.valor_depositado = this.valor_depositado_tese;
+      
+      // if(val){
+      //   if(this.valor_por_depositar == this.pagamento.valor_depositado){
+      //       this.troco = 0;
+      //   }else{
+      //       this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
+      //       if((this.pagamento.valor_depositado - this.total_adicionado) > 0){
+      //           this.condicao_troco = true;
+      //       }
+      //   }
+      // }
+    }
   },
 
 
@@ -964,6 +968,28 @@ export default {
         style: 'currency',
         currency: 'AOA'
       });
+      
+      this.pagamento.valor_depositado = this.removerFormatacaoAOA(this.valor_depositado_tese);
+     
+      if(this.valor_por_depositar == this.pagamento.valor_depositado){
+        this.troco = 0;
+      }else{
+          this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
+          if((this.pagamento.valor_depositado - this.total_adicionado) > 0){
+              this.condicao_troco = true;
+          }
+      }
+      // console.log(this.pagamento.valor_depositado, this.valor_por_depositar)
+    },
+    
+    containsLetters(number) {
+      // Verifica se o número é uma string
+      if (typeof number !== 'string') {
+        return false;
+      }
+    
+      // Verifica se a string contém letras
+      return /[a-zA-Z]/.test(number);
     },
     
     removerFormatacaoAOA(valor) {
@@ -1090,7 +1116,7 @@ export default {
             this.pegaServicos();
             this.pegarDescricaoBolseiro();
             this.pegaBolseiro();
-
+            
             this.verificaConfirmacaoNoAnoLectivoCorrente();
 
             sweetSuccess("Estudante Encontrado com sucesso!");
@@ -1668,6 +1694,7 @@ export default {
     },
 
     adicionarMeses: function () {
+      
       if (+this.anoLectivo.Designacao <= 2019) {
         if ((this.opcoes == 1)) {
           if ((+this.ultima_prestacao_antiga_paga >= this.prestacoes_por_ano) || (+this.tabela.length + this.todos_meses_pagos >= this.meses.length)) {
@@ -1943,6 +1970,7 @@ export default {
     },
 
     registarFatura: function () {
+    
       if (
         (this.pagamento.valor_depositado == null) && Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
       ) {
