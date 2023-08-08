@@ -14,12 +14,13 @@
 
           <ul class="navbar-nav">
             <li class="nav-item">
+              <!-- href="/logout"
+                method="post" -->
               <Link
                 class="nav-link btn btn-link text-danger"
-                href="/logout"
-                method="post"
                 as="button"
                 type="button"
+                @click="logout"
               >
                 <i class="fas fa-sign-out-alt"></i>
               </Link>
@@ -69,7 +70,6 @@
 <script setup>
   import { computed } from "vue";
   import Menu from "./Partials/Menu.vue";
-  import Footer from "./Partials/Footer.vue";
   import { usePage } from "@inertiajs/inertia-vue3";
   import { Link } from "@inertiajs/inertia-vue3";
 
@@ -88,6 +88,21 @@
     },
 
     methods: {
+      logout(){
+        axios
+          .post("/logout")
+          .then((response) => {
+              Swal.fire({
+                icon: "warning",
+                title: "Atenção...",
+                text: response.data.message,
+              });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        
+      }
     },
   };
 </script>

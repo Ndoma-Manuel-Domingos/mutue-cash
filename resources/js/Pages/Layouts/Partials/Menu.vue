@@ -180,12 +180,13 @@
       <div class="ml-auto">
         <ul class="navbar-nav">
           <li class="nav-item text-left">
+              <!-- href="/logout"
+              method="post" -->
             <Link
               class="nav-link btn btn-link btn-danger text-white"
-              href="/logout"
-              method="post"
               as="button"
               type="button"
+              @click="logout"
             >
               <i class="fas fa-sign-out-alt"></i>
               Sair
@@ -208,6 +209,30 @@
     return usePage().props.value.auth.user;
   });
 </script>
+
+<script>
+
+  export default {
+    methods: {
+      logout(){
+        axios
+          .post("/logout")
+          .then((response) => {
+              Swal.fire({
+                icon: "warning",
+                title: "Atenção...",
+                text: response.data.message,
+              });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+        
+      }
+    },
+  };
+</script>
+
 
 <style>
 .nav-pills .nav-link.active,
