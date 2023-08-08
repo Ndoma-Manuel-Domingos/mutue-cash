@@ -42,9 +42,16 @@ class RelatorioController extends Controller
         $valor_deposito = 0;
         $totalPagamentos = 0;
         
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date("Y-m-d");
+        }
+        
         
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
         
+            /** */
             $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
                 $query->where('created_at', '>=' ,Carbon::parse($value) );
             })->when($request->data_final, function($query, $value){
@@ -67,6 +74,38 @@ class RelatorioController extends Controller
             ->select( 'tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
             ->paginate(7)
             ->withQueryString();   
+            /** */
+            
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('data_movimento', '>=' , Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('data_movimento', '<=' , Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })->when($request->ano_lectivo, function($query, $value){
+                $query->where('ano_lectivo_id', $value);
+            })
+            ->sum('valor_depositar');
+            
+            /** */
+            
+            $totalPagamentos = Pagamento::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('fk_utilizador', $value);
+            })->when($request->ano_lectivo, function($query, $value){
+                $query->where('tb_pagamentos.AnoLectivo', $value);
+            })->when($request->servico_id, function($query, $value){
+                $query->where('tb_pagamentosi.Codigo_Servico', $value);
+            })
+            ->where('forma_pagamento', 6)
+            ->where('estado', 1)
+            // ->where('fk_utilizador', $user->codigo_importado)
+            ->sum('valor_depositado');
+            
+            /** */
     
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
             
@@ -101,12 +140,55 @@ class RelatorioController extends Controller
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
             
             
-            $valor_deposito = Deposito::where('data_movimento', '=', Carbon::parse(date('Y-m-d')))->where('created_by', $user->codigo_importado)->sum('valor_depositar');
-            $totalPagamentos = Pagamento::where('estado', 1)->where('DataRegisto', '=', Carbon::parse(date('Y-m-d')))->where('fk_utilizador', $user->codigo_importado)->sum('valor_depositado');
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('data_movimento', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('data_movimento', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })->when($request->ano_lectivo, function($query, $value){
+                $query->where('ano_lectivo_id', $value);
+            })
+            ->where('created_by', $user->codigo_importado)
+            ->sum('valor_depositar');
+            
+            $totalPagamentos = Pagamento::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('fk_utilizador', $value);
+            })->when($request->ano_lectivo, function($query, $value){
+                $query->where('tb_pagamentos.AnoLectivo', $value);
+            })->when($request->servico_id, function($query, $value){
+                $query->where('tb_pagamentosi.Codigo_Servico', $value);
+            })
+            ->where('forma_pagamento', 6)
+            ->where('estado', 1)
+            ->where('fk_utilizador', $user->codigo_importado)
+            ->sum('valor_depositado');
 
         }
-
-        // dd( $valor_deposito, $totalPagamentos);
+        
+        $lista_geral = [];
+        
+        $pagamentos = Pagamento::where('forma_pagamento', 6)->get();
+        $depositos = Deposito::limit(6)->get();
+        
+        foreach ($pagamentos as $pagamento) {
+            $lista_geral[] = [
+                'operador' => $pagamento->Utilizador,
+                'type' => 'pagamento'
+            ];
+        }
+        
+        foreach ($depositos as $deposito) {
+            $lista_geral[] = [
+                'operador' => $deposito->created_by,
+                'type' => 'deposito'
+            ];
+        }
+        
         
         $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
         $data['servicos'] = TipoServico::when($request->ano_lectivo, function($query, $value){
@@ -131,6 +213,7 @@ class RelatorioController extends Controller
         }else{
             $request->data_inicio = date("Y-m-d");
         }
+        
 
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
             
@@ -181,6 +264,9 @@ class RelatorioController extends Controller
             ->sum('valor_depositar');
             
         }
+        
+        $data['valor_deposito'] = $valor_deposito;
+        
 
         return Inertia::render('Relatorios/FechoCaixa/Extrato-Depositos', $data);
     

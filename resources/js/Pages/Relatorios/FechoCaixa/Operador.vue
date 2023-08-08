@@ -146,8 +146,8 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4>{{ formatValor(0) }}</h4>
-                <p>Valor Saldos</p>
+                <h4>{{ formatValor((+totalPagamentos) + (+valor_deposito)) }}</h4>
+                <p>Saldo Final</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
