@@ -92,7 +92,8 @@
               ></Link>
             </div>
           </div>
-          <div class="col-lg-3 col-6">
+          
+          <!-- <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
                 <h4 class="text-uppercase">Total de Pag. Recebido</h4>
@@ -105,7 +106,7 @@
                 >Mais detalhe <i class="fas fa-arrow-circle-right"></i
               ></Link>
             </div>
-          </div>
+          </div> -->
 
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">

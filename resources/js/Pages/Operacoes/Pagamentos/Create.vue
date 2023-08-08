@@ -1028,7 +1028,8 @@ export default {
       formData.append("talao_banco", this.talao_banco);
       // formData.append("talao_banco2", this.talao_banco2);
       formData.append("fonte", 1); // fonte de requisicao
-
+      
+      this.$Progress.start();
       axios
         .post(
           "/pagamentos-estudantes/pagamento/diversos/create/" +
@@ -1059,10 +1060,13 @@ export default {
                 document.getElementById("anexo").value = "";
 
                 sweetSuccess(response.data.mensagem);
+                this.$Progress.finish();
             } else if (response.status === 500) {
                 sweetError("Falha de comunicação!");
+                this.$Progress.fail();
             } else {
                 sweetError(response.data);
+                this.$Progress.fail();
             }
         })
         .catch((error) => {
@@ -1070,6 +1074,8 @@ export default {
             this.erros = error.response.data.errors;
             this.botao = true;
             document.getElementById("btn").disabled = false;
+            
+            this.$Progress.fail();
           }
         });
     },
@@ -2028,6 +2034,7 @@ export default {
         formData.append("referencia", referencia);
         formData.append("fonte", 2);// fonte de requisicao
 
+        this.$Progress.start();
         axios
           .post("/pagamentos-estudantes/fatura/diversos/create/" +
             this.codigo_matricula,
@@ -2062,6 +2069,9 @@ export default {
                 this.saldo_aluno = 0,
                 this.codigo_matricula = null;
                 this.saldo = 0;
+                
+                this.$Progress.finish();
+
             } else {
               Swal.fire({
                 icon: "info",
@@ -2069,6 +2079,7 @@ export default {
                 text: response.data.message,
               });
               this.botao = true;
+              this.$Progress.finish();
             }
           })
           .catch((error) => {
@@ -2076,6 +2087,7 @@ export default {
               this.erros = error.response.data.errors;
               this.botao = true
               document.getElementById("btn").disabled = false;
+              this.$Progress.fail();
             }
           });
       }

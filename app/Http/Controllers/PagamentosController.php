@@ -1005,8 +1005,29 @@ class PagamentosController extends Controller
                         'valor_depositar'=> $novo_saldo,
                         'saldo_apos_movimento'=> $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
                         'created_by'=> auth()->user()->codigo_importado,
+                        'ano_lectivo_id'=> $fatura_paga->ano_factura,
+                        'data_movimento'=> date("Y-m-d"),
                     ];
                     $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
+                    
+                    try {
+                        $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+                        if(filled($caixas)){
+                            $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+                            $update = MovimentoCaixa::findOrFail($movimento->codigo);
+                            $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $novo_saldo;
+                            $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                            $update->update();
+                        }else{
+                            $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+                            return response()->json($result, 201);
+                        }
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        DB::rollback();
+                        return Response()->json($e->getMessage(), 201);
+                    }
                 }else{
 
 
@@ -1029,7 +1050,7 @@ class PagamentosController extends Controller
 
                         $update = MovimentoCaixa::findOrFail($movimento->codigo);
                         $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
-                        $update->valor_facturado_pagamento = $update->valor_arrecadado_pagamento + $fatura_paga->ValorAPagar;
+                        $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $fatura_paga->ValorAPagar;
                         $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
                         $update->update();
                     }else{
