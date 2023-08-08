@@ -53,6 +53,15 @@
           <div class="col-12 col-md-12">
             <div class="card">
               <div class="card-header">
+              
+                <button
+                  class="btn btn-info float-left mr-1"
+                  type="button"
+                >
+                  <i class="fas fa-money-check-alt"></i>
+                  TOTAL: {{ formatValor(valor_deposito) }}
+                </button>
+                
                 <button
                   class="btn btn-success float-right mr-1"
                   type="button"
@@ -83,7 +92,7 @@
                       <th>Saldo após Movimento</th>
                       <!-- <th>Forma Pagamento</th> -->
                       <th>Operador</th>
-                      <th>Ano Lectivo</th>
+                      <!-- <th>Ano Lectivo</th> -->
                       <th>Data</th>
                       <th>Acções</th>
                     </tr>
@@ -99,16 +108,12 @@
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
                       <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
                       <td>{{ item.user ? item.user.nome : "" }}</td>
-                      <td>{{ item.ano_lectivo.Designacao }}</td>
+                      <!-- <td>{{ item.ano_lectivo.Designacao ?? '' }}</td> -->
                       <td>{{ item.created_at }}</td>
                       <td class="text-center">
                         <Link @click="imprimirComprovativo(item)">
                           <i class="fas fa-print text-danger"></i>
                         </Link>
-                        <!-- <Link class="btn-sm btn-success mx-1" @click="editarItem(item)">
-                          <i class="fas fa-edit "></i>
-                          Editar
-                        </Link> -->
                       </td>
                     </tr>
                   </tbody>
@@ -138,7 +143,7 @@ import Paginacao from "../../../Shared/Paginacao";
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["items"],
+  props: ["items", "valor_deposito"],
   components: { Link, Paginacao },
   data() {
     return {
