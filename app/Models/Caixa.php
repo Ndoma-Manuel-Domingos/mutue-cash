@@ -23,4 +23,18 @@ class Caixa extends Model
     //     'updated_by',
     //     'deleted_by',
     // ];
+
+    public static function boot(){
+
+        parent::boot();
+
+        self::creating(function($model){
+            $model->created_by = auth()->user()->codigo_importado;
+        });
+    }
+
+    public function operador()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'codigo_importado');
+    }
 }

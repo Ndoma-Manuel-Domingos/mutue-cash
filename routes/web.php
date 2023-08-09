@@ -7,6 +7,7 @@ use App\Http\Controllers\MovimentoController;
 use App\Http\Controllers\PagamentosController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\SearhController;
+use App\Models\Caixa;
 use App\Models\Deposito;
 use Illuminate\Support\Facades\Route;
 
@@ -122,7 +123,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/ciclos',  [SearhController::class, 'ciclos']);
     Route::get('/ano-lectivo-actual',  [SearhController::class, 'anoLectivoActual']);
 
-
-
     Route::get('/saldo/{id}', 'PagamentosEstudanteController@saldo');
+
+    Route::get('/operacoes/caixas', [Caixa::class, 'index']);
+    Route::post('/operacoes/caixas', [Caixa::class, 'store']);
 });

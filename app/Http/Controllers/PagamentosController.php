@@ -343,8 +343,6 @@ class PagamentosController extends Controller
 
     public function salvarPagamentosDiversos(Request $request, $codigo_matricula)
     {
-
-
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
         $id = $aluno->admissao->preinscricao->Codigo;
         $codigo = $aluno->admissao->preinscricao->Codigo;
@@ -1009,13 +1007,13 @@ class PagamentosController extends Controller
                         'data_movimento'=> date("Y-m-d"),
                     ];
                     $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
-                    
+
                     try {
                         $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-    
+
                         if(filled($caixas)){
                             $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-    
+
                             $update = MovimentoCaixa::findOrFail($movimento->codigo);
                             $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $novo_saldo;
                             $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
@@ -1040,6 +1038,13 @@ class PagamentosController extends Controller
                             return Response()->json($e->getMessage());
                         }
                     }
+                }
+                try {
+                    $total_pagamento = DB::table('tb_pagamentos')->where('codigo_factura', $fatura_paga->codigo)->sum('valor_depositado');
+                    DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['ValorEntregue'=>$total_pagamento, 'estado'=> 1]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    DB::rollback();
+                    return Response()->json($e->getMessage());
                 }
 
                 try {
@@ -1722,8 +1727,9 @@ class PagamentosController extends Controller
 
 
                     if ($liquidacao_fatura) {
-                        return response()->json('2. Caro estudante, tem uma factura que não foi liquidada totalmente com o número ' . $liquidacao_fatura->CodigoFactura, 201);
-                        // dd('2. Caro estudante, tem uma factura que não foi liquidada totalmente com o número ' . $liquidacao_fatura->CodigoFactura);
+
+                        $result['message'] = '2. Caro estudante, tem uma factura que não foi liquidada totalmente com o número ' . $liquidacao_fatura->CodigoFactura;
+                        return response()->json($result, 201);
                     }
                 }
 
@@ -1731,7 +1737,9 @@ class PagamentosController extends Controller
 
                 if ($diplomado && $value['TipoServico'] == 'Mensal') {
 
-                    return response()->json('Caro estudante, não lhe é permitido efectuar o pagamento de propina visto estar diplomado!', 201);
+                    $result['message'] = 'Caro estudante, não lhe é permitido efectuar o pagamento de propina visto estar diplomado!';
+
+                    return response()->json($result, 201);
                 }
 
                 if (($anoDesignacao->Codigo >= $anoCorrente) || ($anoDesignacao->Codigo == 1)) {
