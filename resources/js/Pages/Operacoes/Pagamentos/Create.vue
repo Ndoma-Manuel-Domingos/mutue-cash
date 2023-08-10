@@ -819,13 +819,13 @@
                         </h3>
                     </div>
                     <div class="form-group">
-                      <label for="" class="form-label">Número de inscrição</label>
+                      <label for="" class="form-label">Número de inscrição/BI</label>
                       <div class="input-group">
                         <input
                           class="form-control"
                           v-model="form.codigo_inscricao"
                           type="search"
-                          placeholder="Introduz o Número da Inscrição!"
+                          placeholder="Pesquise pelo nº do candidato ou pelo nº do BI!"
                           aria-label="Search"
                         />
                         <div class="input-group-append">
@@ -942,7 +942,7 @@ export default {
       codigo_tipo_candidatura: null,
       ano_lectivo_id: null,
       isFormDisabled: true,
-      servico: {},
+      servico: {Preco:0},
 
       anoLectivo: { Codigo: null },
 

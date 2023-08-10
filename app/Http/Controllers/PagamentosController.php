@@ -1467,8 +1467,9 @@ class PagamentosController extends Controller
         $data['codigo_preinscricao'] = $request->codigo_inscricao;
         $data['valor_depositado'] = $request->valor_a_depositar;
 
-        $preinscriao = Preinscricao::where('Codigo',$data['codigo_preinscricao'])->first();
-
+        
+        $preinscriao = Preinscricao::where('Codigo',$data['codigo_preinscricao'])->orWhere('Bilhete_Identidade',$data['codigo_preinscricao'])->first();
+        
         $taxa_servico = DB::table('tb_tipo_servicos')->where('Codigo', $this->pagamentoService->taxaServicoPorSigla("TdEdA"))->first();
         // definir taxa para pos-graduacao
         if ($preinscriao && $preinscriao->codigo_tipo_candidatura != 1) {
