@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Matricula;
+use App\Models\PreInscricao;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
 use App\Http\Controllers\Extenso;
@@ -88,6 +89,45 @@ class SearhController extends Controller
             }
 
         return response()->json(["dados" => $resultado, "ano_lectivo_id"=>$ano_lectivo], 200);
+    }
+    public function search_preinscricao(Request $request)
+    {
+        $user = auth()->user();
+
+        $resultado = PreInscricao::where('tb_preinscricao.Codigo', $request->search)
+            ->orWhere('tb_preinscricao.Bilhete_Identidade',  $request->search)
+            ->join('tb_cursos', 'tb_preinscricao.Curso_Candidatura', '=', 'tb_cursos.Codigo')
+            ->select(
+                'tb_preinscricao.Codigo AS codigo_preinscricao',
+                'tb_preinscricao.Nome_Completo',
+                'tb_preinscricao.Bilhete_Identidade',
+                'tb_preinscricao.user_id',
+                'tb_preinscricao.saldo',
+                'tb_preinscricao.codigo_tipo_candidatura',
+                'tb_cursos.Designacao'
+            )->first();
+
+            if ($resultado && $resultado->codigo_tipo_candidatura == 1) {
+                $ano_lectivo = $this->anoAtualPrincipal->index();
+            } elseif($resultado && $resultado->codigo_tipo_candidatura != 1) {
+                if ($resultado->codigo_tipo_candidatura == 2) {
+                    $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
+                } else {
+                    $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
+                }
+            }else{
+
+            }
+
+        return response()->json(["dados" => $resultado, "ano_lectivo_id"=>$ano_lectivo], 200);
+    }
+
+    public function dadosPagamentos(Request $request)
+    {
+        $anoCorrente = $this->anoAtualPrincipal->index();
+
+        $data = DB::table('tb_tipo_servicos')->select('*')->where('Codigo', $this->pagamentoService->taxaServicoPorSigla(request()->get('sigla_do_servico')))->where('codigo_ano_lectivo', $anoCorrente)->first();
+        return response()->json($data);
     }
 
     public function bancosFormaPagamento(Request $request)
