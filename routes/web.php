@@ -43,7 +43,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/depositos/pdf', [DepositoController::class, 'pdf']);
     Route::get('/depositos/excel', [DepositoController::class, 'excel']);
     Route::get('/depositos/imprimir-comprovativo', [DepositoController::class, 'imprimir']);
-    
+
     Route::get('/movimentos/abertura-caixa', [MovimentoController::class, 'abertura'])->name('mc.movimentos-abertura-caixa');
     Route::post('/movimentos/abertura-caixa', [MovimentoController::class, 'aberturaStore'])->name('mc.movimentos-abertura-caixa-store');
     Route::get('/movimentos/fecho-caixa', [MovimentoController::class, 'fecho'])->name('mc.movimentos-fecho-caixa');
@@ -52,11 +52,11 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/movimentos/imprimir-pdf', [MovimentoController::class, 'pdf']);
     Route::get('/movimentos/imprimir-excel', [MovimentoController::class, 'excel']);
     Route::get('/movimentos/validar-fecho', [MovimentoController::class, 'validarFechoCaixa'])->name('mc.movimentos-validar-fecho-caixa');
-    
+
     Route::get('/movimentos/validar-fecho/{id}/validar', [MovimentoController::class, 'validarFechoCaixaAdmin']);
     Route::get('/movimentos/validar-fecho/{id}/cancelar', [MovimentoController::class, 'cancelarFechoCaixaAdmin']);
     Route::get('/movimentos/confirmar-senhar-admin/{id}', [MovimentoController::class, 'confirmarSenhaAdmin']);
-    
+
 
     Route::get('/pagamentos', [PagamentosController::class, 'index'])->name('mc.pagamentos.index');
     Route::get('/pagamentos/criar', [PagamentosController::class, 'create'])->name('mc.pagamentos.create');
@@ -73,6 +73,9 @@ Route::group(["middleware" => "auth"], function () {
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search'])->name('mc.searh-estudante.index');
 
+    Route::get('/pesquisar-inscricao', [SearhController::class, 'search_preinscricao'])->name('mc.searh-estudante.index');
+
+    Route::get('/dados-pagamentos', [SearhController::class, 'dadosPagamentos']);
     /** ROUTAS DAS FACTURAS */
     Route::get('/pagamentos-estudantes/todas-referencias-nao-pagas/{codigo_matricula}', [PagamentosController::class, 'getTodasReferencias'])->name('mc.todas-referencias-nao-pagas');
 
@@ -82,7 +85,11 @@ Route::group(["middleware" => "auth"], function () {
 
     Route::post('/pagamentos-estudantes/fatura/diversos/create/{numero_matricula?}', [PagamentosController::class, 'faturaDiversos'])->name('mc.pagamento-fatura-diversos-create');
 
+    Route::post('/pagamentos-preinscricao', [PagamentosController::class, 'pagamentosPreinscricao']);
+
     Route::get('/fatura/diversos/{factura_id}', [PagamentosController::class, 'imprimirFaturaDiversos']);
+
+    Route::get('/fatura-recibo/inscricao/{factura_id}', [PagamentosController::class, 'pdfFatReciboIExameAcesso']);
 
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
 

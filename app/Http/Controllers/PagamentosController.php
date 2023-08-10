@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Exports\PagamentosExport;
 use App\Models\FormaPagamento;
+use App\Models\Preinscricao;
+use App\Models\Factura;
+use App\Models\FacturaItem;
 use App\Models\Matricula;
 use App\Models\Pagamento;
 use App\Models\PagamentoPorReferencia;
@@ -31,6 +34,7 @@ use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\MovimentoCaixa;
 use App\Models\PagamentoItems;
+use App\Models\CandidatoProva;
 use App\Models\Utilizador;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -1454,6 +1458,127 @@ class PagamentosController extends Controller
         return $resultado;
     }
 
+    public function pagamentosPreinscricao(Request $request){
+
+        $anoLectivo = DB::table('tb_ano_lectivo')
+        ->where('estado', 'Activo')
+        ->first();
+
+        $data['codigo_preinscricao'] = $request->codigo_inscricao;
+        $data['valor_depositado'] = $request->valor_a_depositar;
+
+        $preinscriao = Preinscricao::where('Codigo',$data['codigo_preinscricao'])->first();
+
+        $taxa_servico = DB::table('tb_tipo_servicos')->where('Codigo', $this->pagamentoService->taxaServicoPorSigla("TdEdA"))->first();
+        // definir taxa para pos-graduacao
+        if ($preinscriao && $preinscriao->codigo_tipo_candidatura != 1) {
+            $taxa_servico = DB::table('tb_tipo_servicos')->where('Codigo', $this->pagamentoService->taxaServicoPorSigla("TdIMeP"))->first();
+        }
+
+        $keygen = Keygen::numeric(9)->generate();
+
+        $codigo_inscricao = $preinscriao->Codigo;
+
+        DB::beginTransaction();
+        if ($data['valor_depositado'] < $taxa_servico->Preco) {
+
+            return response()->json("O valor introduzido não é permitido para
+            realizar a operação! O valor não pode ser inferior ao valor do serviço!", 201);
+        } else {
+
+            try {
+
+                $factura = Factura::create([
+                    'DataFactura' => Carbon::now(),
+                    'TotalPreco' =>  $taxa_servico->Preco,
+                    'codigo_preinscricao' => $codigo_inscricao,
+                    'polo_id' => 1,
+                    'Referencia' => $keygen,
+                    'ValorAPagar' => $taxa_servico->Preco,
+                    'ValorEntregue' => $data['valor_depositado'],
+                    'Descricao' => $taxa_servico->Descricao,
+                    'codigo_descricao' => $taxa_servico->sigla=='TdIdP'?11:9, //Exame de acesso
+                    'canal' => 3, //Portal 1
+                    'estado' => 1,
+                    'ano_lectivo' => $anoLectivo->Codigo,
+                    'obs'=>'Pagamento feito a cash'
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollback();
+                return Response()->json('Ocorreu um erro ao efectuar o pagamento(0f1)!', 201);
+            }
+            try {
+                $this->faturaService->salvarFacturaMovimentoConta($factura->Codigo);
+            } catch (\Exception $e) {
+            }
+
+            try {
+
+                $factura_itens =  FacturaItem::create([
+                    'CodigoProduto' => $taxa_servico->Codigo, //Exames de Accesso
+                    'CodigoFactura' => $factura->Codigo,
+                    'preco' => $taxa_servico->Preco,
+                    'Total' => $taxa_servico->Preco,  //fucturamente multiplicar pela quantidade
+                    'codigo_anoLectivo' => $anoLectivo->Codigo
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+
+                DB::rollback();
+                return Response()->json('Ocorreu um erro ao efectuar o pagamento(0fi2)!', 201);
+            }
+
+            try {
+                $data['Data'] = date('Y-m-d');
+                $data['AnoLectivo'] = $anoLectivo->Codigo;
+                $data['Totalgeral'] = $taxa_servico->Preco;
+                $data['Codigo_PreInscricao'] = $codigo_inscricao;
+                $data['DataRegisto'] = Carbon::now();
+                $data['canal'] = 3;
+                $data['estado'] = 1;
+                $data['codigo_factura'] = $factura->Codigo;
+                $data['Observacao'] = "Pagamento efectuado por Cash";
+                $data['fk_utilizador'] = auth()->user()->codigo_importado;
+                $data['Utilizador'] = auth()->user()->codigo_importado;
+                $data['forma_pagamento'] = 6;
+                $data['N_Operacao_Bancaria'] = rand(0, $factura->Codigo) . time();
+                $pagamento = Pagamento::create($data);
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollback();
+                return Response()->json('Ocorreu um erro ao efectuar o pagamento(0p3)!', 201);
+            }
+
+            try {
+                $data1['Codigo_Pagamento'] = $pagamento->Codigo;
+                $data1['Codigo_Servico'] = $taxa_servico->Codigo; //Exames de Acessos
+                $data1['Valor_Pago'] = $taxa_servico->Preco;
+                $data1['Valor_Total'] = $taxa_servico->Preco;
+                $data1['Ano'] = $anoLectivo->Designacao;
+                $data1['Quantidade'] = 1;
+                $data1['Estado'] = 1;
+                $pagamentosi = PagamentoItems::create($data1);
+            } catch (\Illuminate\Database\QueryException $e) {
+
+                DB::rollback();
+                return Response()->json('Ocorreu um erro ao efectuar o pagamento(0pi4)!', 201);
+                //return Response()->json($e->getMessage(),201);
+            }
+            // try {
+            //     $candidato = Preinscricao::whereCodigo($codigo_inscricao)->first();
+            //     $candidato->update(['saldo' => ($candidato->saldo - $taxa_servico->Preco)]);
+            // } catch (\Illuminate\Database\QueryException $e) {
+
+            //     DB::rollback();
+            //     return Response()->json('Ocorreu um erro ao efectuar o pagamento(0s5)!', 201);
+            //     //return Response()->json($e->getMessage(), 201);
+            // }
+
+            $resultado['msg'] = 'Pagamento efectuado com sucesso!';
+            $resultado['codigo_factura'] = $factura->Codigo;
+            DB::commit();
+            return response()->json($resultado);
+        }
+    }
+
 
     public function faturaDiversos(Request $request, $codigo_matricula)
     {
@@ -2188,6 +2313,87 @@ class PagamentosController extends Controller
         //}
     }
 
+    public function pdfFatReciboIExameAcesso($id)
+    {
+        $id = base64_decode(base64_decode(base64_decode($id)));
+        $data['instituicao'] = DB::table('tb_dados_instituicao')->first();
+        $data['aluno'] = DB::table('tb_preinscricao')->join('tb_cursos', 'tb_cursos.codigo', '=', 'tb_preinscricao.Curso_Candidatura')
+            ->join('tb_periodos', 'tb_periodos.codigo', '=', 'tb_preinscricao.Codigo_Turno')
+            ->join('polos', 'polos.id', '=', 'tb_preinscricao.polo_id')
+            ->join('factura', 'factura.codigo_preinscricao', '=', 'tb_preinscricao.Codigo')
+            ->join('tb_pagamentos', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'factura.ano_lectivo')->select(
+                '*',
+                'factura.Codigo as numero_fatura',
+                'tb_preinscricao.Codigo as codigo_preinscricao',
+                'tb_cursos.Designacao as curso',
+                'polos.designacao as polo',
+                'tb_periodos.Designacao as turno',
+                'tb_ano_lectivo.Designacao as anoLectivo',
+                'polos.designacao as polo',
+                'factura.TotalPreco as TotalPreco',
+                'factura.Desconto as Desconto',
+                'factura.ValorAPagar as ValorAPagar',
+                'tb_pagamentos.valor_depositado as valor_depositado',
+                'factura.Troco as Troco',
+                'tb_pagamentos.Observacao as obs',
+                'tb_pagamentos.fk_utilizador as codigo_importado',
+                'tb_ano_lectivo.Designacao as anoLectivo'
+            )->where('factura.Codigo', $id)->first();
+
+        $codigo_aluno = $data['aluno']->codigo_preinscricao;
+        $polo_aluno = $data['aluno']->polo;
+        $curso_aluno = $data['aluno']->curso;
+        $turno_aluno = $data['aluno']->turno;
+        $nome_aluno = $data['aluno']->Nome_Completo;
+        $data['faturas'] = DB::table('factura_items')
+            ->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')->join(
+                'tb_tipo_servicos',
+                'tb_tipo_servicos.Codigo',
+                'factura_items.CodigoProduto'
+            )
+            ->join('tb_preinscricao', 'tb_preinscricao.Codigo', 'factura.codigo_preinscricao')->select(
+                'factura_items.Total as total',
+                'factura.TotalPreco as TotalFatura',
+                'tb_tipo_servicos.preco as preco',
+                'tb_tipo_servicos.Descricao as servico',
+                'factura_items.descontoProduto as desconto',
+                'factura_items.Multa as multa',
+                'factura_items.Total as total'
+
+            )->where('factura.Codigo', $id)->get();
+
+        $data['Total_fatura'] = DB::table('factura')->join('tb_preinscricao', 'tb_preinscricao.Codigo', 'factura.codigo_preinscricao')
+            ->select('*')->where('factura.Codigo', $id)->first();
+        $data['conta1'] = DB::table('tb_local_pagamento')->where('codigo', 1)->first();
+        $data['conta2'] = DB::table('tb_local_pagamento')->where('codigo', 3)->first();
+        $data['conta3'] = DB::table('tb_local_pagamento')->where('codigo', 9)->first();
+        //$servico= $data['faturas']->servico;
+        $data['servico'] = DB::table('tb_tipo_servicos')->where('Codigo', 37)->first();
+        $data['total_geral'] = $data['Total_fatura']->TotalPreco;
+
+        $data['extenso'] = $this->extenso->index($data['total_geral']);;
+        \QrCode::size(250)
+            ->format('png')
+            ->generate("Nº matrícula:$codigo_aluno \n Nome: $nome_aluno \n Curso:$curso_aluno \n Polo: $polo_aluno \n
+        Periodo:$turno_aluno \n Servico: Matrsícula", public_path('img/qrcode.png'));
+
+
+        //Recuperar prova do candidato
+        $candidatoProva = CandidatoProva::where('candidato_id', $codigo_aluno)->where('status', 0)->first();
+
+        if ($candidatoProva) {
+            $candidatoProva->load('horario.curso', 'horario.sala', 'horario.periodo', 'prova');
+        }
+
+        $data['candidato_prova'] = $candidatoProva;
+
+        $data['pagamento_utilizador'] = DB::table('mca_tb_utilizador')
+        ->where('codigo_importado', $data['aluno']->codigo_importado)->select('mca_tb_utilizador.nome as nome')->first();
+
+        $pdf = PDF::loadView('pdf.fatura_inscricao_exame_acesso', $data)->setPaper('a5');
+
+        return $pdf->stream('fatura.pdf');
+    }
 
     public function imprimirFaturaDiversos(Request $request, $id)
     {
