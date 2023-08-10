@@ -302,13 +302,6 @@ export default {
 
     };
   },
-  mounted() {
-    
-    this.params.data_inicio = this.data_inicio;
-    // this.params.data_final = this.data_final;
-  
-    this.updateData();
-  },
   watch: {
     options: function (val) {
       this.params.page = val.page;

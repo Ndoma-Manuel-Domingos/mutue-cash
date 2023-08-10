@@ -19,6 +19,19 @@
               <form action="">
                 <div class="card-body">
                   <div class="row">
+                  
+                    <div class="col-12 col-md-2">
+                      <div class="form-group">
+                        <label for="">Codigo Matricula</label>
+                        <input
+                          type="text"
+                          placeholder="informe o número da matricula do estudante!"
+                          class="form-control"
+                          v-model="codigo_matricula"
+                        />
+                      </div>
+                    </div>
+                    
                     <div class="col-12 col-md-2">
                       <div class="form-group">
                         <label for="">Data Inicio</label>
@@ -150,6 +163,7 @@ export default {
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
       operador: "",
+      codigo_matricula: null,
 
       depositos: [],
 
@@ -167,6 +181,10 @@ export default {
         this.params.sort_by = null;
         this.params.order_by = null;
       }
+      this.updateData();
+    },
+    codigo_matricula: function (val) {
+      this.params.codigo_matricula = val;
       this.updateData();
     },
     data_inicio: function (val) {

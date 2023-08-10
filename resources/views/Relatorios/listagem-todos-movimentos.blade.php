@@ -69,10 +69,14 @@
 
 @include('pdf.estudantes.header')
 
-<h5 style="text-align: center; text-transform: uppercase">Lista de todos os movimentos</h5><br>
 <main>
     <table class="table table-stripeds" style="">
+
         <thead>
+            <tr style="background-color: #3F51B5;color: #ffffff;padding: 2px 7px">
+                <th colspan="10" style="padding: 5px;">LISTAGEM DE TODOS OS MOVIMENTOS</th>
+            </tr>
+
             @if($requests && $requests['data_final'])
                 <tr style="background-color: #a1a4b9;color: #ffffff;">
                     <th colspan="4" style="padding: 5px;text-transform: uppercase">OPERADOR:</th>

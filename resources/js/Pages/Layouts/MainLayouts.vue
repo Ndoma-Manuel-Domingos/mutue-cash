@@ -13,6 +13,21 @@
         <div class="ml-auto">
 
           <ul class="navbar-nav">
+            
+            <li class="nav-item">
+              <!-- href="/logout"
+                method="post" -->
+              <Link
+                class="nav-link btn btn-link text-white"
+                as="button"
+                href="/movimentos/bloquear-caixa"
+                type="button"
+              >
+                <i class="fas fa-box"></i>
+                Bloquear Caixa
+              </Link>
+            </li>
+          
             <li class="nav-item">
               <!-- href="/logout"
                 method="post" -->
@@ -102,6 +117,22 @@
             console.error(error);
           });
         
+      },
+      
+      bloaquearCaixa()
+      {
+        axios
+          .get("/movimentos/bloquear-caixa")
+          .then((response) => {
+              // Swal.fire({
+              //   icon: "warning",
+              //   title: "Atenção...",
+              //   text: response.data.message,
+              // });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       }
     },
   };

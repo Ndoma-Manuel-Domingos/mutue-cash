@@ -113,8 +113,7 @@ class SearhController extends Controller
                 $pagamento = Pagamento::whereHas('factura',function($query){
                     $query->where('codigo_descricao', 9)->where('ano_lectivo', $this->anoAtualPrincipal->index());
                 })->where('Codigo_PreInscricao', $resultado->codigo_preinscricao)->where('AnoLectivo', $this->anoAtualPrincipal->index())->first();
-
-                dd($pagamento);
+                
                 if(filled($pagamento)){
                     return response()->json(["dados" => 'Este candidato já efectuou o pagamento da taxa de inscrição'], 201);
                 }

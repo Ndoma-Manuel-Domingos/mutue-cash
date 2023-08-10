@@ -51,14 +51,14 @@
               <p>Pagamentos</p>
             </Link>
           </li>
-          <li class="nav-item" title="LISTAR CAIXAS">
+          <!-- <li class="nav-item" title="LISTAR CAIXAS">
             <Link
               href="/operacoes/caixas"
               class="nav-link" :class="{active: $page.component == 'Operacoes/Caixas/Index',}">
               <i class="far fa-circle nav-icon"></i>
               <p>Listar Caixas</p>
             </Link>
-          </li>
+          </li> -->
 
         </ul>
       </li>

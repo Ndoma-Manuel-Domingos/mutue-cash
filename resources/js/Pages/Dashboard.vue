@@ -6,7 +6,9 @@
           <div class="col-sm-6">
             <h1 class="m-0">Dashboard</h1>
           </div>
-          <div class="col-sm-6"></div>
+          <div class="col-sm-6">
+            <h1 class="m-0 text-right" v-if="caixa">{{ caixa.code }}</h1>
+          </div>
         </div>
       </div>
     </div>
@@ -125,7 +127,7 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["total_depositado", "total_pagamento", "ano_lectivos", "ano_lectivo_activo_id"],
+  props: ["total_depositado", "total_pagamento", "ano_lectivos", "ano_lectivo_activo_id", "caixa"],
   components: {
     Link,
   },

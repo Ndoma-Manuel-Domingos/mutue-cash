@@ -99,10 +99,9 @@
 
                     </th>
                     <th style="text-align: right;padding: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                    <th
-                        style="text-align: left;padding: 1px;border-bottom: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
-                        <!--<b>{{ $aluno->classe }}º Ano</b> |--> <b>Turno:</b> {{ $aluno->turno }}
-                        <!--  | <b>Turma:</b>{{ $aluno->turma }}  -->
+                    <th style="text-align: left;padding: 1px;border-bottom: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
+                        
+                       <b>Turno:</b> {{ $aluno->turno }}
                         <br><b>Polo:</b> {{ $aluno->polo }} <b>Polo de pag.:</b>
                         @if ($aluno->AlunoCacuaco == 'SIM')
                             <span> Cacuaco</span>

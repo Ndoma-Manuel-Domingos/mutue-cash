@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AnoLectivo;
+use App\Models\Caixa;
 use App\Models\Deposito;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
@@ -22,6 +23,15 @@ class RelatorioController extends Controller
     
     public function fechoCaixaOperador(Request $request)
     {
+            
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+    
+    
         $user = auth()->user();
      
         $ano = AnoLectivo::where('status', '1')->first();
@@ -205,6 +215,13 @@ class RelatorioController extends Controller
     public function extratoDeposito(Request $request)
     {
         $user = auth()->user();
+              
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
         
         $ano = AnoLectivo::where('status', '1')->first();
                 
@@ -224,6 +241,9 @@ class RelatorioController extends Controller
              })->when($request->operador, function($query, $value){
                  $query->where('created_by', $value);
              })
+             ->when($request->codigo_matricula, function($query, $value){
+                $query->where('codigo_matricula_id', $value);
+            })
              ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
              ->orderBy('codigo', 'desc')
              ->paginate(10)
@@ -235,7 +255,11 @@ class RelatorioController extends Controller
                 $query->where('created_at', '<=' ,Carbon::parse($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
-            })->sum('valor_depositar');
+            })
+            ->when($request->codigo_matricula, function($query, $value){
+                $query->where('codigo_matricula_id', $value);
+            })
+            ->sum('valor_depositar');
     
         
         }else {
@@ -246,6 +270,9 @@ class RelatorioController extends Controller
                 $query->where('created_at', '<=' ,Carbon::parse($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
+            })
+            ->when($request->codigo_matricula, function($query, $value){
+                $query->where('codigo_matricula_id', $value);
             })
             ->where('created_by', $user->codigo_importado)
             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
@@ -259,6 +286,9 @@ class RelatorioController extends Controller
                 $query->where('created_at', '<=' ,Carbon::parse($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
+            })
+            ->when($request->codigo_matricula, function($query, $value){
+                $query->where('codigo_matricula_id', $value);
             })
             ->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
@@ -274,6 +304,14 @@ class RelatorioController extends Controller
     
     public function extratoPagamento(Request $request)
     {
+            
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         $user = auth()->user();
         
         $ano = AnoLectivo::where('status', '1')->first();
@@ -324,12 +362,24 @@ class RelatorioController extends Controller
     
     public function pdf()
     {
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
     }
     
     public function excel()
     {
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
     }
     
 
