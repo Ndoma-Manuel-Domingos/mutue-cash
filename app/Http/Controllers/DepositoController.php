@@ -30,6 +30,14 @@ class DepositoController extends Controller
     {
     
         $user = auth()->user();
+        
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
                  
          // utilizadores validadores
          // utilizadores adiministrativos
@@ -171,6 +179,15 @@ class DepositoController extends Controller
     
     public function pdf(Request $request)
     {
+    
+            
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+
         $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })->when($request->data_final, function($query, $value){
@@ -192,12 +209,27 @@ class DepositoController extends Controller
     
       
     public function excel(Request $request)
-    {
+    {          
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+
         return Excel::download(new DepositosExport($request), 'lista-de-depositos.xlsx');
     }
       
     public function imprimir(Request $request)
     {
+               
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         $data['item'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })->when($request->data_final, function($query, $value){

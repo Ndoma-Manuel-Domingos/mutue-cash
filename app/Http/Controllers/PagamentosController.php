@@ -70,6 +70,14 @@ class PagamentosController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
 
         if($request->data_inicio){
             $request->data_inicio = $request->data_inicio;
@@ -136,6 +144,15 @@ class PagamentosController extends Controller
 
     public function pdf(Request $request)
     {
+    
+            
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         $ano = AnoLectivo::where('status', '1')->first();
 
         if(!$request->ano_lectivo){
@@ -175,7 +192,14 @@ class PagamentosController extends Controller
 
 
     public function excel(Request $request)
-    {
+    {           
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         return Excel::download(new PagamentosExport($request), 'lista-de-pagamentos.xlsx');
     }
 
@@ -212,6 +236,14 @@ class PagamentosController extends Controller
 
     public function create(Request $request)
     {
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         $user = auth()->user();
 
         $data['forma_pagamentos'] = FormaPagamento::where('status', 1)->get();
@@ -222,7 +254,14 @@ class PagamentosController extends Controller
 
     public function getTodasReferencias(Request $request, $codigo_matricula)
     {
-
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
 
         $referencias = DB::table('factura')
@@ -257,6 +296,14 @@ class PagamentosController extends Controller
 
     public function faturaByReference(Request $request)
     {
+            
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         $codigo_fatura = $request->get('codigo_fatura');
 
         $negociacao = DB::table('negociacao_dividas')->where('codigo_fatura', $codigo_fatura)->first();
@@ -321,6 +368,7 @@ class PagamentosController extends Controller
 
     public function aplicarMultaMes($data, $mes_id)
     {
+    
         $resultado = null;
 
         try {
@@ -343,7 +391,13 @@ class PagamentosController extends Controller
 
     public function salvarPagamentosDiversos(Request $request, $codigo_matricula)
     {
-
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
         $id = $aluno->admissao->preinscricao->Codigo;
@@ -1370,8 +1424,6 @@ class PagamentosController extends Controller
     return Response()->json('Pagamento enviado com sucesso!');
   }
 
-
-
     public function cobrarFaturaNegociacao($codigo_matricula)
     {
         $negociacao = DB::table('factura')->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
@@ -1452,7 +1504,14 @@ class PagamentosController extends Controller
 
     public function faturaDiversos(Request $request, $codigo_matricula)
     {
-
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
 
         $alunoRepository = $this->alunoRepository->dadosAlunoLogado($aluno->admissao->preinscricao->user_id);

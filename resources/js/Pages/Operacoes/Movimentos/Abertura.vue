@@ -195,7 +195,8 @@ export default {
   data() {
     return {
       form: this.$inertia.form({
-        valor_inicial: this.ultimo_movimento ? this.ultimo_movimento.valor_arrecadado_total : 0,
+        valor_inicial: 0,
+        // valor_inicial: this.ultimo_movimento ? this.ultimo_movimento.valor_arrecadado_total : 0,
         caixa_id: "",
       }),
 

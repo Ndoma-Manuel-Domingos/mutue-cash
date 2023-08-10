@@ -7,10 +7,6 @@
         ">
         <AuthLayouts>
 
-            <!-- <video autoplay muted loop id="myVideo">
-              <source src="images/video01.mp4" type="video/mp4">
-            </video> -->
-
             <div class="login-box">
                 <div class="card card-outline">
                     <!-- <h1 class="text-center pt-3" style="color: #006699">
