@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CaixaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\MovimentoController;
@@ -125,6 +126,6 @@ Route::group(["middleware" => "auth"], function () {
 
     Route::get('/saldo/{id}', 'PagamentosEstudanteController@saldo');
 
-    Route::get('/operacoes/caixas', [Caixa::class, 'index']);
-    Route::post('/operacoes/caixas', [Caixa::class, 'store']);
+    Route::get('/operacoes/caixas', [CaixaController::class, 'index']);
+    Route::post('/operacoes/caixas', [CaixaController::class, 'store']);
 });
