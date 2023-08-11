@@ -26,13 +26,13 @@ use PhpOffice\PhpSpreadsheet\Cell\Cell as CellCell;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DepositosExport extends DefaultValueBinder implements FromCollection, WithMapping, WithTitle, WithHeadings, WithDrawings, WithStyles, WithCustomStartCell, WithCustomValueBinder, ShouldAutoSize
+class DepositosExtratoExport extends DefaultValueBinder implements FromCollection, WithMapping, WithTitle, WithHeadings, WithDrawings, WithStyles, WithCustomStartCell, WithCustomValueBinder, ShouldAutoSize
 {
     use TraitHelpers, Exportable;
 
     public $data_inicio;
     public $data_final;
-    public $operador;
+    public $codigo_matricula;
     public $titulo;
     
 
@@ -40,7 +40,9 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
     {
         $this->data_inicio = $request->data_inicio;
         $this->data_final = $request->data_final;
-        $this->titulo = "LISTA DE DEPOSITOS";
+        $this->codigo_matricula = $request->codigo_matricula;
+                
+        $this->titulo = "LISTA DE EXTRATOS DE DEPOSITOS";
     }
 
     public function headings():array
@@ -51,7 +53,6 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
             'Estudante',
             'Saldo depositado',
             'Saldo apos Movimento',
-            'Forma Pagamento',
             'Operador',
             'Ano Lectivo',
             'Data',
@@ -66,9 +67,8 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
             $item->matricula->admissao->preinscricao->Nome_Completo,
             number_format($item->valor_depositar ?? 0, 2, ',', '.'),
             number_format($item->saldo_apos_movimento ?? 0, 2, ',', '.'),
-            $item->forma_pagamento->descricao,
-            $item->user->nome,
-            $item->ano_lectivo->Designacao,
+            $item->user->nome ?? '',
+            $item->ano_lectivo->Designacao ?? '',
             date("Y-m-d", strtotime($item->created_at)),
         ];
     }
@@ -82,11 +82,11 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
         $data['items'] = Deposito::when($this->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })
-        ->when($this->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
-        })
-        ->when($this->operador, function($query, $value){
-            $query->where('created_by', $value);
+        // ->when($this->data_final, function($query, $value){
+        //     $query->where('created_at', '<=' ,Carbon::parse($value));
+        // })
+        ->when($this->codigo_matricula, function($query, $value){
+            $query->where('codigo_matricula_id', $value);
         })
         ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
         ->get();
@@ -122,7 +122,7 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
     {
         $drawing = new Drawing();
         $drawing->setName('Logo');
-        $drawing->setDescription('LISTA DE DEPOSITOS');
+        $drawing->setDescription('LISTA DE EXTRATOS DE DEPOSITOS');
         $drawing->setPath(public_path('/images/logotipo.png'));
         $drawing->setHeight(90);
         $drawing->setCoordinates('A1');
@@ -142,6 +142,8 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
     {
         return 'A10';
     }
+    
+    
     public function styles(Worksheet $sheet)
     {
         //$sheet->getStyle('A7:D7')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');

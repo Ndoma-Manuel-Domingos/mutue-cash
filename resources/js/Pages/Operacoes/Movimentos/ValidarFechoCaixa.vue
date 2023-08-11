@@ -211,6 +211,10 @@
       this.params.operador = val;
       this.updateData();
     },
+    caixa_id: function (val) {
+      this.params.caixa_id = val;
+      this.updateData();
+    },
     data_inicio: function (val) {
       this.params.data_inicio = val;
       this.updateData();

@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DepositosExtratoExport;
+use App\Exports\PagamentosExtratoExport;
 use App\Models\AnoLectivo;
 use App\Models\Caixa;
 use App\Models\Deposito;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
+use App\Models\Matricula;
 use App\Models\Pagamento;
 use App\Models\TipoServico;
+use App\Models\Utilizador;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RelatorioController extends Controller
 {
@@ -302,6 +307,52 @@ class RelatorioController extends Controller
     
     }
     
+    public function pdf_deposito(Request $request)
+    {
+
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+
+        $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
+            $query->where('created_at', '>=' ,Carbon::parse($value) );
+        })
+        ->when($request->data_final, function($query, $value){
+            $query->where('created_at', '<=' ,Carbon::parse($value));
+        })
+        ->when($request->codigo_matricula, function($query, $value){
+            $query->where('codigo_matricula_id', $value);
+        })
+        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+        ->get();
+        
+        $data['matricula'] = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
+        
+        
+        $data['requests'] = $request->all('data_inicio', 'data_final');
+        
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.listagem-depositos-extratos', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
+    }
+    
+      
+    public function excel_deposito(Request $request)
+    {        
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+
+        return Excel::download(new DepositosExtratoExport($request), 'lista-de-extratos-depositos.xlsx');
+    }
+    
     public function extratoPagamento(Request $request)
     {
             
@@ -333,6 +384,7 @@ class RelatorioController extends Controller
                 $query->where('factura.CodigoMatricula', $value);
             })
             ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
+            ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
             ->where('forma_pagamento', 6)
             ->paginate(7)
             ->withQueryString();
@@ -360,26 +412,59 @@ class RelatorioController extends Controller
     }
     
     
-    public function pdf()
+    
+    public function pdf(Request $request)
     {
-                
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
-        }
+        } 
+        
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date("Y-m-d");
+        }   
+        $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
+            $query->where('DataRegisto', '>=' ,Carbon::parse($value) );
+        })
+        // ->when($request->data_final, function($query, $value){
+        //     $query->where('DataRegisto', '<=' ,Carbon::parse($value));
+        // })
+        ->when($request->codigo_matricula, function($query, $value){
+            dd($value);
+            $query->where('factura.CodigoMatricula', $value);
+        })
+        ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
+        ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
+        ->where('forma_pagamento', 6)
+        ->get();
+        
+        $data['requests'] = $request->all('data_inicio', 'data_final');
+
+        $data['ano_lectivo'] = AnoLectivo::where('Codigo', $request->ano_lectivo)->first();
+        $data['operador'] =  Utilizador::where('codigo_importado', $request->operador ?? auth()->user()->codigo_importado)->first();
+
+        
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.listagem-pagamentos-extrato', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
+
     }
     
-    public function excel()
+    public function excel(Request $request)
     {
-                
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
+        
+        return Excel::download(new PagamentosExtratoExport($request), 'lista-de-pagamentos-extrato.xlsx');
     }
     
 

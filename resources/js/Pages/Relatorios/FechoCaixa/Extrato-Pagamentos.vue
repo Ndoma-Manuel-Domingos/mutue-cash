@@ -91,24 +91,26 @@
                       <th>Nº</th>
                       <th>Codigo</th>
                       <th>Matricula</th>
+                      <th>Nome</th>
                       <th>Valor a Pago</th>
                       <th>Valor Pago</th>
                       <th>Data</th>
                       <th>Saldo Restante</th>
-                      <th class="text-center">Detalhe</th>
-                      <th class="text-center">Imprimir</th>
+                      <!-- <th class="text-center">Detalhe</th> -->
+                      <!-- <th class="text-center">Imprimir</th> -->
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="(item, index) in items.data" :key="item.Codigo">
                       <td>{{ index + 1 }}</td>
                       <td>{{ item.Codigo }}</td>
-                      <td>{{ item.CodigoMatricula }}</td>
+                      <td>{{ item.CodigoMatricula ?? '######' }}</td>
+                      <td>{{ item.Nome_Completo }}</td>
                       <td>{{ formatValor(item.valor_depositado) }}</td>
                       <td>{{ formatValor(item.valor_depositado) }}</td>
                       <td>{{ item.DataRegisto ?? "" }}</td>
                       <td>{{ formatValor(0) }}</td>
-                      <td class="text-center">
+                      <!-- <td class="text-center">
                         <a @click="detalhes(item.Codigo)" class="text-primary"
                           ><i class="fas fa-eye"></i
                         ></a>
@@ -118,13 +120,13 @@
                           class="text-danger"
                           @click.prevent="imprimirFatura(item.codigo_factura)"
                           ><i class="fas fa-print"></i
-                        ></a>
-                      </td>
-                      <td class="text-center" v-else>
+                        ></a> -->
+                      <!-- </td> -->
+                      <!-- <td class="text-center" v-else>
                         <a class="text-secondary" href=""
                           ><i class="fas fa-print"></i
                         ></a>
-                      </td>
+                      </td> -->
                     </tr>
                   </tbody>
                 </table>
@@ -309,7 +311,7 @@ export default {
     return {
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
-      codigo_matricula: null,
+      codigo_matricula: "",
 
       pagamento: [],
       items_pagamento: [],
@@ -385,7 +387,7 @@ export default {
     },
 
     imprimirPDF() {
-      window.open(`/relatorios/fecho-caixa/operador/pdf`, "_blank");
+      window.open(`/relatorios/fecho-caixa/operador/pdf?codigo_matricula=${this.codigo_matricula}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
 
     imprimirEXCEL() {

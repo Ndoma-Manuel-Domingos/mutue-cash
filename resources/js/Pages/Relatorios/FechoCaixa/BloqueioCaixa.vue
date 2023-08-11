@@ -74,7 +74,7 @@
                   Swal.fire({
                     title: "Bom Trabalho",
                     text: "Abertura do caixa realizado com sucesso!",
-                    icon: "error",
+                    // icon: "error",
                     confirmButtonColor: "#3d5476",
                     confirmButtonText: "Ok",
                     onClose: () => {},

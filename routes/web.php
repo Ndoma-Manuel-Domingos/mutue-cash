@@ -56,6 +56,9 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/movimentos/validar-fecho/{id}/validar', [MovimentoController::class, 'validarFechoCaixaAdmin']);
     Route::get('/movimentos/validar-fecho/{id}/cancelar', [MovimentoController::class, 'cancelarFechoCaixaAdmin']);
     Route::get('/movimentos/confirmar-senhar-admin/{id}', [MovimentoController::class, 'confirmarSenhaAdmin']);
+    Route::get('/movimentos/bloquear-caixa', [MovimentoController::class, 'bloquearCaixa'])->name('mc.bloquear-caixa');
+    Route::post('/movimentos/bloquear-caixa-store', [MovimentoController::class, 'bloquearCaixaStore'])->name('mc.bloquear-caixa-store');
+    
 
     Route::get('/pagamentos', [PagamentosController::class, 'index'])->name('mc.pagamentos.index');
     Route::get('/pagamentos/criar', [PagamentosController::class, 'create'])->name('mc.pagamentos.create');
@@ -68,6 +71,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/relatorios/fecho-caixa/operador/excel', [RelatorioController::class, 'excel'])->name('mc.fecho-caixa-operador.excel');
     Route::get('/relatorios/extrato-depositos', [RelatorioController::class, 'extratoDeposito'])->name('mc.extrato-depositos.index');
     Route::get('/relatorios/extrato-pagamentos', [RelatorioController::class, 'extratoPagamento'])->name('mc.extrato-pagamentos.index');
+    Route::get('/relatorios/extrato-deposito/pdf', [RelatorioController::class, 'pdf_deposito']);
+    Route::get('/relatorios/extrato-deposito/excel', [RelatorioController::class, 'excel_deposito']);
 
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search'])->name('mc.searh-estudante.index');
