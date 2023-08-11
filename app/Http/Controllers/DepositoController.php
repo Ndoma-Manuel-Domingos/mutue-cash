@@ -35,7 +35,7 @@ class DepositoController extends Controller
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
-        if($caixa->bloqueio == 'Y'){
+        if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
                  
@@ -184,7 +184,7 @@ class DepositoController extends Controller
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
-        if($caixa->bloqueio == 'Y'){
+        if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
 
@@ -213,7 +213,7 @@ class DepositoController extends Controller
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
-        if($caixa->bloqueio == 'Y'){
+        if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
 
@@ -226,7 +226,7 @@ class DepositoController extends Controller
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
-        if($caixa->bloqueio == 'Y'){
+        if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
         

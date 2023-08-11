@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
 use App\Http\Controllers\Extenso;
 use App\Http\Controllers\Divida\ControloDivida;
+use App\Models\Pagamento;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\AlunoRepository;
 use App\Services\DividaService;
@@ -107,16 +108,23 @@ class SearhController extends Controller
                 'tb_cursos.Designacao'
             )->first();
 
-            if ($resultado && $resultado->codigo_tipo_candidatura == 1) {
-                $ano_lectivo = $this->anoAtualPrincipal->index();
-            } elseif($resultado && $resultado->codigo_tipo_candidatura != 1) {
-                if ($resultado->codigo_tipo_candidatura == 2) {
+            if ($resultado) {
+
+                $pagamento = Pagamento::whereHas('factura',function($query){
+                    $query->where('codigo_descricao', 9)->where('ano_lectivo', $this->anoAtualPrincipal->index());
+                })->where('Codigo_PreInscricao', $resultado->codigo_preinscricao)->where('AnoLectivo', $this->anoAtualPrincipal->index())->first();
+                
+                if(filled($pagamento)){
+                    return response()->json(["dados" => 'Este candidato já efectuou o pagamento da taxa de inscrição'], 201);
+                }
+                
+                if($resultado->codigo_tipo_candidatura == 1) {
+                    $ano_lectivo = $this->anoAtualPrincipal->index();
+                }elseif ($resultado->codigo_tipo_candidatura == 2) {
                     $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
                 } else {
                     $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
                 }
-            }else{
-
             }
 
         return response()->json(["dados" => $resultado, "ano_lectivo_id"=>$ano_lectivo], 200);

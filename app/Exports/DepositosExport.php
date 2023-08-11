@@ -196,13 +196,6 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
     public function bindValue(CellCell $cell, $value)
     {
 
-        /* if($cell->getCoordinate()=='A7'){
-          
-         dd($cell->getCoordinate());
-        }
-        
-         dd('Não'); */
-
         if (is_string($value)) {
             $cell->setValueExplicit(strval($value), DataType::TYPE_STRING);
             return true;

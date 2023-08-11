@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CaixaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\MovimentoController;
 use App\Http\Controllers\PagamentosController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\SearhController;
+use App\Models\Caixa;
 use App\Models\Deposito;
 use Illuminate\Support\Facades\Route;
 
@@ -69,6 +71,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/relatorios/fecho-caixa/operador/excel', [RelatorioController::class, 'excel'])->name('mc.fecho-caixa-operador.excel');
     Route::get('/relatorios/extrato-depositos', [RelatorioController::class, 'extratoDeposito'])->name('mc.extrato-depositos.index');
     Route::get('/relatorios/extrato-pagamentos', [RelatorioController::class, 'extratoPagamento'])->name('mc.extrato-pagamentos.index');
+    Route::get('/relatorios/extrato-deposito/pdf', [RelatorioController::class, 'pdf_deposito']);
+    Route::get('/relatorios/extrato-deposito/excel', [RelatorioController::class, 'excel_deposito']);
 
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search'])->name('mc.searh-estudante.index');
@@ -131,7 +135,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/ciclos',  [SearhController::class, 'ciclos']);
     Route::get('/ano-lectivo-actual',  [SearhController::class, 'anoLectivoActual']);
 
-
-
     Route::get('/saldo/{id}', 'PagamentosEstudanteController@saldo');
+
+    Route::get('/operacoes/caixas', [CaixaController::class, 'index']);
+    Route::post('/operacoes/caixas', [CaixaController::class, 'store']);
 });

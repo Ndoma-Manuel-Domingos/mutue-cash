@@ -163,7 +163,7 @@ export default {
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
       operador: "",
-      codigo_matricula: null,
+      codigo_matricula: "",
 
       depositos: [],
 
@@ -224,11 +224,11 @@ export default {
     },
 
     imprimirPDF() {
-      window.open(`/relatorios/fecho-caixa/operador/pdf`, "_blank");
+      window.open(`/relatorios/extrato-deposito/pdf?codigo_matricula=${this.codigo_matricula}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
 
     imprimirEXCEL() {
-      window.open(`/relatorios/fecho-caixa/operador/excel`, "_blank");
+      window.open(`/relatorios/extrato-deposito/excel?codigo_matricula=${this.codigo_matricula}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
   },
 };

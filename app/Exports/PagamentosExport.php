@@ -46,26 +46,22 @@ class PagamentosExport implements FromCollection,
     public function headings():array
     {
         return[
-            'Nº',
-            'Matricula',
-            'Serviço Pago',
-            'Nome',
-            'Curso',
-            'Data',
-            'Total Pago',
+            'Nº Factura',
+            'Valor a pagar',
+            'Valor pago',
+            'Data da factura',
+            'Saldo Restante',
         ];
     }
 
     public function map($item):array
     {
         return[
-            $item->Codigo,
-            $item->matricula,
-            $item->servico,
-            $item->Nome_Completo,
-            $item->curso,
+            $item->codigo_factura,
+            number_format($item->ValorAPagar ?? 0, 2, ',', '.'),
+            number_format($item->valor_depositado ?? 0, 2, ',', '.'),
             date("Y-m-d", strtotime($item->DataRegisto)),
-            number_format($item->Totalgeral ?? 0, 2, ',', '.'),
+            number_format(0, 2, ',', '.'),
         ];
     }
 
@@ -80,25 +76,21 @@ class PagamentosExport implements FromCollection,
         if(!$this->ano_lectivo){
             $this->ano_lectivo = $ano->Codigo;
         }
-        
-        $data['items'] = Pagamento::when($this->data_inicio, function($query, $value){
-            $query->where('created_at', '>=' ,Carbon::parse($value) );
-        })->when($this->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
-        })->when($this->operador, function($query, $value){
+
+        $data['items'] = Pagamento::when($this->data_inicio, function ($query, $value) {
+            $query->where('created_at', '>=', Carbon::parse($value));
+        })
+        // ->when($this->data_final, function ($query, $value) {
+        //     $query->where('created_at', '<', Carbon::parse($value));
+        // })
+        ->when($this->operador, function ($query, $value) {
             $query->where('fk_utilizador', $value);
-        })->when($this->ano_lectivo, function($query, $value){
-            $query->where('tb_pagamentos.AnoLectivo', $value);
+        })
+        ->when($this->ano_lectivo, function ($query, $value) {
+            $query->where('AnoLectivo', $value);
         })
         ->where('forma_pagamento', 6)
-        ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
-        ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-        ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
-        ->leftjoin('tb_cursos', 'tb_matriculas.Codigo_Curso', '=', 'tb_cursos.Codigo')
-        ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
-        ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
         ->orderBy('tb_pagamentos.Codigo', 'desc')
-        ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
         ->get();
         
         return $data['items'];

@@ -74,53 +74,55 @@
     <table class="table table-stripeds" style="">
 
         <thead>
+            
+            <tr style="background-color: #3F51B5;color: #ffffff;padding: 2px 7px">
+                <th colspan="6" style="padding: 5px;">LISTAGEM DE PAGAMENTOS</th>
+            </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Ano Lectivo:</th>
-                <th colspan="6" style="padding: 5px;">{{ $ano_lectivo ? $ano_lectivo->Designacao : 'Todos' }}</th>
+                <th colspan="4" style="padding: 5px;">{{ $ano_lectivo ? $ano_lectivo->Designacao : 'Todos' }}</th>
             </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Operador:</th>
-                <th colspan="6" style="padding: 5px;">{{ $operador ? $operador->nome : 'Todos' }}</th>
+                <th colspan="4" style="padding: 5px;">{{ $operador ? $operador->nome : 'Todos' }}</th>
             </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Data Inicio:</th>
-                <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
+                <th colspan="4" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
             </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Data Final:</th>
-                <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
+                <th colspan="4" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
             </tr>
 
 
             <tr style="background-color: #3F51B5;color: #ffffff;padding: 7px">
-                <th colspan="8">Total: <strong>{{ count($items) }}</strong></th>
+                <th colspan="6" style="padding: 5px;">Total: <strong>{{ count($items) }}</strong></th>
             </tr>
 
             <tr style="background-color: #3F51B5;color: #ffffff">
-                <th style="text-align: center;padding: 4px 2px" >Nº</th>
-                <th style="text-align: center;padding: 4px 2px" >Matricula</th>
-                <th style="text-align: center;padding: 4px 2px" >Serviço Pago</th>
-                <th style="text-align: center;padding: 4px 2px" >Nome</th>
-                <th style="text-align: center;padding: 4px 2px" >Curso</th>
-                <th style="text-align: center;padding: 4px 2px" >Data</th>
-                <th style="text-align: center;padding: 4px 2px" >Total Pago</th>
+                <th style="text-align: center;padding: 4px 2px" >Item</th>
+                <th style="text-align: center;padding: 4px 2px" >Nº Factura</th>
+                <th style="text-align: center;padding: 4px 2px" >Valor a pagar</th>
+                <th style="text-align: center;padding: 4px 2px" >Valor pago</th>
+                <th style="text-align: center;padding: 4px 2px" >Data da factura</th>
+                <th style="text-align: center;padding: 4px 2px" >Saldo Restante</th>
             </tr>
 
         </thead>
         <tbody>
-            @foreach ($items as $item)
+            @foreach ($items as $index => $item)
                 <tr>
-                    <td style="text-align: center;">{{ $item->Codigo ?? '' }}</td>
-                    <td style="text-align: center;">{{ $item->matricula ?? '' }}</td>
-                    <td style="text-align: center;">{{ $item->servico ?? '' }}</td>
-                    <td style="text-align: center;">{{ $item->Nome_Completo ?? '' }}</td>
-                    <td style="text-align: center;">{{ $item->curso ?? '' }}</td>
+                    <td style="text-align: center;">{{ $index + 1 }}</td>
+                    <td style="text-align: center;">{{ $item->codigo_factura ?? '' }}</td>
+                    <td style="text-align: center;">{{ number_format($item->ValorAPagar ?? 0, 2, ',', '.') }} kz</td>
+                    <td style="text-align: center;">{{ number_format($item->valor_depositado ?? 0, 2, ',', '.') }} kz</td>
                     <td style="text-align: center;">{{ date("Y-m-d", strtotime($item->DataRegisto ?? ''))  }}</td>
-                    <td style="text-align: center;">{{ number_format($item->Totalgeral ?? 0, 2, ',', '.') }} kz</td>
+                    <td style="text-align: center;">{{ number_format(0, 2, ',', '.') }} kz</td>
                 </tr>
             @endforeach
         </tbody>

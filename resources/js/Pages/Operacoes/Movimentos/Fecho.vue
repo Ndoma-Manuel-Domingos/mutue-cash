@@ -258,7 +258,7 @@
                   </div>
                 </div>
                 <div class="card-footer">
-                  <button type="submit" class="btn-sm btn-info" v-show="caixa">Fechar</button>
+                  <button type="submit" class="btn-sm btn-info" v-show="caixa">Fechar o Caixa</button>
                   <Link v-if="movimento" @click="imprimirComprovativo(movimento)" class="float-right btn-sm btn-primary"><i class="fas fa-print"></i> Imprimr</Link>
                 </div>
               </div>
