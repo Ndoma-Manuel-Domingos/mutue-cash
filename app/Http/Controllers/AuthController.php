@@ -56,13 +56,16 @@ class AuthController extends Controller
     { 
         $verificar_caixa_aberto = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";
+        $messag2 = "Gostariamos de lembrar ao caro utilizador que não fez o fecho do caixa que abriu.";
     
         if($verificar_caixa_aberto)
         {
+            $message = $messag2;
+            Auth::logout();
             return response()->json(['message' => $message]);
         }
     
-        Auth::logout();
+        // Auth::logout();
 
         return Inertia::location('/login');
     }

@@ -4,10 +4,17 @@
     <div class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
-          <div class="col-sm-8">
+          <div class="col-sm-6">
             <h1 class="m-0">Validação de fechos de caixas</h1>
           </div>
-          <div class="col-sm-4"></div>
+          <div class="col-sm-6">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -119,6 +126,7 @@
                       <th>Caixa</th>
                       <th>Estado Caixa</th>
                       <th>Validação</th>
+                      <th>Motivo</th>
                       <th>V.Abertura</th>
                       <th>V.Pagamentos</th>
                       <th>V.Depositos</th>
@@ -134,6 +142,7 @@
                       <td>{{ item.caixa.nome ?? '' }} </td>
                       <td class="text-uppercase">{{ item.status ?? '' }}</td>
                       <td class="text-uppercase">{{ item.status_admin ?? '' }}</td>
+                      <td class="text-uppercase text-center text-danger">{{ item.motivo_rejeicao ?? 'Nenhum motivo' }}</td>
                       <td>{{ formatValor(item.valor_abertura ?? 0)}}</td>
                       <td>{{ formatValor(item.valor_arrecadado_pagamento ?? 0)}}</td>
                       <td>{{ formatValor(item.valor_arrecadado_depositos ?? 0)}}</td>
@@ -284,24 +293,31 @@
               allowOutsideClick: () => !Swal.isLoading()
             }).then((result) => {
               if (result.isConfirmed) {
-                return fetch(`/movimentos/validar-fecho/${item.codigo}/cancelar`)
-                  .then(response => {
-                        Swal.fire({
-                          title: "Bom Trabalho",
-                          text: "Fecho de Caixa Não Validado!",
-                          icon: "success",
-                          confirmButtonColor: "#3d5476",
-                          confirmButtonText: "Ok",
-                          onClose: () => {},
-                        });
-                        this.$Progress.finish();
-                        this.updateData();
-                  })
-                  .catch(error => {
-                    Swal.showValidationMessage(
-                      `Request failed: ${error}`
-                    )
-                    this.$Progress.fail();
+                Swal.fire({
+                  title: 'Informe o motivo da rejeição ou pelo qual desejas cancelar o fecho!',
+                  input: 'text',
+                  type: 'text',
+                  inputAttributes: {
+                    autocapitalize: 'off'
+                  },
+                  preConfirm: (login) => {
+                    return fetch(`/movimentos/validar-fecho/${item.codigo}/${login}/cancelar`).then(response => {
+                      Swal.fire({
+                        title: "Bom Trabalho",
+                        text: "Fecho de Caixa Não Validado!",
+                        icon: "success",
+                        confirmButtonColor: "#3d5476",
+                        confirmButtonText: "Ok",
+                        onClose: () => {},
+                      });
+                      this.$Progress.finish();
+                      this.updateData();
+                    }).catch(error => {
+                      Swal.showValidationMessage(`Request failed: ${error}`)
+                      this.$Progress.fail();
+                    })
+                  },
+                  allowOutsideClick: () => !Swal.isLoading()
                 })
               }
             })
@@ -391,7 +407,11 @@
     imprimirComprovativo(item) 
     {
       window.open(`/movimentos/imprimir-comprovativo?codigo=${item.codigo}`, "_blank");
-    }
+    },
+    
+    voltarPaginaAnterior() {
+      window.history.back();
+    },
     
   },
 };

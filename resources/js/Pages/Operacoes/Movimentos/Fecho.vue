@@ -6,7 +6,14 @@
           <div class="col-sm-6">
             <h1 class="m-0">Fecho do Caixa</h1>
           </div>
-          <div class="col-sm-6"></div>
+          <div class="col-sm-6">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -258,7 +265,7 @@
                   </div>
                 </div>
                 <div class="card-footer">
-                  <button type="submit" class="btn-sm btn-info" v-show="caixa">Fechar o Caixa</button>
+                  <button type="submit" class="btn-sm btn-info" v-show="caixa" :disabled="isfechado">Fechar o Caixa</button>
                   <Link v-if="movimento" @click="imprimirComprovativo(movimento)" class="float-right btn-sm btn-primary"><i class="fas fa-print"></i> Imprimr</Link>
                 </div>
               </div>
@@ -294,6 +301,7 @@ export default {
       }),
 
       isUpdate: false,
+      isfechado: false,
 
       params: {},
     };
@@ -304,6 +312,7 @@ export default {
     this.form.valor_pagamento = this.formatValor(this.form.valor_pagamento)
     this.form.valor_facturado = this.formatValor(this.form.valor_facturado)
     this.form.valor_depositado = this.formatValor(this.form.valor_depositado)
+    this.isfechado = false;
   },
   
   watch: {
@@ -486,7 +495,8 @@ export default {
             onClose: () => {},
           });
 
-        this.imprimirComprovativo(response.data.data);
+          this.isfechado=true;
+          this.imprimirComprovativo(response.data.data);
 
           // Faça algo com a resposta, se necessário
         } catch (error) {
@@ -510,6 +520,10 @@ export default {
         currency: "AOA",
       }).format(atual);
       return valorFormatado;
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
     },
   },
   

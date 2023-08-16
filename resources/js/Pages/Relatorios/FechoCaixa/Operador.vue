@@ -6,7 +6,14 @@
           <div class="col-sm-6">
             <h1 class="m-0">Fecho de Caixa Oparador</h1>
           </div>
-          <div class="col-sm-6"></div>
+          <div class="col-sm-6">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -321,6 +328,10 @@ export default {
         `/relatorios/fecho-caixa/operador/excel?operador=${this.operador}&ano_lectivo=${this.ano_lectivo}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
         "_blank"
       );
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
     },
   },
 };

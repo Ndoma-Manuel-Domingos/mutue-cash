@@ -262,9 +262,8 @@ class MovimentoController extends Controller
         
     }
     
-    public function cancelarFechoCaixaAdmin($id)
+    public function cancelarFechoCaixaAdmin($id, $motivo)
     {
-        
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
@@ -274,6 +273,7 @@ class MovimentoController extends Controller
         
         $movimento = MovimentoCaixa::findOrFail($id);
         $movimento->status_admin = 'nao validado';
+        $movimento->motivo_rejeicao = $motivo;
         $movimento->operador_admin_id = Auth::user()->codigo_importado;
         $movimento->update();
         

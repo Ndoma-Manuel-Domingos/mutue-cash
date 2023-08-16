@@ -4,9 +4,16 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Depósito de valores efetuados no período de {{ data_inicio }} a {{ data_final }}</h1>
+            <h1 class="m-0">Depósito de valores efetuados no período de {{ formatarData(data_inicio) }} a {{ formatarData(data_final) }}</h1>
           </div>
-          <div class="col-sm-4"></div>
+          <div class="col-sm-4">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -501,6 +508,23 @@
       }).format(atual);
       return valorFormatado;
     },
+
+    formatarData(valor) {
+      let data = new Date(valor);
+      if (valor) {
+        return (
+          (data.getDate() < 10 ? "0" : null) +
+          data.getDate() +
+          "-" +
+          "0" +
+          (data.getMonth() + 1) +
+          "-" +
+          data.getFullYear()
+        );
+      } else {
+        return "00-00-0000";
+      }
+    },
     
     editarItem(item) 
     {   
@@ -529,7 +553,11 @@
     imprimirComprovativo(item) 
     {
       window.open(`/depositos/imprimir-comprovativo?codigo=${item.codigo}`, "_blank");
-    }
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
+    },
     
   },
 };

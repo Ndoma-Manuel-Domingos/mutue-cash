@@ -1110,7 +1110,7 @@ class PagamentosController extends Controller
                         $update = MovimentoCaixa::findOrFail($movimento->codigo);
                         $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
                         $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $fatura_paga->ValorAPagar;
-                        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $update->valor_facturado_pagamento;
                         $update->update();
                     } else {
                         $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
@@ -2496,6 +2496,7 @@ class PagamentosController extends Controller
                 'factura.Desconto as desconto',
                 'tb_preinscricao.Nome_Completo',
                 'tb_preinscricao.saldo',
+                'tb_preinscricao.saldo_anterior',
                 'factura.TotalMulta as multa',
                 'tb_ano_lectivo.Designacao as anoDesignacao',
                 'tb_ano_lectivo.Codigo as anoCodigo',
@@ -2545,6 +2546,7 @@ class PagamentosController extends Controller
                     'factura.Desconto as desconto',
                     'tb_preinscricao.Nome_Completo',
                     'tb_preinscricao.saldo',
+                    'tb_preinscricao.saldo_anterior',
                     'factura.TotalMulta as multa',
                     'tb_ano_lectivo.Designacao as anoDesignacao',
                     'tb_ano_lectivo.Codigo as anoCodigo',

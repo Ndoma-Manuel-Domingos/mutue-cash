@@ -54,7 +54,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/movimentos/validar-fecho', [MovimentoController::class, 'validarFechoCaixa'])->name('mc.movimentos-validar-fecho-caixa');
 
     Route::get('/movimentos/validar-fecho/{id}/validar', [MovimentoController::class, 'validarFechoCaixaAdmin']);
-    Route::get('/movimentos/validar-fecho/{id}/cancelar', [MovimentoController::class, 'cancelarFechoCaixaAdmin']);
+    Route::get('/movimentos/validar-fecho/{id}/{motivo}/cancelar', [MovimentoController::class, 'cancelarFechoCaixaAdmin']);
     Route::get('/movimentos/confirmar-senhar-admin/{id}', [MovimentoController::class, 'confirmarSenhaAdmin']);
     Route::get('/movimentos/bloquear-caixa', [MovimentoController::class, 'bloquearCaixa'])->name('mc.bloquear-caixa');
     Route::post('/movimentos/bloquear-caixa-store', [MovimentoController::class, 'bloquearCaixaStore'])->name('mc.bloquear-caixa-store');

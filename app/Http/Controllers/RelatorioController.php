@@ -65,7 +65,6 @@ class RelatorioController extends Controller
         
         
         if($user->tipo_grupo->grupo->designacao == "Administrador"){
-        
             /** */
             $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
                 $query->where('created_at', '>=' ,Carbon::parse($value) );
@@ -77,8 +76,7 @@ class RelatorioController extends Controller
                 $query->where('tb_pagamentos.AnoLectivo', $value);
             })->when($request->servico_id, function($query, $value){
                 $query->where('tb_pagamentosi.Codigo_Servico', $value);
-            })
-            ->where('forma_pagamento', 6)
+            })->where('forma_pagamento', 6)
             ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
             ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
             ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
@@ -115,10 +113,12 @@ class RelatorioController extends Controller
             })->when($request->servico_id, function($query, $value){
                 $query->where('tb_pagamentosi.Codigo_Servico', $value);
             })
-            ->where('forma_pagamento', 6)
-            ->where('estado', 1)
+            ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
+            ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
+            ->where('tb_pagamentos.forma_pagamento', 6)
+            ->where('tb_pagamentos.estado', 1)
             // ->where('fk_utilizador', $user->codigo_importado)
-            ->sum('valor_depositado');
+            ->sum('tb_pagamentos.valor_depositado');
             
             /** */
     
@@ -178,11 +178,12 @@ class RelatorioController extends Controller
             })->when($request->servico_id, function($query, $value){
                 $query->where('tb_pagamentosi.Codigo_Servico', $value);
             })
-            ->where('forma_pagamento', 6)
-            ->where('estado', 1)
-            ->where('fk_utilizador', $user->codigo_importado)
-            ->sum('valor_depositado');
-
+            ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
+            ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
+            ->where('tb_pagamentos.forma_pagamento', 6)
+            ->where('tb_pagamentos.estado', 1)
+            ->where('tb_pagamentos.fk_utilizador', $user->codigo_importado)
+            ->sum('tb_pagamentos.valor_depositado');
         }
         
         $lista_geral = [];
@@ -333,6 +334,7 @@ class RelatorioController extends Controller
         
         
         $data['requests'] = $request->all('data_inicio', 'data_final');
+        $data['operador'] =  Utilizador::where('codigo_importado', $request->operador ?? auth()->user()->codigo_importado)->first();
         
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadView('Relatorios.listagem-depositos-extratos', $data);

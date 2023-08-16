@@ -10,6 +10,7 @@ use App\Models\GrupoUtilizador;
 use App\Models\Matricula;
 use App\Models\MovimentoCaixa;
 use App\Models\PreInscricao;
+use App\Models\Utilizador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -200,6 +201,7 @@ class DepositoController extends Controller
         ->get();
         
         $data['requests'] = $request->all('data_inicio', 'data_final');
+        $data['operador'] =  Utilizador::where('codigo_importado', $request->operador ?? auth()->user()->codigo_importado)->first();
         
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadView('Relatorios.listagem-depositos', $data);

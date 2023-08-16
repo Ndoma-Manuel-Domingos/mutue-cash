@@ -6,7 +6,14 @@
           <div class="col-sm-6">
             <h1 class="m-0">Extratos de Pagamentos</h1>
           </div>
-          <div class="col-sm-6"></div>
+          <div class="col-sm-6">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -392,6 +399,10 @@ export default {
 
     imprimirEXCEL() {
       window.open(`/relatorios/fecho-caixa/operador/excel`, "_blank");
+    },
+    
+    voltarPaginaAnterior() {
+      window.history.back();
     },
   },
 };

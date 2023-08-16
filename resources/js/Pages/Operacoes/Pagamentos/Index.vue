@@ -4,8 +4,16 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Pagamentos de valores efetuados no período de {{ data_inicio }} a {{ data_final }}</h1>
+            <h1 class="m-0">Pagamentos de valores efetuados no período de {{ formatarData(data_inicio) }} a {{ formatarData(data_final) }}</h1>
           </div>
+          <div class="col-sm-4">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
           <div class="col-sm-4"></div>
         </div>
       </div>
@@ -88,18 +96,12 @@
                 <Link
                   :href="route('mc.pagamentos.create')"
                   class="btn btn-info float-right"
-                  type="button"
-                >
+                  type="button">
                   Novos Pagamentos
                 </Link>
 
-                <button
-                  class="btn btn-success float-right mr-1"
-                  type="button"
-                  @click="imprimirEXCEL"
-                >
-                  <i class="fas fa-file-excel"></i>
-                  EXCEL
+                <button class="btn btn-success float-right mr-1" type="button" @click="imprimirEXCEL">
+                  <i class="fas fa-file-excel"></i>EXCEL
                 </button>
 
                 <button
@@ -332,6 +334,8 @@ export default {
       this.updateData();
     },
   },
+
+
   methods: {
     updateData() {
       this.$Progress.start();
@@ -367,6 +371,25 @@ export default {
       return valorFormatado;
     },
 
+    
+    formatarData(valor) {
+      let data = new Date(valor);
+      if (valor) {
+        return (
+          (data.getDate() < 10 ? "0" : null) +
+          data.getDate() +
+          "-" +
+          "0" +
+          (data.getMonth() + 1) +
+          "-" +
+          data.getFullYear()
+        );
+      } else {
+        return "00-00-0000";
+      }
+    },
+
+    
 
     imprimirFatura(codigo_fatura) {
       window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
@@ -385,6 +408,10 @@ export default {
         `/pagamentos/excel?operador=${this.operador}&ano_lectivo=${this.ano_lectivo}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
         "_blank"
       );
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
     },
   },
 };

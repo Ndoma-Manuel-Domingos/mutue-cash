@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><!DOCTYPE html>
-        <title>RELATÓRIO DOS DEPOSITOS</title>
+        <title>RELATÓRIO DE DEPÓSITOS</title>
     
         <style type="text/css">
             *{
@@ -62,6 +62,17 @@
             }
             strong{
                 font-size: 10px;
+            }
+
+            footer {
+                color: #777777;
+                width: 100%;
+                height: 30px;
+                position: absolute;
+                bottom: 0;
+                border-top: 1px solid #AAAAAA;
+                padding: 8px 0;
+                text-align: center;
             }
         </style>
     </head>
@@ -128,6 +139,21 @@
             @endforeach
         </tbody>
     </table> 
+
+    <div >
+        <br>
+        <br><br><br>
+        <p style="text-align:center;">Assinatura<br><br>
+            __________________________ <br><br>
+            {{ $operador ? $operador->nome : 'Todos' }}
+
+        </p>
+    </div>
+
+    <footer style="width: 100%; left: -10px; font-size: 10px!important;">
+        Documento processado pelo software MUTUE CASH - Gestão Universitária, desenvolvido pela Mutue - Soluções Tecnológicas
+        Inteligentes.
+    </footer>
 </main>
 
 </body>
