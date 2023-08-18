@@ -11,6 +11,7 @@ use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\Matricula;
 use App\Models\Pagamento;
+use App\Models\PreInscricao;
 use App\Models\TipoServico;
 use App\Models\Utilizador;
 use Illuminate\Http\Request;
@@ -321,9 +322,9 @@ class RelatorioController extends Controller
         $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })
-        ->when($request->data_final, function($query, $value){
+        /*->when($request->data_final, function($query, $value){
             $query->where('created_at', '<=' ,Carbon::parse($value));
-        })
+        })*/
         ->when($request->codigo_matricula, function($query, $value){
             $query->where('codigo_matricula_id', $value);
         })
@@ -358,58 +359,100 @@ class RelatorioController extends Controller
     public function extratoPagamento(Request $request)
     {
             
+        $user = auth()->user();
+
+
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-    
+        
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
-        
-        $user = auth()->user();
-        
-        $ano = AnoLectivo::where('status', '1')->first();
-        
-        
-        if($request->data_inicio){
-            $request->data_inicio = $request->data_inicio;
-        }else{
-            $request->data_inicio = date("Y-m-d");
-        }        
-        
-        if($user->tipo_grupo->grupo->designacao == "Administrador"){
-        
-            $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('DataRegisto', '>=' ,Carbon::parse($value) );
-            })->when($request->data_final, function($query, $value){
-                $query->where('DataRegisto', '<=' ,Carbon::parse($value));
-            })->when($request->codigo_matricula, function($query, $value){
-                $query->where('factura.CodigoMatricula', $value);
-            })
-            ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
-            ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
-            ->where('forma_pagamento', 6)
-            ->paginate(7)
-            ->withQueryString();
 
-        }else {
+        $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
         
-            $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('DataRegisto', '>=' ,Carbon::parse($value) );
-            })->when($request->data_final, function($query, $value){
-                $query->where('DataRegisto', '<=' ,Carbon::parse($value));
-            })->when($request->codigo_matricula, function($query, $value){
-                $query->where('factura.CodigoMatricula', $value);
-            })
-            ->where('fk_utilizador', $user->codigo_importado)
-            ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
-            ->where('forma_pagamento', 6)
-            ->paginate(7)
-            ->withQueryString();
-            
+        if($request->codigo_matricula!=NULL){
+            if(blank($estudante)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->codigo_matricula.'! Informe o nº de candidatura ');
+            }
         }
 
-        
+        if($estudante){
+            $request->codigo_matricula = $estudante->admissao->preinscricao->Codigo??NULL;
+        }else{
+            $request->codigo_matricula = NULL; 
+        }
 
+        if ($request->data_inicio) {
+            $request->data_inicio = $request->data_inicio;
+        } else {
+            $request->data_inicio = date("Y-m-d");
+        }
+
+        // dd($request->codigo_matricula);
+
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+
+        if ($user->tipo_grupo->grupo->designacao == "Administrador") {
+
+            $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso', 'operador_novos','operador_antigo','utilizadores')
+                ->when($request->data_inicio, function ($query, $value) {
+                    $query->where('created_at', '>=', Carbon::parse($value));
+                })
+                ->when($request->data_final, function ($query, $value) {
+                    $query->where('created_at', '<=', Carbon::parse($value));
+                })
+                ->when($request->operador, function ($query, $value) {
+                    $query->where('fk_utilizador', $value);
+                })
+                ->when($request->ano_lectivo, function ($query, $value) {
+                    $query->where('AnoLectivo', $value);
+                })
+                ->when($request->codigo_matricula, function($query, $value) {
+                    $query->where('Codigo_PreInscricao', $value);
+                })
+                ->where('forma_pagamento', 6)
+                ->orderBy('tb_pagamentos.Codigo', 'desc')
+                ->paginate(10)
+                ->withQueryString();
+
+                // dd($data['items']);
+
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        } else {
+            $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
+                ->when($request->data_inicio, function ($query, $value) {
+                    $query->where('created_at', '>=', Carbon::parse($value));
+                })
+                ->when($request->data_final, function ($query, $value) {
+                    $query->where('created_at', '<=', Carbon::parse($value));
+                })
+                ->when($request->operador, function ($query, $value) {
+                    $query->where('fk_utilizador', $value);
+                })
+                ->when($request->ano_lectivo, function ($query, $value) {
+                    $query->where('AnoLectivo', $value);
+                })
+                ->when($request->codigo_matricula, function($query, $value) {
+                    $query->where('Codigo_PreInscricao', $value);
+                })
+                ->where('fk_utilizador', $user->codigo_importado)
+                ->where('forma_pagamento', 6)
+                ->orderBy('tb_pagamentos.Codigo', 'desc')
+                ->paginate(10)
+                ->withQueryString();
+
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        }
+
+        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
+
+        
         return Inertia::render('Relatorios/FechoCaixa/Extrato-Pagamentos', $data);
     }
     
@@ -436,7 +479,6 @@ class RelatorioController extends Controller
         //     $query->where('DataRegisto', '<=' ,Carbon::parse($value));
         // })
         ->when($request->codigo_matricula, function($query, $value){
-            dd($value);
             $query->where('factura.CodigoMatricula', $value);
         })
         ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')

@@ -191,9 +191,9 @@ class DepositoController extends Controller
 
         $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
-        })->when($request->data_final, function($query, $value){
+        })/*->when($request->data_final, function($query, $value){
             $query->where('created_at', '<=' ,Carbon::parse($value));
-        })
+        })*/
         ->when($request->operador, function($query, $value){
             $query->where('created_by', $value);
         })

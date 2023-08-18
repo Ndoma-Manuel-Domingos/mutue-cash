@@ -49,6 +49,11 @@ class Factura extends Model
     {
         return $this->belongsTo(Matricula::class, 'CodigoMatricula', 'Codigo');
     }
+    
+    public function candidato()
+    {
+        return $this->belongsTo(PreInscricao::class, 'codigo_preinscricao');
+    }
 
     public function items()
     {

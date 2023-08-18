@@ -96,7 +96,7 @@ class PagamentosController extends Controller
 
         if ($user->tipo_grupo->grupo->designacao == "Administrador") {
 
-            $data['items'] = Pagamento::with('factura')
+            $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso', 'operador_novos','operador_antigo','utilizadores')
                 ->when($request->data_inicio, function ($query, $value) {
                     $query->where('created_at', '>=', Carbon::parse($value));
                 })
@@ -116,7 +116,7 @@ class PagamentosController extends Controller
 
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         } else {
-            $data['items'] = Pagamento::with('factura')
+            $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
                 ->when($request->data_inicio, function ($query, $value) {
                     $query->where('created_at', '>=', Carbon::parse($value));
                 })
@@ -174,6 +174,7 @@ class PagamentosController extends Controller
         ->when($request->ano_lectivo, function ($query, $value) {
             $query->where('AnoLectivo', $value);
         })
+        ->with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
         ->where('forma_pagamento', 6)
         ->orderBy('tb_pagamentos.Codigo', 'desc')
         ->get();

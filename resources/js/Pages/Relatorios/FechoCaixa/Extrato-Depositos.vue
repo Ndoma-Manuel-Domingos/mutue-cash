@@ -4,7 +4,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Extratos de Depositos</h1>
+            <h1 class="m-0">Extratos de Depósitos de {{ data_inicio+' a '+data_final }}</h1>
           </div>
           <div class="col-sm-6">
             <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">

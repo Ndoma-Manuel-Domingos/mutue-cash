@@ -4,7 +4,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Fecho de Caixa Oparador</h1>
+            <h3 class="m-0">Fecho de Caixa do Oparador de {{ data_inicio+' a '+ data_final }} </h3>
           </div>
           <div class="col-sm-6">
             <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
@@ -253,8 +253,8 @@ export default {
   components: { Link, Paginacao },
   data() {
     return {
-      data_inicio: "",
-      data_final: "",
+      data_inicio: new Date().toISOString().substr(0, 10),
+      data_final: new Date().toISOString().substr(0, 10),
       operador: "",
       ano_lectivo: "",
       servico_id: "",
