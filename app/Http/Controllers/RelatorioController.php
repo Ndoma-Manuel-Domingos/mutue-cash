@@ -231,6 +231,25 @@ class RelatorioController extends Controller
         }
         
         $ano = AnoLectivo::where('status', '1')->first();
+
+        $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
+        $candidato = PreInscricao::find($request->candidato_id);
+        
+        if($request->codigo_matricula!=NULL){
+            if(blank($estudante)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->codigo_matricula.'! Informe o nº de candidatura ');
+            }
+        }elseif($request->candidato_id!=NULL){
+            if(blank($candidato)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->candidato_id.'! Informe o nº de matricula caso tenha ');
+            }
+        }
+
+        if($estudante){
+            $request->codigo_matricula = $estudante->admissao->preinscricao->Codigo??NULL;
+        }elseif($candidato){
+            $request->codigo_matricula = $candidato->Codigo; 
+        }
                 
         if($request->data_inicio){
             $request->data_inicio = $request->data_inicio;
@@ -251,7 +270,7 @@ class RelatorioController extends Controller
              ->when($request->codigo_matricula, function($query, $value){
                 $query->where('codigo_matricula_id', $value);
             })
-             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao', 'candidato'])
              ->orderBy('codigo', 'desc')
              ->paginate(10)
              ->withQueryString();
@@ -265,6 +284,8 @@ class RelatorioController extends Controller
             })
             ->when($request->codigo_matricula, function($query, $value){
                 $query->where('codigo_matricula_id', $value);
+            })->when($request->codigo_matricula, function($query, $value) {
+                $query->where('Codigo_PreInscricao', $value);
             })
             ->sum('valor_depositar');
     
@@ -282,7 +303,7 @@ class RelatorioController extends Controller
                 $query->where('codigo_matricula_id', $value);
             })
             ->where('created_by', $user->codigo_importado)
-            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao', 'candidato'])
             ->orderBy('codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
@@ -296,6 +317,8 @@ class RelatorioController extends Controller
             })
             ->when($request->codigo_matricula, function($query, $value){
                 $query->where('codigo_matricula_id', $value);
+            })->when($request->codigo_matricula, function($query, $value) {
+                $query->where('Codigo_PreInscricao', $value);
             })
             ->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
@@ -319,6 +342,25 @@ class RelatorioController extends Controller
             return redirect()->route('mc.bloquear-caixa');
         }
 
+        $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
+        $candidato = PreInscricao::find($request->candidato_id);
+        
+        if($request->codigo_matricula!=NULL){
+            if(blank($estudante)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->codigo_matricula.'! Informe o nº de candidatura ');
+            }
+        }elseif($request->candidato_id!=NULL){
+            if(blank($candidato)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->candidato_id.'! Informe o nº de matricula caso tenha ');
+            }
+        }
+
+        if($estudante){
+            $request->codigo_matricula = $estudante->admissao->preinscricao->Codigo??NULL;
+        }elseif($candidato){
+            $request->codigo_matricula = $candidato->Codigo; 
+        }
+
         $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })
@@ -327,8 +369,10 @@ class RelatorioController extends Controller
         })*/
         ->when($request->codigo_matricula, function($query, $value){
             $query->where('codigo_matricula_id', $value);
+        })->when($request->codigo_matricula, function($query, $value) {
+            $query->where('Codigo_PreInscricao', $value);
         })
-        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao', 'candidato'])
         ->get();
         
         $data['matricula'] = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
@@ -370,17 +414,22 @@ class RelatorioController extends Controller
         }
 
         $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
+        $candidato = PreInscricao::find($request->candidato_id);
         
         if($request->codigo_matricula!=NULL){
             if(blank($estudante)){
                 return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->codigo_matricula.'! Informe o nº de candidatura ');
             }
+        }elseif($request->candidato_id!=NULL){
+            if(blank($candidato)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->candidato_id.'! Informe o nº de matricula caso tenha ');
+            }
         }
 
         if($estudante){
             $request->codigo_matricula = $estudante->admissao->preinscricao->Codigo??NULL;
-        }else{
-            $request->codigo_matricula = NULL; 
+        }elseif($candidato){
+            $request->codigo_matricula = $candidato->Codigo; 
         }
 
         if ($request->data_inicio) {
@@ -465,7 +514,26 @@ class RelatorioController extends Controller
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
-        } 
+        }
+
+        $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
+        $candidato = PreInscricao::find($request->candidato_id);
+        
+        if($request->codigo_matricula!=NULL){
+            if(blank($estudante)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->codigo_matricula.'! Informe o nº de candidatura ');
+            }
+        }elseif($request->candidato_id!=NULL){
+            if(blank($candidato)){
+                return redirect()->back()->withErrors('Não foi possível encontrar o estudante com o nº : ' . $request->candidato_id.'! Informe o nº de matricula caso tenha ');
+            }
+        }
+
+        if($estudante){
+            $request->codigo_matricula = $estudante->admissao->preinscricao->Codigo??NULL;
+        }elseif($candidato){
+            $request->codigo_matricula = $candidato->Codigo; 
+        }
         
         if($request->data_inicio){
             $request->data_inicio = $request->data_inicio;
@@ -478,8 +546,8 @@ class RelatorioController extends Controller
         // ->when($request->data_final, function($query, $value){
         //     $query->where('DataRegisto', '<=' ,Carbon::parse($value));
         // })
-        ->when($request->codigo_matricula, function($query, $value){
-            $query->where('factura.CodigoMatricula', $value);
+        ->when($request->codigo_matricula, function($query, $value) {
+            $query->where('tb_pagamentos.Codigo_PreInscricao', $value);
         })
         ->leftjoin('factura', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
         ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')

@@ -27,14 +27,29 @@
                 <div class="card-body">
                   <div class="row">
                   
-                    <div class="col-12 col-md-2">
+                    <div class="col-12 col-md-2" >
                       <div class="form-group">
-                        <label for="">Codigo Matricula</label>
+                        <label for="">Nº do Estudante</label>
                         <input
                           type="text"
                           placeholder="informe o número da matricula do estudante!"
                           class="form-control"
+                          :disabled="disabled2"
+                          @keyup="disableTo"
                           v-model="codigo_matricula"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                      <div class="form-group">
+                        <label for="">Nº do Candidato</label>
+                        <input
+                          type="text"
+                          placeholder="informe o número do candidato!"
+                          class="form-control"
+                          :disabled="disabled"
+                          @keyup="disableTo"
+                          v-model="candidato_id"
                         />
                       </div>
                     </div>
@@ -106,7 +121,8 @@
                   <thead>
                     <tr>
                       <th>Nº Deposito</th>
-                      <th>Matricula</th>
+                      <th>Nº Matricula</th>
+                      <th>Nº Candidatura</th>
                       <th>Estudante</th>
                       <th>Saldo depositado</th>
                       <th>Saldo após Movimento</th>
@@ -120,9 +136,10 @@
                   <tbody>
                     <tr v-for="item in items.data" :key="item.codigo">
                       <td>{{ item.codigo }}</td>
-                      <td>{{ item.codigo_matricula_id }}</td>
+                      <td>{{ item.codigo_matricula_id?? 'Candidato'}}</td>
+                      <td>{{item.Codigo_PreInscricao?? 'Estudante Regular'}}</td>
                       <td>
-                        {{ item.matricula.admissao.preinscricao.Nome_Completo }}
+                        {{ item.matricula ? item.matricula.admissao.preinscricao.Nome_Completo : item.candidato ? item.candidato.Nome_Completo: NULL }}
                       </td>
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
@@ -171,6 +188,9 @@ export default {
       data_final: new Date().toISOString().substr(0, 10),
       operador: "",
       codigo_matricula: "",
+      candidato_id: "",
+      disabled: false,
+      disabled2: false,
 
       depositos: [],
 
@@ -192,6 +212,10 @@ export default {
     },
     codigo_matricula: function (val) {
       this.params.codigo_matricula = val;
+      this.updateData();
+    },
+    candidato_id: function (val) {
+      this.params.candidato_id = val;
       this.updateData();
     },
     data_inicio: function (val) {
@@ -223,6 +247,19 @@ export default {
       return valorFormatado;
     },
 
+    disableTo(){
+      if(this.codigo_matricula){
+        this.disabled2=false;
+        this.disabled=true;
+      }else if(this.candidato_id){
+        this.disabled2=true;
+        this.disabled=false;
+      }else{
+        this.disabled2=false;
+        this.disabled=false;
+      }
+    },
+
     imprimirComprovativo(item) {
       window.open(
         `/depositos/imprimir-comprovativo?codigo=${item.codigo}`,
@@ -231,7 +268,7 @@ export default {
     },
 
     imprimirPDF() {
-      window.open(`/relatorios/extrato-deposito/pdf?codigo_matricula=${this.codigo_matricula}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(`/relatorios/extrato-deposito/pdf${this.codigo_matricula ? '?codigo_matricula='+this.codigo_matricula:(this.candidato_id ? '?candidato_id='+this.candidato_id:NULL)}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
 
     imprimirEXCEL() {
@@ -241,6 +278,7 @@ export default {
     voltarPaginaAnterior() {
       window.history.back();
     },
+    
   },
 };
 </script>

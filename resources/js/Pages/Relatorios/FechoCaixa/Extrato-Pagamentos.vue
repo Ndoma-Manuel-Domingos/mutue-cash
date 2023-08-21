@@ -26,14 +26,29 @@
               <form action="">
                 <div class="card-body">
                   <div class="row">
-                    <div class="col-12 col-md-2">
+                    <div class="col-12 col-md-2" >
                       <div class="form-group">
-                        <label for="">Codigo Matricula</label>
+                        <label for="">Nº do Estudante</label>
                         <input
                           type="text"
                           placeholder="informe o número da matricula do estudante!"
                           class="form-control"
+                          :disabled="disabled2"
+                          @keyup="disableTo"
                           v-model="codigo_matricula"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                      <div class="form-group">
+                        <label for="">Nº do Candidato</label>
+                        <input
+                          type="text"
+                          placeholder="informe o número do candidato!"
+                          class="form-control"
+                          :disabled="disabled"
+                          @keyup="disableTo"
+                          v-model="candidato_id"
                         />
                       </div>
                     </div>
@@ -280,11 +295,14 @@ export default {
       operador: "",
       ano_lectivo: "",
       codigo_matricula: "",
+      candidato_id: "",
 
       params: {},
 
       pagamento: [],
       items_pagamento: [],
+      disabled: false,
+      disabled2: false,
 
     };
   },
@@ -321,6 +339,10 @@ export default {
       this.params.codigo_matricula = val;
       this.updateData();
     },
+    candidato_id: function (val) {
+      this.params.candidato_id = val;
+      this.updateData();
+    },
   },
 
 
@@ -336,7 +358,7 @@ export default {
         onError: () => {
           Swal.fire({
             title: "Alerta",
-            text: "O número de matricula informado não existe! Procure pelo código de candidatura",
+            text: "O número de estudante/candidatura informado não existe!",
             icon: "error",
             confirmButtonColor: "#3d5476",
             confirmButtonText: "Ok",
@@ -386,15 +408,28 @@ export default {
       }
     },
 
-    
+    disableTo(){
+      if(this.codigo_matricula){
+        this.disabled2=false;
+        this.disabled=true;
+      }else if(this.candidato_id){
+        this.disabled2=true;
+        this.disabled=false;
+      }else{
+        this.disabled2=false;
+        this.disabled=false;
+      }
+    },
 
     imprimirFatura(codigo_fatura) {
       window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
     },
+    
+    // ${!this.codigo_matricula?this.candidato_id:this.codigo_matricula}
 
 
     imprimirPDF() {
-      window.open(`/relatorios/fecho-caixa/operador/pdf?codigo_matricula=${this.codigo_matricula}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(`/relatorios/fecho-caixa/operador/pdf${this.codigo_matricula ? '?codigo_matricula='+this.codigo_matricula:(this.candidato_id ? '?candidato_id='+this.candidato_id:NULL)}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
 
     imprimirEXCEL() {

@@ -47,4 +47,8 @@ class Deposito extends Model
     {
         return $this->belongsTo(Matricula::class, 'codigo_matricula_id', 'Codigo');
     }
+    public function candidato()
+    {
+        return $this->belongsTo(PreInscricao::class, 'Codigo_PreInscricao', 'Codigo');
+    }
 }
