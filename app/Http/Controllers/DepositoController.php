@@ -61,7 +61,7 @@ class DepositoController extends Controller
              })->when($request->operador, function($query, $value){
                  $query->where('created_by', $value);
              })
-             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
              ->orderBy('codigo', 'desc')
              ->paginate(10)
              ->withQueryString();
@@ -86,7 +86,7 @@ class DepositoController extends Controller
                 $query->where('created_by', $value);
             })
             ->where('created_by', $user->codigo_importado)
-            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
             ->orderBy('codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
@@ -144,6 +144,7 @@ class DepositoController extends Controller
         // registramos o deposito 
         $create = Deposito::create([
             'codigo_matricula_id' => $request->codigo_matricula,
+            'Codigo_PreInscricao' => $resultado->Codigo,
             'canal_cominucacao_id' => 1,
             'valor_depositar' => $request->valor_a_depositar,
             'saldo_apos_movimento' => $saldo_apos_movimento,
@@ -180,7 +181,6 @@ class DepositoController extends Controller
     
     public function pdf(Request $request)
     {
-    
             
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
@@ -196,8 +196,7 @@ class DepositoController extends Controller
         })*/
         ->when($request->operador, function($query, $value){
             $query->where('created_by', $value);
-        })
-        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+        })->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao', 'candidato'])
         ->get();
         
         $data['requests'] = $request->all('data_inicio', 'data_final');
@@ -240,7 +239,7 @@ class DepositoController extends Controller
         ->when($request->operador, function($query, $value){
             $query->where('created_by', $value);
         })
-        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
+        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
         ->findOrFail($request->codigo);
         
         $pdf = \App::make('dompdf.wrapper');

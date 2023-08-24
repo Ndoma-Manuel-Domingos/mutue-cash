@@ -17,6 +17,7 @@ class Deposito extends Model
 
     protected $fillable = [
         'codigo_matricula_id',
+        'Codigo_PreInscricao',
         'canal_cominucacao_id',
         'valor_depositar',
         'saldo_apos_movimento',

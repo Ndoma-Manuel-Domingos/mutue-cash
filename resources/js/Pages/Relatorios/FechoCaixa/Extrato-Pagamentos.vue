@@ -138,7 +138,7 @@
                       <td class="text-center" v-if="item.factura">
                         <a class="text-danger" title="REIMPRIMIR A FACTURA" href="#" @click.prevent="imprimirFatura(item.codigo_factura)"><i class="fas fa-print"></i></a>
                         &nbsp;&nbsp;
-                        <a class="text-primary" href="#" title="IMPRIMIR O EXTRACTO" @click.prevent="imprimirDetalhesPagamento()"><i class="fas fa-print"></i></a>
+                        <a class="text-primary" href="#" title="IMPRIMIR O EXTRACTO" @click.prevent="imprimirDetalhesPagamento(item.Codigo)"><i class="fas fa-print"></i></a>
                       </td>
                       <td class="text-center" v-else>
                         <a class="text-secondary" href=""><i class="fas fa-print"></i></a>
@@ -167,12 +167,11 @@
         <div class="modal fade" id="modal_pagamento">
           <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
-
               <div class="modal-header">
                 <h5 class="modal-title">Detalhes do extrato de pagamentos</h5>
                 <div class="row">
                   <div class="col-sm-6">
-                    <button class="btn btn-primary float-right mr-1" type="button" @click="imprimirDetalhesPagamento()">
+                    <button class="btn btn-primary float-right mr-1" type="button" @click="imprimirDetalhesPagamento(pagamento.Codigo)">
                       <i class="fas fa-print"></i>
                     </button>
                   </div>
@@ -270,7 +269,6 @@
 
               <div class="modal-footer justify-content-between">
               </div>
-
             </div>
           </div>
         </div>
@@ -369,7 +367,7 @@ export default {
     },
 
     detalhes(Codigo){
-      this.loading = true;
+      this.loading = true; 
       axios
         .get(`/pagamentos/${Codigo}/detalhes`)
         .then((response) => {
@@ -429,16 +427,16 @@ export default {
 
 
     imprimirPDF() {
-      window.open(`/relatorios/fecho-caixa/operador/pdf${this.codigo_matricula ? '?codigo_matricula='+this.codigo_matricula:(this.candidato_id ? '?candidato_id='+this.candidato_id:NULL)}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(`/relatorios/fecho-caixa/operador/pdf?${this.codigo_matricula ? 'codigo_matricula='+this.codigo_matricula:(this.candidato_id ? 'candidato_id='+this.candidato_id:'')}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
 
     imprimirEXCEL() {
       window.open(`/relatorios/fecho-caixa/operador/excel`, "_blank");
     },
 
-    imprimirDetalhesPagamento() {
-      // Chama a função window.print() para abrir a janela de impressão do navegador.
-      window.print();
+    imprimirDetalhesPagamento(Codigo) {
+      this.loading = true; 
+      window.open(`/pagamentos/imprmir/${Codigo}/detalhes`, "_blank");
     },
 
     // imprimirEXCEL() {

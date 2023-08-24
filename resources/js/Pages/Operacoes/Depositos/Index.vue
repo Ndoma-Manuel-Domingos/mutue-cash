@@ -32,7 +32,7 @@
                         <label for="">Operadores</label>
                           <select v-model="operador" class="form-control">
                             <option value="">TODOS</option>
-                            <option v-for="item in utilizadores" :key="item" :value=item.utilizadores.codigo_importado>
+                            <option v-for="item in utilizadores" :key="item" :value="item.utilizadores.codigo_importado">
                               {{ item.utilizadores.nome ?? '' }}
                             </option>
                           </select>
@@ -117,7 +117,8 @@
                   <thead>
                     <tr>
                       <th>Nº Deposito</th>
-                      <th>Matricula</th>
+                      <th>Nº Matricula</th>
+                      <th>Nº Candidatura</th>
                       <th>Estudante</th>
                       <th>Saldo depositado</th>
                       <th>Saldo após Movimento</th>
@@ -131,9 +132,10 @@
                   <tbody>
                     <tr v-for="item in items.data" :key="item.codigo">
                       <td>{{ item.codigo }}</td>
-                      <td>{{ item.codigo_matricula_id }}</td>
+                      <td>{{ item.codigo_matricula_id?? 'Candidato'}}</td>
+                      <td>{{item.Codigo_PreInscricao?? 'Estudante Regular'}}</td>
                       <td>
-                        {{ item.matricula.admissao.preinscricao.Nome_Completo }}
+                        {{ item.matricula ? item.matricula.admissao.preinscricao.Nome_Completo : item.candidato ? item.candidato.Nome_Completo : '' }}
                       </td>
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
@@ -325,6 +327,9 @@
         
         form: this.$inertia.form({
           codigo_matricula: null,
+          candidato_id: "",
+          disabled: false,
+          disabled2: false,
           // falta ser paramentrizado 5000
           valor_a_depositar: 0,
           nome_estudante: null,
@@ -364,6 +369,11 @@
     },
     data_final: function (val) {
       this.params.data_final = val;
+      this.updateData();
+    },
+
+    candidato_id: function (val) {
+      this.params.candidato_id = val;
       this.updateData();
     },
   },
@@ -526,8 +536,7 @@
       }
     },
     
-    editarItem(item) 
-    {   
+    editarItem(item) {   
       this.form.clearErrors();
       
       // this.form.clearErrors();
@@ -540,6 +549,19 @@
       // this.isUpdate = true;
       // this.itemId = item.codigo;
 
+    },
+
+    disableTo(){
+      if(this.codigo_matricula){
+        this.disabled2=false;
+        this.disabled=true;
+      }else if(this.candidato_id){
+        this.disabled2=true;
+        this.disabled=false;
+      }else{
+        this.disabled2=false;
+        this.disabled=false;
+      }
     },
     
     imprimirPDF() {

@@ -1055,6 +1055,7 @@ class PagamentosController extends Controller
 
                     $dados_deposito = [
                         'codigo_matricula_id' => $codigo_matricula,
+                        'Codigo_PreInscricao' => $codigo,
                         'valor_depositar' => $novo_saldo,
                         'saldo_apos_movimento' => $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
                         'created_by' => auth()->user()->codigo_importado,

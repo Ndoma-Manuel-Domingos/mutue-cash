@@ -123,7 +123,7 @@
 
                 <tr style="background-color: #3F51B5;color: #ffffff">
                     <th style="text-align: center;padding: 4px 2px">Nº Deposito</th>
-                    <th style="text-align: center;padding: 4px 2px">Matricula</th>
+                    <th style="text-align: center;padding: 4px 2px">Nº Estudante</th>
                     <th style="text-align: center;padding: 4px 2px">Estudante</th>
                     <th style="text-align: center;padding: 4px 2px">Saldo depositado</th>
                     <th style="text-align: center;padding: 4px 2px">Saldo apos Movimento</th>
@@ -139,9 +139,9 @@
                 <tr>
 
                     <td style="text-align: center;">{{ $item->codigo ?? '' }}</td>
-                    <td style="text-align: center;">{{ $item->codigo_matricula_id ?? '' }}</td>
+                    <td style="text-align: center;">{{$item->codigo_matricula_id ?? $item->candidato->Codigo ?? '' }}</td>
                     <td style="text-align: center;">
-                        {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? '' }}
+                        {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? $item->candidato->Nome_Completo ?? '' }}
                     </td>
                     <td style="text-align: center;">{{ number_format($item->valor_depositar ?? 0, 2, ',', '.') }} kz</td>
                     <td style="text-align: center;">{{ number_format($item->saldo_apos_movimento ?? 0, 2, ',', '.') }} kz</td>

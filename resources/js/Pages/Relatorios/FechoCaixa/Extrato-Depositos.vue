@@ -100,7 +100,7 @@
                 <button
                   class="btn btn-success float-right mr-1"
                   type="button"
-                  @click="imprimirEXCEL"
+                  @click="imprimirExtratoEXCEL"
                 >
                   <i class="fas fa-file-excel"></i>
                   EXCEL
@@ -109,7 +109,7 @@
                 <button
                   class="btn btn-danger float-right mr-1"
                   type="button"
-                  @click="imprimirPDF"
+                  @click="imprimirExtratoPDF"
                 >
                   <i class="fas fa-file-pdf"></i>
                   PDF
@@ -120,8 +120,8 @@
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
-                      <th>Nº Deposito</th>
-                      <th>Nº Matricula</th>
+                      <th @click="sortBy('codigo')">Nº Deposito</th>
+                      <th @click="sortBy('codigo_matricula_id')">Nº Matricula</th>
                       <th>Nº Candidatura</th>
                       <th>Estudante</th>
                       <th>Saldo depositado</th>
@@ -134,7 +134,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in items.data" :key="item.codigo">
+                    <tr v-for="item in sortedItems" :key="item.codigo">
                       <td>{{ item.codigo }}</td>
                       <td>{{ item.codigo_matricula_id?? 'Candidato'}}</td>
                       <td>{{item.Codigo_PreInscricao?? 'Estudante Regular'}}</td>
@@ -193,8 +193,10 @@ export default {
       disabled2: false,
 
       depositos: [],
-
       params: {},
+
+      sortKey: '', // A coluna pela qual ordenar
+      sortOrder: 1 // 1 para ascendente, -1 para descendente
     };
   },
   watch: {
@@ -227,6 +229,19 @@ export default {
       this.updateData();
     },
   },
+
+
+  computed: {
+    sortedItems() {
+      return this.items.data.slice().sort((a, b) => {
+        const modifier = this.sortOrder === 1 ? 1 : -1;
+        // alert(JSON.stringify(b))
+        return (a[this.sortKey] && b[this.sortKey]) ? a[this.sortKey].localeCompare(b[this.sortKey]) * modifier : null;
+      });
+    }
+  },
+
+
   methods: {
     updateData() {
       this.$Progress.start();
@@ -237,6 +252,15 @@ export default {
           this.$Progress.finish();
         },
       });
+    },
+
+    sortBy(column) {
+      if (this.sortKey === column) {
+        this.sortOrder *= -1;
+      } else {
+        this.sortKey = column;
+        this.sortOrder = 1;
+      }
     },
 
     formatValor(atual) {
@@ -267,11 +291,11 @@ export default {
       );
     },
 
-    imprimirPDF() {
-      window.open(`/relatorios/extrato-deposito/pdf${this.codigo_matricula ? '?codigo_matricula='+this.codigo_matricula:(this.candidato_id ? '?candidato_id='+this.candidato_id:NULL)}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+    imprimirExtratoPDF() {
+      window.open(`/relatorios/extrato-deposito/pdf?${this.codigo_matricula ? 'codigo_matricula='+this.codigo_matricula:(this.candidato_id ? 'candidato_id='+this.candidato_id:'')}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
 
-    imprimirEXCEL() {
+    imprimirExtratoEXCEL() {
       window.open(`/relatorios/extrato-deposito/excel?codigo_matricula=${this.codigo_matricula}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
     },
 
