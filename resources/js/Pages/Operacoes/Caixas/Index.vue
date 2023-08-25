@@ -4,7 +4,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Depósito de valores efetuados no período de {{ formatarData(data_inicio) }} a {{ formatarData(data_final) }}</h1>
+            <h1 class="m-0">Listas de Caixas </h1>
           </div>
           <div class="col-sm-4">
             <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
@@ -27,7 +27,7 @@
                 <div class="card-body">
                   <div class="row">
                   
-                    <div class="col-12 col-md-3">
+                    <!-- <div class="col-12 col-md-3">
                       <div class="form-group">
                         <label for="">Operadores</label>
                           <select v-model="operador" class="form-control">
@@ -37,9 +37,9 @@
                             </option>
                           </select>
                         </div>
-                    </div>
+                    </div> -->
                   
-                    <div class="col-12 col-md-3">
+                    <!-- <div class="col-12 col-md-3">
                       <div class="form-group">
                         <label for="">Data Inicio</label>
                         <input
@@ -61,7 +61,7 @@
                           v-model="data_final"
                         />
                       </div>
-                    </div>
+                    </div> -->
                     
                   </div>
                 </div>
@@ -79,34 +79,30 @@
                   class="btn btn-info float-left"
                   type="button"
                 >
-                  <i class="fas fa-money-bill"></i>
-                  {{ formatValor(total_depositado) }}
+                  <i class="fas fa-list"></i>
+                  {{ (total_geral) }} Registos
                 </button>
               
                 <button
                   class="btn btn-info float-right"
                   type="button"
                   data-toggle="modal"
-                  data-target="#modalDeposito"
+                  data-target="#modalCaixas"
                 >
                   <i class="fas fa-plus"></i>
-                  Novos Depositos
+                  Novos Caixas
                 </button>
                 
                 <button
                   class="btn btn-success float-right mr-1"
-                  type="button"
-                  @click="imprimirEXCEL"
-                >
+                  type="button">
                   <i class="fas fa-file-excel"></i>
                   EXCEL
                 </button>
                 
                 <button
                   class="btn btn-danger float-right mr-1"
-                  type="button"
-                  @click="imprimirPDF"
-                >
+                  type="button">
                   <i class="fas fa-file-pdf"></i>
                   PDF
                 </button>
@@ -116,41 +112,40 @@
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
-                      <th>Nº Deposito</th>
-                      <th>Nº Matricula</th>
-                      <th>Nº Candidatura</th>
-                      <th>Estudante</th>
-                      <th>Saldo depositado</th>
-                      <th>Saldo após Movimento</th>
-                      <!-- <th>Forma Pagamento</th> -->
-                      <th>Operador</th>
-                      <th>Ano Lectivo</th>
-                      <th>Data</th>
+                      <th>Nº Ordem</th>
+                      <th>ID</th>
+                      <th>Designação</th>
+                      <th>Código de Bloqueio</th>
+                      <th>Status</th>
+                      <th>Estado de Bloqueio</th>
+                      <th>Criado Por</th>
+                      <th>Data de Criação</th>
+                      <th>Data de Actualização</th>
                       <th>Acções</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in items.data" :key="item.codigo">
-                      <td>{{ item.codigo }}</td>
-                      <td>{{ item.codigo_matricula_id?? 'Candidato'}}</td>
-                      <td>{{item.Codigo_PreInscricao?? 'Estudante Regular'}}</td>
-                      <td>
-                        {{ item.matricula ? item.matricula.admissao.preinscricao.Nome_Completo : item.candidato ? item.candidato.Nome_Completo : '' }}
-                      </td>
-                      <td>{{ formatValor(item.valor_depositar) }}</td>
-                      <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
-                      <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
-                      <td>{{ item.user ? item.user.nome : '' }}</td>
-                      <td>{{ item.ano_lectivo ? item.ano_lectivo.Designacao: '' }}</td>
-                      <td>{{ item.created_at }}</td>
+                    <tr v-for="(item, index) in items.data" :key="item.codigo">
+                      <td>{{ ++index }}</td>
+                      <td>{{ item.codigo ?? ''}}</td>
+                      <td class="text-bold text-info">{{ item.nome ?? ''}}</td>
+                      <td :class="item.code ? (item.code!=='null' ? 'text-bold text-center':'text-red text-bold text-center'): 'text-black text-center'">{{ item.code ?? 'NULL'}}</td>
+                      <td :class="item.status ? (item.status=='aberto' ? 'text-success text-bold':'text-red text-bold'): 'text-black'" style="text-transform: capitalize;">{{ item.status ?? 'Indefinido' }}</td>
+                      <td :class="item.bloqueio ? (item.bloqueio=='Y' ? 'text-success text-bold':'text-red text-bold'): 'text-black'">{{ item.bloqueio ? (item.bloqueio=='Y' ? 'Bloqueado':'Desbloqueado'): 'Não definido' }}</td>
+                      <td>{{ item.operador ? item.operador.nome: 'Sem operador' }}</td>
+                      <td>{{ item.created_at ? item.created_at: 'Sem data' }}</td>
+                      <td>{{ item.updated_at ? item.updated_at: 'Sem actualização'}}</td>
                       <td class="text-center">
-                        <Link @click="imprimirComprovativo(item)">
-                          <i class="fas fa-print text-danger"></i>
-                        </Link>
-                        <!-- <Link class="btn-sm btn-success mx-1" @click="editarItem(item)">
+                        <bottom href="#" class="btn-sm btn-success mx-1" @click="editarItem(item)">
                           <i class="fas fa-edit "></i>
                           Editar
-                        </Link> -->
+                        </bottom>
+                      </td>
+                      <td class="text-center">
+                        <bottom type="button" @click="deleteItem(item)" class="btn-sm btn-danger mx-1">
+                          <i class="fas fa-edit "></i>
+                          Excluir
+                        </bottom>
                       </td>
                     </tr>
                   </tbody>
@@ -171,11 +166,12 @@
       </div>
     </div>
 
-    <div class="modal fade" id="modalDeposito">
+    <!-- MODAL REGISTAR NOVO CAIXA  -->
+    <div class="modal fade" id="modalCaixas">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title">Novo Depósito</h4>
+            <h4 class="modal-title">Novo Caixa</h4>
             <button
               type="button"
               class="close"
@@ -188,37 +184,6 @@
           <form action="" @submit.prevent="submit">
             <div class="modal-body py-3">
               <div class="row">
-                <div class="col-12 col-md-12 mb-3">
-                  <div class="col-12 col-md-4">
-                    <div class="form-group">
-                      <label for="" class="form-label">Matricula</label>
-                      <div class="input-group">
-                        <input
-                          class="form-control"
-                          v-model="form.codigo_matricula"
-                          type="search"
-                          placeholder="Introduz o Número da matricula!"
-                          aria-label="Search"
-                        />
-                        <div class="input-group-append">
-                          <button
-                            class="btn btn-info"
-                            @click="pesqisar_estudante"
-                          >
-                            <i class="fas fa-search fa-fw"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div
-                        v-if="form.errors.codigo_matricula"
-                        class="text-danger"
-                      >
-                        {{ form.errors.codigo_matricula }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <div class="col-12 col-md-4 mb-3">
                   <div class="form-group">
                     <label for="" class="form-label">Nome Completo</label>
@@ -284,16 +249,134 @@
               </div>
             </div>
             <div class="modal-footer justify-content-between">
-              <button
-                type="button"
-                class="btn btn-default"
-                data-dismiss="modal"
-              >
+              <button type="button" class="btn btn-black" data-dismiss="modal">
                 Fechar
               </button>
               <button type="submit" class="btn btn-primary">Salvar</button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL EDITAR CAIXA  -->
+    <div class="modal fade" id="modalEditCaixa">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">EDITAR CAIXA</h4>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form action="" @submit.prevent="submit">
+            <div class="modal-body py-3">
+              <div class="row">
+                <div class="col-12 col-md-4 mb-3">
+                  <div class="form-group">
+                    <label for="" class="form-label">Nome Completo</label>
+                    <input
+                      type="text"
+                      v-model="form.nome_estudante"
+                      disabled
+                      class="form-control"
+                      placeholder="Nome Completo"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 mb-3">
+                  <div class="form-group">
+                    <label for="" class="form-label">Número do BI</label>
+                    <input
+                      type="text"
+                      v-model="form.bilheite_estudante"
+                      disabled
+                      class="form-control"
+                      placeholder="Número do BI"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 mb-3">
+                  <div class="form-group">
+                    <label for="" class="form-label">Curso</label>
+                    <input
+                      type="text"
+                      v-model="form.curso_estudante"
+                      disabled
+                      class="form-control"
+                      placeholder="Curso"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 mb-3">
+                  <div class="form-group">
+                    <label for="" class="form-label">Valor a depositar</label>
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        v-model="form.valor_a_depositar"
+                        class="form-control"
+                        placeholder="informe o valor a depositar"
+                        @keyup="formatarMoeda()"
+                      />
+                      <div class="input-group-append">
+                        <button type="button" class="btn btn-info">kz</button>
+                      </div>
+                    </div>
+                    <div
+                      v-if="form.errors.valor_a_depositar"
+                      class="text-danger"
+                    >
+                      {{ form.errors.valor_a_depositar }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-black" data-dismiss="modal">
+                Fechar
+              </button>
+              <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!--Modal Eliminar Caixa -->
+    <div class="modal fade" id="modalEliminarCaixa">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Eliminar Caixa</h4>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <h5 class="text-bold text-danger">Tem certeza que pretende excluir o {{ caixa.nome }} ?</h5>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-black" data-dismiss="modal">
+              NÃO
+            </button>
+            <button type="submit" @click="confirmDeleteItem(caixa)" class="btn btn-primary">SIM</button>
+          </div>
         </div>
       </div>
     </div>
@@ -308,7 +391,7 @@
 
   
   export default {
-    props: ["items", "utilizadores", "total_depositado"],
+    props: ["items", "total_geral"],
     components: { Link, Paginacao },
     data() {
       return { 
@@ -319,31 +402,21 @@
         data_inicio: new Date().toISOString().substr(0, 10),
         data_final: new Date().toISOString().substr(0, 10),
         operador: "",
-        
-        depositos: [],
+
         params: {},
-        
-        contemDeposito: false,
+        caixa: {codigo:0},
         
         form: this.$inertia.form({
-          codigo_matricula: null,
-          candidato_id: "",
           disabled: false,
           disabled2: false,
-          // falta ser paramentrizado 5000
-          valor_a_depositar: 0,
-          nome_estudante: null,
-          bilheite_estudante: null,
-          curso_estudante: null,
         }),
     };
   },
   
   mounted() {
     this.params.data_inicio = this.data_inicio;
-    this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
-    // this.params.data_final = this.data_final;
-    this.updateData();
+
+    // this.updateData();
   },
 
   watch: {
@@ -363,32 +436,27 @@
       this.params.operador = val;
       this.updateData();
     },
-    data_inicio: function (val) {
-      this.params.data_inicio = val;
-      this.updateData();
-    },
-    data_final: function (val) {
-      this.params.data_final = val;
-      this.updateData();
-    },
-
-    candidato_id: function (val) {
-      this.params.candidato_id = val;
-      this.updateData();
-    },
+    // data_inicio: function (val) {
+    //   this.params.data_inicio = val;
+    //   this.updateData();
+    // },
+    // data_final: function (val) {
+    //   this.params.data_final = val;
+    //   this.updateData();
+    // },
   },
   
   methods: {
-    updateData() {
-      this.$Progress.start();
-      this.$inertia.get("/depositos", this.params, {
-        preserveState: true,
-        preverseScroll: true,
-        onSuccess: () => {
-          this.$Progress.finish();
-        },
-      });
-    },
+    // updateData() {
+    //   this.$Progress.start();
+    //   this.$inertia.get("/depositos/operacoes/caixas", this.params, {
+    //     preserveState: true,
+    //     preverseScroll: true,
+    //     onSuccess: () => {
+    //       this.$Progress.finish();
+    //     },
+    //   });
+    // },
     
     formatarMoeda() {
       // Remover caracteres que não são números
@@ -422,10 +490,10 @@
     
       this.$Progress.start();
               
-      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < 5000) {
+      if (!this.form) {
         Swal.fire({
           title: "Atenção",
-          text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",
+          text: "O formulário está sem dados, preencha-o por favor",
           icon: "warning",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
@@ -436,56 +504,40 @@
       }
     
       if (this.isUpdate) {
-        
-      } else {
-        
+
         try {
-        
-          this.form.valor_a_depositar = this.removerFormatacaoAOA(this.form.valor_a_depositar);
           // Faça uma requisição POST para o backend Laravel
-          const response = await axios.post('/depositos/store', this.form);
+          this.form.codigo = this.caixa.codigo;
+
+          const response = await axios.post('/operacoes/update', this.form);
           
           this.form.reset();
           this.$Progress.finish();
           sweetSuccess(response.data.message);
-          $("#modalDeposito").modal("hide");
-          this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
-          
-          this.imprimirComprovativo(response.data.data);
-          
-            // Faça algo com a resposta, se necessário
+          $("#modalCaixas").modal("hide");
         } catch (error) {
           // Lide com erros, se houver
-          sweetError("Primeiro deves fazer abertura do caixa");
-          this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
+          sweetError("Erro inesperado, contacte a área técnica por favor");
+          this.$Progress.fail();
+        }
+        
+      } else {
+        
+        try {
+          // Faça uma requisição POST para o backend Laravel
+          const response = await axios.post('/operacoes/store', this.form);
+          
+          this.form.reset();
+          this.$Progress.finish();
+          sweetSuccess(response.data.message);
+          $("#modalCaixas").modal("hide");
+        } catch (error) {
+          // Lide com erros, se houver
+          sweetError("Erro inesperado, contacte a área técnica por favor");
           this.$Progress.fail();
         }
       }
     
-    },
-
-    pesqisar_estudante(e) {
-      e.preventDefault();
-      this.$Progress.start();
-      $(".table_estudantes").html("");
-      axios
-        .get(`/pesquisar-estudante?search=${this.form.codigo_matricula}`)
-        .then((response) => {
-          if (response.data.dados === null) {
-            sweetError("Ocorreu um errro");
-          } else {
-            this.form.codigo_estudante = response.data.dados.Codigo;
-            this.form.nome_estudante = response.data.dados.Nome_Completo;
-            this.form.bilheite_estudante = response.data.dados.Bilhete_Identidade;
-            this.form.curso_estudante = response.data.dados.Designacao;
-            sweetSuccess("Estudante Encontrado com sucesso!");
-          }
-          this.$Progress.finish();
-        })
-        .catch((errors) => {
-          this.$Progress.fail();
-          sweetError("Estudante Não Encontrado!");
-        });
     },
 
     applyCurrencyMask() {
@@ -536,19 +588,18 @@
       }
     },
     
-    editarItem(item) {   
-      this.form.clearErrors();
-      
-      // this.form.clearErrors();
-      // this.form.codigo_matricula = item.codigo_matricula_id,
-      // this.form.valor_a_depositar = item.valor_depositar,
-      // this.form.nome_estudante = item.matricula.admissao.preinscricao.Nome_Completo,
-      // this.form.bilheite_estudante = item.matricula.admissao.preinscricao.Bilhete_Identidade,
-      // this.form.curso_estudante = item.matricula.admissao.preinscricao.Bilhete_Identidade,
-      
-      // this.isUpdate = true;
-      // this.itemId = item.codigo;
+    editarItem(item) {  
+      this.caixa = item;
+      $("#modalEditCaixa").modal("show");
+    },
 
+    deleteItem(item) {  
+      this.caixa = item;
+      $("#modalEliminarCaixa").modal("show");
+    },
+
+    confirmDeleteItem(item) {  
+      this.caixa = item;
     },
 
     disableTo(){

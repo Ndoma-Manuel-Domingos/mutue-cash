@@ -31,7 +31,7 @@
               <div class="small-box bg-info">
                 <div class="inner">
                   <h4 class="text-uppercase">operador activo</h4>
-                  <p>{{ movimento.operador.nome }}</p>
+                  <p>{{ movimento.operador ? movimento.operador.nome: '' }}</p>
                 </div>
                 <div class="icon">
                   <i class="ion ion-bag"></i>
@@ -313,7 +313,7 @@
               <div class="alert alert-warning alert-dismissible">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                   <h2><i class="icon fas fa-info"></i>Atenção!</h2> 
-                  <h4 class="mt-4">Operador(a) {{ user.nome }}, Infelizmente ainda não tens acesso a um caixa por favor, entra em contacto com administrador do sistema ou com o gestor(a) do caixa!</h4>
+                  <h4 class="mt-4">Operador(a) {{ user.nome }}, Infelizmente ainda não tens acesso a um caixa, por favor, entre em contacto com o(a) seu(a) Gerente ou Gestor(a) do Caixa!</h4>
                 </div>
             </div>
           </div>

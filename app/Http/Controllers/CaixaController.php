@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class CaixaController extends Controller
 {
@@ -24,9 +25,18 @@ class CaixaController extends Controller
         
     public function index()
     {
-        $caixas = Caixa::with('operador')->get();
+        $data['items'] = Caixa::with('operador')->paginate(15);
         
-        return Inertia::render('Operacoes/Caixa/Index', $caixas);
+        $data['total_geral'] = Caixa::with('operador')->count();
+        
+        return Inertia::render('Operacoes/Caixas/Index', $data);
+    }
+
+    public function show($id)
+    {
+        $caixa = Caixa::find($id);
+        
+        return response()->json($caixa, 200);
     }
     
     public function store(Request $request)
@@ -54,6 +64,9 @@ class CaixaController extends Controller
 
     public function update(Request $request)
     {
+
+        $caixa = Caixa::find($request->codigo);
+        
         $request->validate([
             'nome' => 'required',
         ], [
@@ -61,18 +74,34 @@ class CaixaController extends Controller
         ]);
         
         try {
-            $create = Caixa::create([
+            $udate = $caixa::update([
                 'nome' => $request->nome,
                 'nome' => 'fechado',
             ]);
         } catch (\Throwable $th) {
-            return response()->json([
-                'message' => 'Não foi possível registar este caixa!',
-            ]);
+            return response()->json(['message' => 'Não foi possível editar este caixa!']);
         }
        
         return redirect()->back();
+    }
 
+
+    public function destroy($id)
+    {
+        $caixa = Caixa::find($id);
+
+        DB::beginTransaction();
+
+        try {
+            $caixa->delete();
+        } catch (\Exception $e) {
+            //throw $th;
+            return response()->json('Não foi possível eliminar o caixa: ' . $e->getMessage(), 201);
+        }
+
+        DB::commit();
+
+        return response()->json('Caixa eliminado com sucesso!', 200);
     }
     
           
@@ -108,5 +137,6 @@ class CaixaController extends Controller
         $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
         return $pdf->stream();
     }
+    
     
 }
