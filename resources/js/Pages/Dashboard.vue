@@ -6,9 +6,17 @@
           <div class="col-sm-6">
             <h1 class="m-0">Dashboard</h1>
           </div>
-          <div class="col-sm-6">
+          <div class="col-sm-3">
             <h1 class="m-0 text-right" v-if="caixa">{{ caixa.code }}</h1>
           </div>
+          <div class="col-sm-3">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -197,6 +205,10 @@ export default {
         currency: "AOA",
       }).format(atual);
       return valorFormatado;
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
     },
   },
 };

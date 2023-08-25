@@ -4,8 +4,16 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Pagamentos de valores efetuados no período de {{ data_inicio }} a {{ data_final }}</h1>
+            <h1 class="m-0">Pagamentos de valores efetuados no período de {{ formatarData(data_inicio) }} a {{ formatarData(data_final) }}</h1>
           </div>
+          <div class="col-sm-4">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
           <div class="col-sm-4"></div>
         </div>
       </div>
@@ -88,18 +96,12 @@
                 <Link
                   :href="route('mc.pagamentos.create')"
                   class="btn btn-info float-right"
-                  type="button"
-                >
+                  type="button">
                   Novos Pagamentos
                 </Link>
 
-                <button
-                  class="btn btn-success float-right mr-1"
-                  type="button"
-                  @click="imprimirEXCEL"
-                >
-                  <i class="fas fa-file-excel"></i>
-                  EXCEL
+                <button class="btn btn-success float-right mr-1" type="button" @click="imprimirEXCEL">
+                  <i class="fas fa-file-excel"></i>EXCEL
                 </button>
 
                 <button
@@ -118,11 +120,13 @@
                   <thead>
                     <tr>
                       <th>Item</th>
+                      <th>Estudante</th>
                       <th>Nº Factura</th>
                       <th>Valor a pagar</th>
                       <th>Valor pago</th>
                       <th>Data da factura</th>
                       <th>Saldo Restante</th>
+                      <th>Operador</th>
                       <th class="text-center">Ver detalhes</th>
                       <th class="text-center">Ver Factura</th>
                     </tr>
@@ -130,11 +134,13 @@
                   <tbody>
                     <tr v-for="(item, index) in items.data" :key="item.Codigo">
                       <td>{{ index + 1 }}</td>
+                      <td>{{ item.factura.matriculas ? item.factura.matriculas.admissao.preinscricao.Nome_Completo : item.preinscricao ? item.preinscricao.Nome_Completo:NULL }}</td>
                       <td>{{ item.codigo_factura }}</td>
                       <td>{{ formatValor(item.factura.ValorAPagar) }}</td>
                       <td>{{ formatValor(item.valor_depositado)  }}</td>
                       <td>{{ item.factura ? item.factura.DataFactura : '' }}</td>
-                      <td> {{ formatValor(0) }}</td>
+                      <td>{{ item.factura ? formatValor(item.factura.Troco): formatValor(0) }}</td>
+                      <td>{{ item.operador_novos ? item.operador_novos.nome : item.operador_antigo ? item.operador_antigo.nome : NULL }}</td>
                       <td class="text-center">
                         <a @click="detalhes(item.Codigo)" class="text-primary"><i class="fas fa-eye"></i></a>
                       </td>
@@ -332,6 +338,8 @@ export default {
       this.updateData();
     },
   },
+
+
   methods: {
     updateData() {
       this.$Progress.start();
@@ -367,6 +375,25 @@ export default {
       return valorFormatado;
     },
 
+    
+    formatarData(valor) {
+      let data = new Date(valor);
+      if (valor) {
+        return (
+          (data.getDate() < 10 ? "0" : null) +
+          data.getDate() +
+          "-" +
+          "0" +
+          (data.getMonth() + 1) +
+          "-" +
+          data.getFullYear()
+        );
+      } else {
+        return "00-00-0000";
+      }
+    },
+
+    
 
     imprimirFatura(codigo_fatura) {
       window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
@@ -385,6 +412,10 @@ export default {
         `/pagamentos/excel?operador=${this.operador}&ano_lectivo=${this.ano_lectivo}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
         "_blank"
       );
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
     },
   },
 };

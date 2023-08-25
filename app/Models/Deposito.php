@@ -17,6 +17,7 @@ class Deposito extends Model
 
     protected $fillable = [
         'codigo_matricula_id',
+        'Codigo_PreInscricao',
         'canal_cominucacao_id',
         'valor_depositar',
         'saldo_apos_movimento',
@@ -46,5 +47,9 @@ class Deposito extends Model
     public function matricula()
     {
         return $this->belongsTo(Matricula::class, 'codigo_matricula_id', 'Codigo');
+    }
+    public function candidato()
+    {
+        return $this->belongsTo(PreInscricao::class, 'Codigo_PreInscricao', 'Codigo');
     }
 }

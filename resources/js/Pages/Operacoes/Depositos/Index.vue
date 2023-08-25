@@ -4,9 +4,16 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Depósito de valores efetuados no período de {{ data_inicio }} a {{ data_final }}</h1>
+            <h1 class="m-0">Depósito de valores efetuados no período de {{ formatarData(data_inicio) }} a {{ formatarData(data_final) }}</h1>
           </div>
-          <div class="col-sm-4"></div>
+          <div class="col-sm-4">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -25,7 +32,7 @@
                         <label for="">Operadores</label>
                           <select v-model="operador" class="form-control">
                             <option value="">TODOS</option>
-                            <option v-for="item in utilizadores" :key="item" :value=item.utilizadores.codigo_importado>
+                            <option v-for="item in utilizadores" :key="item" :value="item.utilizadores.codigo_importado">
                               {{ item.utilizadores.nome ?? '' }}
                             </option>
                           </select>
@@ -110,7 +117,8 @@
                   <thead>
                     <tr>
                       <th>Nº Deposito</th>
-                      <th>Matricula</th>
+                      <th>Nº Matricula</th>
+                      <th>Nº Candidatura</th>
                       <th>Estudante</th>
                       <th>Saldo depositado</th>
                       <th>Saldo após Movimento</th>
@@ -124,9 +132,10 @@
                   <tbody>
                     <tr v-for="item in items.data" :key="item.codigo">
                       <td>{{ item.codigo }}</td>
-                      <td>{{ item.codigo_matricula_id }}</td>
+                      <td>{{ item.codigo_matricula_id?? 'Candidato'}}</td>
+                      <td>{{item.Codigo_PreInscricao?? 'Estudante Regular'}}</td>
                       <td>
-                        {{ item.matricula.admissao.preinscricao.Nome_Completo }}
+                        {{ item.matricula ? item.matricula.admissao.preinscricao.Nome_Completo : item.candidato ? item.candidato.Nome_Completo : '' }}
                       </td>
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
@@ -318,6 +327,9 @@
         
         form: this.$inertia.form({
           codigo_matricula: null,
+          candidato_id: "",
+          disabled: false,
+          disabled2: false,
           // falta ser paramentrizado 5000
           valor_a_depositar: 0,
           nome_estudante: null,
@@ -357,6 +369,11 @@
     },
     data_final: function (val) {
       this.params.data_final = val;
+      this.updateData();
+    },
+
+    candidato_id: function (val) {
+      this.params.candidato_id = val;
       this.updateData();
     },
   },
@@ -501,9 +518,25 @@
       }).format(atual);
       return valorFormatado;
     },
+
+    formatarData(valor) {
+      let data = new Date(valor);
+      if (valor) {
+        return (
+          (data.getDate() < 10 ? "0" : null) +
+          data.getDate() +
+          "-" +
+          "0" +
+          (data.getMonth() + 1) +
+          "-" +
+          data.getFullYear()
+        );
+      } else {
+        return "00-00-0000";
+      }
+    },
     
-    editarItem(item) 
-    {   
+    editarItem(item) {   
       this.form.clearErrors();
       
       // this.form.clearErrors();
@@ -517,6 +550,19 @@
       // this.itemId = item.codigo;
 
     },
+
+    disableTo(){
+      if(this.codigo_matricula){
+        this.disabled2=false;
+        this.disabled=true;
+      }else if(this.candidato_id){
+        this.disabled2=true;
+        this.disabled=false;
+      }else{
+        this.disabled2=false;
+        this.disabled=false;
+      }
+    },
     
     imprimirPDF() {
       window.open(`/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
@@ -529,7 +575,11 @@
     imprimirComprovativo(item) 
     {
       window.open(`/depositos/imprimir-comprovativo?codigo=${item.codigo}`, "_blank");
-    }
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
+    },
     
   },
 };

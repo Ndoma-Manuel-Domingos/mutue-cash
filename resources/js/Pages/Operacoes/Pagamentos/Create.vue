@@ -3,20 +3,27 @@
     <div class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
-          <div class="col-sm-6">
+          <div class="col-sm-3">
             <h1 class="m-0">Novo Pagamento</h1>
           </div>
           <div class="col-sm-6">
             <button
-                  class="btn btn-info float-right"
-                  type="button"
-                  data-toggle="modal"
-                  data-target="#modalPagamentoTaxaInscricao"
-                >
-                  <i class="fas fa-plus"></i>
-                  Pagamento de taxa de inscrição
-                </button>
+              class="btn btn-info float-right"
+              type="button"
+              data-toggle="modal"
+              data-target="#modalPagamentoTaxaInscricao">
+              <i class="fas fa-plus"></i>
+              Pagamento de taxa de inscrição
+            </button>
           </div>
+          <div class="col-sm-3">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -695,9 +702,7 @@
                       />
                     </div> -->
                     <div class="col-12 col-md-6 mb-3">
-                      <label for="valor_depositado_tese" class="form-label"
-                        >Valor entregue</label
-                      >
+                      <label for="valor_depositado_tese" class="form-label">Valor entregue</label>
                       <input
                         type="text"
                         class="form-control"
@@ -707,18 +712,15 @@
                         placeholder="Ex: 12346"
                       />
                     </div>
-                    <div
-                      v-if="condicao_troco == true"
-                      class="col-12 col-md-6 mb-3"
-                    >
-                      <label for="" class="form-label"
-                        >Salvar troco como saldo?</label
-                      >
-                      <input
-                        class="form-control"
-                        type="checkbox"
-                        v-model="switch1"
-                      />
+
+                    
+                    <div class="row" v-if="condicao_troco == true" >
+                      <div class="col-12 col-md-6" style="margin-top: 24;">
+                        <label class="text-red">Salvar troco como saldo?</label>
+                      </div>
+                      <div class="col-12 col-md-6" style="margin-top: 30;">
+                        <input class="form-control" type="checkbox" v-model="switch1"/>
+                      </div>
                     </div>
 
                     <div
@@ -922,7 +924,7 @@
               >
                 Fechar
               </button>
-              <button type="submit" class="btn btn-primary">Salvar</button>
+              <button type="submit" class="btn btn-primary">Salvar Pagamento</button>
             </div>
           </form>
         </div>
@@ -1132,39 +1134,21 @@ export default {
     fatura(val) {
       if (val) {
         if (this.fatura.descricao_factura == 5) {
-          if (
-            this.estudante.saldo >= 0 &&
-            this.estudante.saldo < this.metadeValorPagar
-          ) {
-            this.pagamento.valor_depositado =
-              this.metadeValorPagar - this.estudante.saldo;
-            this.valor_depositado_tese = this.pagamento.valor_depositado;
+          if ( this.estudante.saldo >= 0 && this.estudante.saldo < this.metadeValorPagar) {
+            this.pagamento.valor_depositado = (this.metadeValorPagar - this.estudante.saldo);
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
           } else if (this.estudante.saldo >= this.metadeValorPagar) {
-            this.pagamento.valor_depositado =
-              this.estudante.saldo - this.metadeValorPagar;
-            this.valor_depositado_tese = this.pagamento.valor_depositado;
+            this.pagamento.valor_depositado = (this.estudante.saldo - this.metadeValorPagar);
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
           }
-        } else if (
-          this.estudante.saldo >= 0 &&
-          this.estudante.saldo < this.fatura.ValorAPagar
-        ) {
-          this.pagamento.valor_depositado =
-            this.fatura.ValorAPagar -
-            this.fatura.ValorEntregue -
-            this.estudante.saldo;
-          this.valor_depositado_tese = this.pagamento.valor_depositado;
-          this.valor_por_depositar =
-            this.fatura.ValorAPagar -
-            this.fatura.ValorEntregue -
-            this.estudante.saldo;
+        } else if (this.estudante.saldo >= 0 && this.estudante.saldo < this.fatura.ValorAPagar) {
+          this.pagamento.valor_depositado = (this.fatura.ValorAPagar - this.fatura.ValorEntregue -this.estudante.saldo);
+          this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+          this.valor_por_depositar = (this.fatura.ValorAPagar - this.fatura.ValorEntregue - this.estudante.saldo);
         } else if (this.estudante.saldo >= this.fatura.ValorAPagar) {
-          this.pagamento.valor_depositado =
-            this.estudante.saldo -
-            (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
-          this.valor_depositado_tese = this.pagamento.valor_depositado;
-          this.valor_por_depositar =
-            this.estudante.saldo -
-            (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
+          this.pagamento.valor_depositado = this.estudante.saldo -(this.fatura.ValorAPagar - this.fatura.ValorEntregue);
+          this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+          this.valor_por_depositar = this.estudante.saldo -(this.fatura.ValorAPagar - this.fatura.ValorEntregue);
         }
       }
     },
@@ -1172,26 +1156,19 @@ export default {
     total_adicionado(val) {
       if (val) {
         this.pagamento.valor_depositado = this.valor_depositado_tese;
-        if (
-          this.estudante.saldo >= 0 &&
-          this.estudante.saldo < this.total_adicionado
-        ) {
-          this.pagamento.valor_depositado =
-            this.total_adicionado - this.estudante.saldo;
-          this.valor_depositado_tese = this.pagamento.valor_depositado;
-          this.valor_por_depositar =
-            this.total_adicionado - this.estudante.saldo;
+        if (this.estudante.saldo >= 0 && this.estudante.saldo < this.total_adicionado) {
+          this.pagamento.valor_depositado = (this.total_adicionado - this.estudante.saldo);
+          this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+          this.valor_por_depositar = (this.total_adicionado - this.estudante.saldo);
           // this.estudante.saldo = 0;
         } else {
           if (this.estudante.saldo >= this.total_adicionado) {
-            this.pagamento.valor_depositado =
-              this.estudante.saldo - this.total_adicionado;
-            this.valor_depositado_tese = this.pagamento.valor_depositado;
-            this.valor_por_depositar =
-              this.estudante.saldo - this.total_adicionado;
+            this.pagamento.valor_depositado =(this.estudante.saldo - this.total_adicionado);
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+            this.valor_por_depositar = (this.estudante.saldo - this.total_adicionado);
           } else {
             this.pagamento.valor_depositado = this.total_adicionado;
-            this.valor_depositado_tese = this.pagamento.valor_depositado;
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
             this.valor_por_depositar = this.total_adicionado;
           }
         }
@@ -1248,18 +1225,16 @@ export default {
         currency: "AOA",
       });
 
-      this.pagamento.valor_depositado = this.removerFormatacaoAOA(
-        this.valor_depositado_tese
-      );
+      this.pagamento.valor_depositado = this.removerFormatacaoAOA(this.valor_depositado_tese);
 
       if (this.valor_por_depositar == this.pagamento.valor_depositado) {
         this.troco = 0;
       } else {
-        this.troco = this.formatPrice(
-          this.pagamento.valor_depositado - this.total_adicionado
-        );
-        if (this.pagamento.valor_depositado - this.total_adicionado > 0) {
+        this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
+        if((this.pagamento.valor_depositado - this.total_adicionado > 0) || (this.valor_depositado_tese - this.total_adicionado > 0)) {
           this.condicao_troco = true;
+        }else{
+          this.condicao_troco = false;
         }
       }
       // console.log(this.pagamento.valor_depositado, this.valor_por_depositar)
@@ -2334,10 +2309,7 @@ export default {
       ) {
         Swal.fire({
           title: "Dados Incorrectos",
-          text:
-            "O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +
-            this.valor_por_depositar +
-            " kzs",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),
           icon: "error",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
@@ -2486,21 +2458,26 @@ export default {
         });
     },
     getDadosPagamentos: function(){
-        if(this.form.codigo_tipo_candidatura == 1){
-            var sigla_do_servico = 'TdEdA'
-        }else{
-            var sigla_do_servico = 'TdIMeP'
-        }
-        axios
-         .get("/dados-pagamentos",{params:{sigla_do_servico}})
-        .then((response)=> {
-          this.servico= response.data;
-          this.form.valor_a_depositar = this.servico.Preco;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+      if(this.form.codigo_tipo_candidatura == 1){
+          var sigla_do_servico = 'TdEdA'
+      }else{
+          var sigla_do_servico = 'TdIMeP'
+      }
+      axios
+        .get("/dados-pagamentos",{params:{sigla_do_servico}})
+      .then((response)=> {
+        this.servico= response.data;
+        this.form.valor_a_depositar = this.servico.Preco;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
+    },
+
   },
 };
 </script>

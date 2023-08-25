@@ -150,7 +150,7 @@
             </Link>
           </li>
           
-          <li class="nav-item" title="EXTRATOS DOS DEPOSITOS">
+          <li class="nav-item" title="EXTRATOS DE DEPÓSITOS">
             <Link
               :href="route('mc.extrato-depositos.index')"
               class="nav-link"
@@ -160,7 +160,7 @@
               }"
             >
               <i class="far fa-circle nav-icon"></i>
-              <p>Extrato depositos</p>
+              <p>Extrato de Depósitos</p>
             </Link>
           </li>
           
@@ -174,7 +174,7 @@
               }"
             >
               <i class="far fa-circle nav-icon"></i>
-              <p>Extrato Pagamentos</p>
+              <p>Extrato de Pagamentos</p>
             </Link>
           </li>
           

@@ -4,12 +4,20 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0" v-if="movimento">Movimentos do Caixa</h1>
-            <h1 class="m-0" v-else>Abertura do Caixa</h1>
+            <h3 class="m-0" v-if="movimento">Movimentos do Caixa referente a {{formatarData( data_inicio) }}</h3>
+            <h3 class="m-0" v-else>Abertura do Caixa referente a {{formatarData( data_inicio) }}</h3>
           </div>
-          <div class="col-sm-6">
+          <div class="col-sm-3">
             <button class="float-right btn-sm btn-primary" v-if="movimento" @click="imprimirComprovativo(movimento)"><i class="fas fa-print"></i> IMPRIMR RELATÓRIO DO CAIXA</button>
           </div>
+          <div class="col-sm-3">
+            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+              <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
+            </button>
+          </div>
+          <!-- voltarPaginaAnterior() {
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -207,6 +215,7 @@
         
         <template v-else>
           <div class="row" v-if="movimento">
+          
             <div class="col-lg-3 col-6">
               <div class="small-box bg-info">
                 <div class="inner">
@@ -221,7 +230,6 @@
                 ></Link>
               </div>
             </div>
-            
             
             <div class="col-lg-3 col-6">
               <div class="small-box bg-info">
@@ -291,6 +299,8 @@
                 </div>
                 <div class="icon">
                   <i class="ion ion-bag"></i>
+                <div class="card-footer">
+                  <button type="submit" class="btn-sm btn-info">Abrir o Caixa</button>
                 </div>
                 <Link :href="route('mc.depositos.index')" class="small-box-footer"
                   >Mais detalhe <i class="fas fa-arrow-circle-right"></i
@@ -298,8 +308,8 @@
               </div>
             </div>
   
+            </div>
           </div>
-          
           
           <div class="row" v-else>
             <div class="col-12 col-md-12">
@@ -343,6 +353,9 @@ export default {
         // valor_inicial: this.ultimo_movimento ? this.ultimo_movimento.valor_arrecadado_total : 0,
         caixa_id: "",
       }),
+
+      data_inicio: new Date().toISOString().substr(0, 10),
+      data_final: new Date().toISOString().substr(0, 10),
 
       params: {},
     };
@@ -426,6 +439,23 @@ export default {
         currency: 'AOA'
       });
     },
+
+    formatarData(valor) {
+      let data = new Date(valor);
+      if (valor) {
+        return (
+          (data.getDate() < 10 ? "0" : null) +
+          data.getDate() +
+          "-" +
+          "0" +
+          (data.getMonth() + 1) +
+          "-" +
+          data.getFullYear()
+        );
+      } else {
+        return "00-00-0000";
+      }
+    },
     
     removerFormatacaoAOA(valor) {
       // Remover caracteres não numéricos, exceto a vírgula
@@ -452,6 +482,10 @@ export default {
         currency: "AOA",
       }).format(atual);
       return valorFormatado;
+    },
+
+    voltarPaginaAnterior() {
+      window.history.back();
     },
   },
 };

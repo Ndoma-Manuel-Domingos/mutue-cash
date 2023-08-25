@@ -10,6 +10,7 @@ use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\SearhController;
 use App\Models\Caixa;
 use App\Models\Deposito;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +23,23 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+// Route::get('/renomear-arquivos', function () {
+    
+//     $depositos= Deposito::whereNotNull('codigo_matricula_id')->pluck('codigo_matricula_id')->toArray();
+
+//     $matriculados = DB::table('tb_matriculas')
+//     ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
+//     ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
+//     ->select('tb_preinscricao.Codigo as candidato_id', 'tb_matriculas.Codigo as matricula_id')
+//     ->whereIn('tb_matriculas.Codigo', $depositos)->get();
+//     foreach ($matriculados as $value) {
+//         $deposito = Deposito::where('codigo_matricula_id', $value->matricula_id)->first();
+//         if($deposito){
+//             $deposito->update(['Codigo_PreInscricao'=>$value->candidato_id]);
+//         }
+//     }
+// });
 
 Route::get('/', [AuthController::class, 'login'])
     ->middleware('guest');
@@ -54,7 +72,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/movimentos/validar-fecho', [MovimentoController::class, 'validarFechoCaixa'])->name('mc.movimentos-validar-fecho-caixa');
 
     Route::get('/movimentos/validar-fecho/{id}/validar', [MovimentoController::class, 'validarFechoCaixaAdmin']);
-    Route::get('/movimentos/validar-fecho/{id}/cancelar', [MovimentoController::class, 'cancelarFechoCaixaAdmin']);
+    Route::get('/movimentos/validar-fecho/{id}/{motivo}/cancelar', [MovimentoController::class, 'cancelarFechoCaixaAdmin']);
     Route::get('/movimentos/confirmar-senhar-admin/{id}', [MovimentoController::class, 'confirmarSenhaAdmin']);
     Route::get('/movimentos/bloquear-caixa', [MovimentoController::class, 'bloquearCaixa'])->name('mc.bloquear-caixa');
     Route::post('/movimentos/bloquear-caixa-store', [MovimentoController::class, 'bloquearCaixaStore'])->name('mc.bloquear-caixa-store');
@@ -71,6 +89,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/relatorios/fecho-caixa/operador/excel', [RelatorioController::class, 'excel'])->name('mc.fecho-caixa-operador.excel');
     Route::get('/relatorios/extrato-depositos', [RelatorioController::class, 'extratoDeposito'])->name('mc.extrato-depositos.index');
     Route::get('/relatorios/extrato-pagamentos', [RelatorioController::class, 'extratoPagamento'])->name('mc.extrato-pagamentos.index');
+    Route::get('/pagamentos/imprmir/{id}/detalhes', [RelatorioController::class, 'extratoDetalhesPagamento']);
     Route::get('/relatorios/extrato-deposito/pdf', [RelatorioController::class, 'pdf_deposito']);
     Route::get('/relatorios/extrato-deposito/excel', [RelatorioController::class, 'excel_deposito']);
 

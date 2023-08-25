@@ -96,7 +96,7 @@ class PagamentosController extends Controller
 
         if ($user->tipo_grupo->grupo->designacao == "Administrador") {
 
-            $data['items'] = Pagamento::with('factura')
+            $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso', 'operador_novos','operador_antigo','utilizadores')
                 ->when($request->data_inicio, function ($query, $value) {
                     $query->where('created_at', '>=', Carbon::parse($value));
                 })
@@ -116,7 +116,7 @@ class PagamentosController extends Controller
 
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         } else {
-            $data['items'] = Pagamento::with('factura')
+            $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
                 ->when($request->data_inicio, function ($query, $value) {
                     $query->where('created_at', '>=', Carbon::parse($value));
                 })
@@ -174,6 +174,7 @@ class PagamentosController extends Controller
         ->when($request->ano_lectivo, function ($query, $value) {
             $query->where('AnoLectivo', $value);
         })
+        ->with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
         ->where('forma_pagamento', 6)
         ->orderBy('tb_pagamentos.Codigo', 'desc')
         ->get();
@@ -1054,6 +1055,7 @@ class PagamentosController extends Controller
 
                     $dados_deposito = [
                         'codigo_matricula_id' => $codigo_matricula,
+                        'Codigo_PreInscricao' => $codigo,
                         'valor_depositar' => $novo_saldo,
                         'saldo_apos_movimento' => $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
                         'created_by' => auth()->user()->codigo_importado,
@@ -1110,7 +1112,7 @@ class PagamentosController extends Controller
                         $update = MovimentoCaixa::findOrFail($movimento->codigo);
                         $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
                         $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $fatura_paga->ValorAPagar;
-                        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $update->valor_facturado_pagamento;
                         $update->update();
                     } else {
                         $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
@@ -2496,6 +2498,7 @@ class PagamentosController extends Controller
                 'factura.Desconto as desconto',
                 'tb_preinscricao.Nome_Completo',
                 'tb_preinscricao.saldo',
+                'tb_preinscricao.saldo_anterior',
                 'factura.TotalMulta as multa',
                 'tb_ano_lectivo.Designacao as anoDesignacao',
                 'tb_ano_lectivo.Codigo as anoCodigo',
@@ -2545,6 +2548,7 @@ class PagamentosController extends Controller
                     'factura.Desconto as desconto',
                     'tb_preinscricao.Nome_Completo',
                     'tb_preinscricao.saldo',
+                    'tb_preinscricao.saldo_anterior',
                     'factura.TotalMulta as multa',
                     'tb_ano_lectivo.Designacao as anoDesignacao',
                     'tb_ano_lectivo.Codigo as anoCodigo',

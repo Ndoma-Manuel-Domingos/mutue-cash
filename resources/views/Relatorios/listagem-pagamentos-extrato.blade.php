@@ -63,6 +63,16 @@
             strong{
                 font-size: 10px;
             }
+            footer {
+                color: #777777;
+                width: 100%;
+                height: 30px;
+                position: absolute;
+                bottom: 0;
+                border-top: 1px solid #AAAAAA;
+                padding: 8px 0;
+                text-align: center;
+            }
         </style>
     </head>
 <body>
@@ -138,6 +148,11 @@
 
         </p>
     </div>
+
+    <footer style="width: 100%; left: -10px; font-size: 10px!important;">
+        Documento processado pelo software MUTUE CASH - Gestão Universitária, desenvolvido pela Mutue - Soluções Tecnológicas
+        Inteligentes.
+    </footer>
 </main>
 
 </body>
