@@ -34,7 +34,7 @@ class DepositoController extends Controller
         
                 
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -123,7 +123,7 @@ class DepositoController extends Controller
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
         
-        $caixas = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if(!$caixas){
             return response()->json([
@@ -183,7 +183,7 @@ class DepositoController extends Controller
     {
             
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -212,7 +212,7 @@ class DepositoController extends Controller
     public function excel(Request $request)
     {          
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -225,7 +225,7 @@ class DepositoController extends Controller
     {
                
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');

@@ -299,8 +299,6 @@
                 </div>
                 <div class="icon">
                   <i class="ion ion-bag"></i>
-                <div class="card-footer">
-                  <button type="submit" class="btn-sm btn-info">Abrir o Caixa</button>
                 </div>
                 <Link :href="route('mc.depositos.index')" class="small-box-footer"
                   >Mais detalhe <i class="fas fa-arrow-circle-right"></i
@@ -308,7 +306,6 @@
               </div>
             </div>
   
-            </div>
           </div>
           
           <div class="row" v-else>

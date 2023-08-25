@@ -34,7 +34,7 @@ class MovimentoController extends Controller
         ->first();
         
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -66,16 +66,18 @@ class MovimentoController extends Controller
     {
         $request->validate([
             'caixa_id' => 'required',
+            'operador_id' => 'required',
             'valor_inicial' => 'required|numeric',
-
         ], [
             'caixa_id.required' => "Caixa Invalido!",
+            'operador_id.required' => "Caixa Invalido!",
             'valor_inicial.required' => "Valor de abertura invalido!",
             'valor_inicial.numeric' => "Valor da abertura do caixa deve serve um valor númerico!",
         ]);
         
         
-        $verificar = MovimentoCaixa::where('operador_id', Auth::user()->codigo_importado)
+        // $verificar = MovimentoCaixa::where('operador_id', $request->operador_id Auth::user()->codigo_importado)
+        $verificar = MovimentoCaixa::where('operador_id', $request->operador_id)
         ->where('status', 'aberto')
         ->first();
         
@@ -85,7 +87,7 @@ class MovimentoController extends Controller
             
             $create = MovimentoCaixa::create([
                 'caixa_id' => $caixa->codigo,
-                'operador_id' => Auth::user()->codigo_importado,
+                'operador_id' => $request->operador_id,
                 'operador_admin_id' => NULL,
                 'valor_abertura' => $request->valor_inicial,
                 'valor_arrecadado_total' => $request->valor_inicial,
@@ -94,11 +96,12 @@ class MovimentoController extends Controller
                 'status' => 'aberto',
                 'status_admin' => 'pendente',
                 'created_by' => Auth::user()->codigo_importado,
-                'updated_by' => Auth::user()->codigo_importado,
-                'deleted_by' => Auth::user()->codigo_importado,
+                'updated_by' => $request->operador_id,
+                'deleted_by' => $request->operador_id,
             ]);
             
             $caixa->status = "aberto";
+            $caixa->operador_id = $request->operador_id;
             $caixa->created_by = Auth::user()->codigo_importado;
             $caixa->code = $this->gerarNumeroUnico();
             $caixa->update();
@@ -116,9 +119,8 @@ class MovimentoController extends Controller
     public function fecho()
     {
     
-    
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -171,6 +173,7 @@ class MovimentoController extends Controller
         $caixa = Caixa::findOrFail($movimento->caixa_id);
         $caixa->status = "fechado";
         $caixa->created_by = NULL;
+        $caixa->operador_id = NULL;
         $caixa->code = NULL;
         $caixa->update();
         
@@ -186,7 +189,7 @@ class MovimentoController extends Controller
     {
         
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -204,7 +207,7 @@ class MovimentoController extends Controller
     {
         
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -259,7 +262,7 @@ class MovimentoController extends Controller
     
         
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -277,7 +280,7 @@ class MovimentoController extends Controller
     public function cancelarFechoCaixaAdmin($id, $motivo)
     {
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -296,7 +299,7 @@ class MovimentoController extends Controller
     {
         
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -318,7 +321,7 @@ class MovimentoController extends Controller
     {
         
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -331,7 +334,7 @@ class MovimentoController extends Controller
     {
         
         // verificar se o caixa esta bloqueado
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -366,13 +369,13 @@ class MovimentoController extends Controller
     
     public function bloquearCaixa()
     {
-        // $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        // $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         // if($caixa->bloqueio == 'N'){
         //     return redirect()->route('mc.bloquear-caixa');
         // }
         
-        $caixa = Caixa::where('created_by', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if($caixa){
             $update = Caixa::findOrFail($caixa->codigo);

@@ -16,14 +16,6 @@ class Caixa extends Model
 
     public $timestamps = false;
 
-    // protected $fillable = [
-    //     'nome',
-    //     'status',
-    //     'created_by',
-    //     'updated_by',
-    //     'deleted_by',
-    // ];
-
     public static function boot(){
 
         parent::boot();
@@ -34,6 +26,11 @@ class Caixa extends Model
     }
 
     public function operador()
+    {
+        return $this->belongsTo(User::class, 'operadpr_id', 'codigo_importado');
+    }
+    
+    public function operador_que_abriu()
     {
         return $this->belongsTo(User::class, 'created_by', 'codigo_importado');
     }
