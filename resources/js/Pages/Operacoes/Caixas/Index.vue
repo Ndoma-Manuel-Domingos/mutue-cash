@@ -132,7 +132,7 @@
                       <td :class="item.code ? (item.code!=='null' ? 'text-bold text-center':'text-red text-bold text-center'): 'text-black text-center'">{{ item.code ?? 'NULL'}}</td>
                       <td :class="item.status ? (item.status=='aberto' ? 'text-success text-bold':'text-red text-bold'): 'text-black'" style="text-transform: capitalize;">{{ item.status ?? 'Indefinido' }}</td>
                       <td :class="item.bloqueio ? (item.bloqueio=='Y' ? 'text-success text-bold':'text-red text-bold'): 'text-black'">{{ item.bloqueio ? (item.bloqueio=='Y' ? 'Bloqueado':'Desbloqueado'): 'Não definido' }}</td>
-                      <td>{{ item.operador ? item.operador.nome: 'Sem operador' }}</td>
+                      <td>{{ item.operador_que_abriu ? item.operador_que_abriu.nome: 'Sem operador' }}</td>
                       <td>{{ item.created_at ? item.created_at: 'Sem data' }}</td>
                       <td>{{ item.updated_at ? item.updated_at: 'Sem actualização'}}</td>
                       <td class="text-center">
@@ -168,7 +168,7 @@
 
     <!-- MODAL REGISTAR NOVO CAIXA  -->
     <div class="modal fade" id="modalCaixas">
-      <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Novo Caixa</h4>
@@ -184,66 +184,15 @@
           <form action="" @submit.prevent="submit">
             <div class="modal-body py-3">
               <div class="row">
-                <div class="col-12 col-md-4 mb-3">
+                <div class="col-12 col-md-12 mb-3">
                   <div class="form-group">
-                    <label for="" class="form-label">Nome Completo</label>
+                    <label for="" class="form-label">Designação do Caixa</label>
                     <input
                       type="text"
-                      v-model="form.nome_estudante"
-                      disabled
+                      v-model="form.nome"
                       class="form-control"
-                      placeholder="Nome Completo"
+                      placeholder="CAIXA N º1"
                     />
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Número do BI</label>
-                    <input
-                      type="text"
-                      v-model="form.bilheite_estudante"
-                      disabled
-                      class="form-control"
-                      placeholder="Número do BI"
-                    />
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Curso</label>
-                    <input
-                      type="text"
-                      v-model="form.curso_estudante"
-                      disabled
-                      class="form-control"
-                      placeholder="Curso"
-                    />
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Valor a depositar</label>
-                    <div class="input-group">
-                      <input
-                        type="text"
-                        v-model="form.valor_a_depositar"
-                        class="form-control"
-                        placeholder="informe o valor a depositar"
-                        @keyup="formatarMoeda()"
-                      />
-                      <div class="input-group-append">
-                        <button type="button" class="btn btn-info">kz</button>
-                      </div>
-                    </div>
-                    <div
-                      v-if="form.errors.valor_a_depositar"
-                      class="text-danger"
-                    >
-                      {{ form.errors.valor_a_depositar }}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -261,7 +210,7 @@
 
     <!-- MODAL EDITAR CAIXA  -->
     <div class="modal fade" id="modalEditCaixa">
-      <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">EDITAR CAIXA</h4>
@@ -277,66 +226,53 @@
           <form action="" @submit.prevent="submit">
             <div class="modal-body py-3">
               <div class="row">
-                <div class="col-12 col-md-4 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                   <div class="form-group">
-                    <label for="" class="form-label">Nome Completo</label>
+                    <label for="" class="form-label">Designação do Caixa</label>
                     <input
                       type="text"
-                      v-model="form.nome_estudante"
-                      disabled
+                      v-model="form.nome"
                       class="form-control"
-                      placeholder="Nome Completo"
+                      placeholder="Designação do Caixa"
                     />
                   </div>
                 </div>
 
-                <div class="col-12 col-md-4 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                   <div class="form-group">
-                    <label for="" class="form-label">Número do BI</label>
+                    <label for="" class="form-label">Estado do Caixa</label>
                     <input
                       type="text"
-                      v-model="form.bilheite_estudante"
-                      disabled
+                      v-model="form.status"
                       class="form-control"
-                      placeholder="Número do BI"
+                      placeholder="Estado do Caixa"
+                    />
+                  </div>
+                </div>
+              </div>
+                
+              <div class="row">
+                <div class="col-12 col-md-6 mb-3">
+                  <div class="form-group">
+                    <label for="" class="form-label">Estado de Bloqueio</label>
+                    <input
+                      type="text"
+                      v-model="form.bloqueio"
+                      class="form-control"
+                      placeholder="Estado de Bloqueio"
                     />
                   </div>
                 </div>
 
-                <div class="col-12 col-md-4 mb-3">
+                <div class="col-12 col-md-6 mb-3">
                   <div class="form-group">
-                    <label for="" class="form-label">Curso</label>
+                    <label for="" class="form-label">Código de Bloqueio</label>
                     <input
                       type="text"
-                      v-model="form.curso_estudante"
-                      disabled
+                      v-model="form.code"
                       class="form-control"
-                      placeholder="Curso"
+                      placeholder="Código de Bloqueio"
                     />
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                  <div class="form-group">
-                    <label for="" class="form-label">Valor a depositar</label>
-                    <div class="input-group">
-                      <input
-                        type="text"
-                        v-model="form.valor_a_depositar"
-                        class="form-control"
-                        placeholder="informe o valor a depositar"
-                        @keyup="formatarMoeda()"
-                      />
-                      <div class="input-group-append">
-                        <button type="button" class="btn btn-info">kz</button>
-                      </div>
-                    </div>
-                    <div
-                      v-if="form.errors.valor_a_depositar"
-                      class="text-danger"
-                    >
-                      {{ form.errors.valor_a_depositar }}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -405,6 +341,8 @@
 
         params: {},
         caixa: {codigo:0},
+
+        editedIndex: -1,
         
         form: this.$inertia.form({
           disabled: false,
@@ -503,21 +441,21 @@
         return;
       }
     
-      if (this.isUpdate) {
+      if (this.form.codigo > 1) {
 
         try {
           // Faça uma requisição POST para o backend Laravel
-          this.form.codigo = this.caixa.codigo;
-
-          const response = await axios.post('/operacoes/update', this.form);
+          
+          const response = await axios.post('/operacoes/caixas/update', this.form);
           
           this.form.reset();
           this.$Progress.finish();
           sweetSuccess(response.data.message);
-          $("#modalCaixas").modal("hide");
+          this.updateData();
+          $("#modalEditCaixa").modal("hide");
         } catch (error) {
           // Lide com erros, se houver
-          sweetError("Erro inesperado, contacte a área técnica por favor");
+          sweetError(error.data.message);
           this.$Progress.fail();
         }
         
@@ -525,15 +463,16 @@
         
         try {
           // Faça uma requisição POST para o backend Laravel
-          const response = await axios.post('/operacoes/store', this.form);
+          const response = await axios.post('/operacoes/caixas/store', this.form);
           
           this.form.reset();
           this.$Progress.finish();
           sweetSuccess(response.data.message);
+          this.updateData();
           $("#modalCaixas").modal("hide");
         } catch (error) {
           // Lide com erros, se houver
-          sweetError("Erro inesperado, contacte a área técnica por favor");
+          sweetError(error.data.message);
           this.$Progress.fail();
         }
       }
@@ -589,7 +528,8 @@
     },
     
     editarItem(item) {  
-      this.caixa = item;
+      this.form = item;
+      // this.editedIndex = this.items.indexOf(item);
       $("#modalEditCaixa").modal("show");
     },
 
@@ -600,6 +540,16 @@
 
     confirmDeleteItem(item) {  
       this.caixa = item;
+      axios.get(`/operacoes/caixas/delete/${item.codigo}`).then((response) => {
+        this.$Progress.finish();
+        sweetSuccess(response.data.message);
+        this.updateData();
+        $("#modalCaixas").modal("hide");
+      })
+      .catch((error) => {
+        this.$Progress.fail();
+        sweetError(error.data.message);
+      });
     },
 
     disableTo(){

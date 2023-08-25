@@ -29,7 +29,7 @@ class Caixa extends Model
 
     public function operador()
     {
-        return $this->belongsTo(User::class, 'operadpr_id', 'pk_utilizador');
+        return $this->belongsTo(User::class, 'operadpr_id', 'codigo_importado');
     }
     
     public function operador_que_abriu()

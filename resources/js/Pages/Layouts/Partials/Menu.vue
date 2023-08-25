@@ -51,7 +51,7 @@
               <p>Pagamentos</p>
             </Link>
           </li>
-          <li class="nav-item" title="CRIAR CAIXAS">
+          <li class="nav-item" title="CRIAR CAIXAS" v-if="user.type_user == 'Administrador'">
             <Link
               href="/operacoes/caixas"
               class="nav-link" :class="{active: $page.component == 'Operacoes/Caixas/Index',}">

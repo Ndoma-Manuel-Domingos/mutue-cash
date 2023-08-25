@@ -25,8 +25,8 @@ class CaixaController extends Controller
         
     public function index()
     {
-        $data['items'] = Caixa::with('operador')->paginate(15);
-        
+        $data['items'] = Caixa::with('operador_que_abriu')->paginate(15);
+
         $data['total_geral'] = Caixa::with('operador')->count();
         
         return Inertia::render('Operacoes/Caixas/Index', $data);
@@ -42,23 +42,38 @@ class CaixaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required',
+            'nome' => 'required|unique:tb_caixas,nome,except,codigo',
         ], [
             'nome.required' => "A designação do Caixa é Obrigatório!",
+            'nome.unique' => "A designação do Caixa que informou já se encontra registado!",
         ]);
+
+        DB::beginTransaction();
         
         try {
             $create = Caixa::create([
-                'nome' => $request->nome,
-                'nome' => 'fechado',
+                'nome' => strtoupper($request->nome),
+                'status' => 'fechado',
+                'code' => NULL,
+                'bloqueio' => 'N',
+                'operador_id' => NULL,
+                'created_by' => auth()->user()->codigo_importado,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'Não foi possível registar este caixa!',
             ]);
         }
+
+        DB::rollBack();
        
-        return redirect()->back();
+        return response()->json([
+            'message' => 'Operação realizada com sucesso!',
+            'data' => $create
+        ]);
     }
 
 
@@ -72,17 +87,30 @@ class CaixaController extends Controller
         ], [
             'nome.required' => "A designação do Caixa é Obrigatório!",
         ]);
+
+        DB::beginTransaction();
         
         try {
-            $udate = $caixa::update([
-                'nome' => $request->nome,
-                'nome' => 'fechado',
+            $update = $caixa->update([
+                'nome' => strtoupper($request->nome),
+                'status' => $request->status,
+                'code' => $request->code,
+                'bloqueio' => $request->bloqueio,
+                'operador_id' => NULL,
+                'created_by' => auth()->user()->codigo_importado,
+                'updated_at' => Carbon::now()
             ]);
         } catch (\Throwable $th) {
-            return response()->json(['message' => 'Não foi possível editar este caixa!']);
+            DB::rollBack();
+            return response()->json(['message' => 'Não foi possível editar este caixa! - '.$th->getMessage()]);
         }
+
+        DB::commit();
        
-        return redirect()->back();
+        return response()->json([
+            'message' => 'Operação realizada com sucesso!',
+            'data' => $update
+        ]);
     }
 
 
@@ -93,15 +121,18 @@ class CaixaController extends Controller
         DB::beginTransaction();
 
         try {
-            $caixa->delete();
+            $delete=$caixa->delete();
         } catch (\Exception $e) {
-            //throw $th;
-            return response()->json('Não foi possível eliminar o caixa: ' . $e->getMessage(), 201);
+            DB::rollBack();
+            return response()->json(['message' => 'Não foi possível editar este caixa!']);
         }
 
         DB::commit();
 
-        return response()->json('Caixa eliminado com sucesso!', 200);
+        return response()->json([
+            'message' => 'Operação realizada com sucesso!',
+            'data' => $delete
+        ]);
     }
     
           
