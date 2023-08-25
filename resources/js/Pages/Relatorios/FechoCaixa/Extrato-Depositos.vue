@@ -120,8 +120,8 @@
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
-                      <th @click="sortBy('codigo')">Nº Deposito</th>
-                      <th @click="sortBy('codigo_matricula_id')">Nº Matricula</th>
+                      <th>Nº Deposito</th>
+                      <th>Nº Matricula</th>
                       <th>Nº Candidatura</th>
                       <th>Estudante</th>
                       <th>Saldo depositado</th>
@@ -134,7 +134,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in sortedItems" :key="item.codigo">
+                    <tr v-for="item in items.data" :key="item.codigo">
                       <td>{{ item.codigo }}</td>
                       <td>{{ item.codigo_matricula_id?? 'Candidato'}}</td>
                       <td>{{item.Codigo_PreInscricao?? 'Estudante Regular'}}</td>

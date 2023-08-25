@@ -65,7 +65,7 @@ class AuthController extends Controller
             return response()->json(['message' => $message]);
         }
     
-        // Auth::logout();
+        Auth::logout();
 
         return Inertia::location('/login');
     }
