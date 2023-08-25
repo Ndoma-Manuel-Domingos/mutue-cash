@@ -142,6 +142,7 @@
                       >
                     </template>
                   </div>
+                  
                   <div
                     class="col s12 m6"
                     v-else-if="cadeiras >= 0 && cadeiras <= 3"
@@ -154,6 +155,7 @@
                       - 50%)</b
                     >
                   </div>
+                  
                   <div
                     class="col s12 m6"
                     v-else-if="desconto_especial_nov21_jul22 > 0"
@@ -166,6 +168,7 @@
                       - {{ desconto_incentivo }}%)</b
                     >
                   </div>
+                  
                   <div class="col s12 m6" v-else style="float: right">
                     <b
                       >{{ estudante_tipo1.designacao }} ({{
@@ -1684,17 +1687,14 @@ export default {
           this.mesAtual = response.data.mesAtual;
           this.diaAtual = response.data.diaAtual;
           this.anoAtual = response.data.anoAtual;
-          this.ano_lectivo_sem_cadeiras_inscritas =
-            response.data.ano_lectivo_sem_cadeiras_inscritas;
+          this.ano_lectivo_sem_cadeiras_inscritas = response.data.ano_lectivo_sem_cadeiras_inscritas;
           this.transferencia_curso = response.data.transferencia_curso;
           this.parametroMulta = response.data.parametroMulta;
           this.desconto_incentivo = response.data.taxa_nov21_jul22;
           //desconto_especial_nov_fev2021
-          this.desconto_especial_nov21_jul22 =
-            this.propina.Preco * (response.data.taxa_nov21_jul22 / 100);
+          this.desconto_especial_nov21_jul22 = this.propina.Preco * (response.data.taxa_nov21_jul22 / 100);
 
-          this.desconto_excepcao_todos =
-            this.propina.Preco - this.propina.valor_anterior;
+          this.desconto_excepcao_todos = this.propina.Preco - this.propina.valor_anterior;
 
           //this.loading=false;
           this.pegaUltimoMes();

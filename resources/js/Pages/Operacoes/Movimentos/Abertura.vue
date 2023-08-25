@@ -16,179 +16,322 @@
 
     <div class="content">
       <div class="container-fluid">
-        <div class="row" v-if="movimento">
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h4 class="text-uppercase">operador activo</h4>
-                <p>{{ movimento.operador.nome }}</p>
+        
+        <template v-if="user.type_user == 'Administrador'">
+          <div class="row" v-if="movimento">
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">operador activo</h4>
+                  <p>{{ movimento.operador.nome }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
               </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
             </div>
+            
+            
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">{{ movimento.caixa.nome ?? '' }}</h4>
+                  <p class="text-uppercase">{{ movimento.status ?? '' }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Valor de Abertura</h4>
+                  <p>{{ formatValor(movimento.valor_abertura) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Total de Depósitos</h4>
+                  <p>{{ formatValor(movimento.valor_arrecadado_depositos) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Total de Pag. Facturado</h4>
+                  <p>{{ formatValor(movimento.valor_facturado_pagamento) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+            
+            <!-- <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Total de Pag. Recebido</h4>
+                  <p>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div> -->
+  
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Total arrecadado</h4>
+                  <p>{{ formatValor(movimento.valor_arrecadado_total) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
           </div>
-          
-          
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h4 class="text-uppercase">{{ movimento.caixa.nome ?? '' }}</h4>
-                <p class="text-uppercase">{{ movimento.status ?? '' }}</p>
-              </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h4 class="text-uppercase">Valor de Abertura</h4>
-                <p>{{ formatValor(movimento.valor_abertura) }}</p>
-              </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h4 class="text-uppercase">Total de Depósitos</h4>
-                <p>{{ formatValor(movimento.valor_arrecadado_depositos) }}</p>
-              </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h4 class="text-uppercase">Total de Pag. Facturado</h4>
-                <p>{{ formatValor(movimento.valor_facturado_pagamento) }}</p>
-              </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
-            </div>
-          </div>
-          
-          <!-- <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h4 class="text-uppercase">Total de Pag. Recebido</h4>
-                <p>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</p>
-              </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
-            </div>
-          </div> -->
-
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h4 class="text-uppercase">Total arrecadado</h4>
-                <p>{{ formatValor(movimento.valor_arrecadado_total) }}</p>
-              </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="row" v-else>
-          <div class="col-12 col-md-6">
-            <form action="" @submit.prevent="submit">
-              <div class="card">
-                <div class="card-body">
-                  <div class="row">
-                    <div class="form-group col-12 col-md-12">
-                      <label for="valor_inicial" class="form-label"
-                        >VALOR INICIAL</label
-                      >
-                      <input
-                        type="text"
-                        placeholder="VALOR INICIAL"
-                        id="valor_inicial"
-                        v-model="form.valor_inicial"
-                        @keyup="formatarMoeda()"
-                        class="form-control"
-                      />
-                      <div class="p-0" v-if="form.errors.valor_inicial">
-                        <p class="text-danger">
-                          {{ form.errors.valor_inicial }}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="form-group col-12 col-md-12">
-                      <label for="caixa_id" class="form-label">CAIXA</label>
-                      <select
-                        v-model="form.caixa_id"
-                        id="caixa_id"
-                        class="form-control"
-                      >
-                        <option value="">Selecione</option>
-                        <option
-                          :value="caixa.codigo"
-                          v-for="caixa in caixas"
-                          :key="caixa.codigo"
+  
+          <div class="row" v-else>
+            <div class="col-12 col-md-6">
+              <form action="" @submit.prevent="submit">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="form-group col-12 col-md-12">
+                        <label for="valor_inicial" class="form-label"
+                          >VALOR INICIAL</label
                         >
-                          {{ caixa.nome }}
-                        </option>
-                      </select>
-                      <div class="p-0" v-if="form.errors.caixa_id">
-                        <p class="text-danger">{{ form.errors.caixa_id }}</p>
+                        <input
+                          type="text"
+                          placeholder="VALOR INICIAL"
+                          id="valor_inicial"
+                          v-model="form.valor_inicial"
+                          @keyup="formatarMoeda()"
+                          class="form-control"
+                        />
+                        <div class="p-0" v-if="form.errors.valor_inicial">
+                          <p class="text-danger">
+                            {{ form.errors.valor_inicial }}
+                          </p>
+                        </div>
                       </div>
+  
+                      <div class="form-group col-12 col-md-12">
+                        <label for="caixa_id" class="form-label">CAIXA</label>
+                        <select
+                          v-model="form.caixa_id"
+                          id="caixa_id"
+                          class="form-control"
+                        >
+                          <option value="">Selecione</option>
+                          <option
+                            :value="caixa.codigo"
+                            v-for="caixa in caixas"
+                            :key="caixa.codigo"
+                          >
+                            {{ caixa.nome }}
+                          </option>
+                        </select>
+                        <div class="p-0" v-if="form.errors.caixa_id">
+                          <p class="text-danger">{{ form.errors.caixa_id }}</p>
+                        </div>
+                      </div>
+                      
+                      <div class="form-group col-12 col-md-12">
+                        <label for="caixa_id" class="form-label">OPERADOR(A)</label>
+                        <select
+                          v-model="form.operador_id"
+                          id="operador_id"
+                          class="form-control"
+                        >
+                          <option value="">Selecione</option>
+                          <option
+                            :value="item.utilizadores.codigo_importado"
+                            v-for="item in utilizadores"
+                            :key="item.utilizadores.codigo_importado"
+                          >
+                            {{ item.utilizadores.nome }}
+                          </option>
+                        </select>
+                        <div class="p-0" v-if="form.errors.operador_id">
+                          <p class="text-danger">{{ form.errors.operador_id }}</p>
+                        </div>
+                      </div>
+                      
                     </div>
                   </div>
+                  <div class="card-footer">
+                    <button type="submit" class="btn-sm btn-info">Abrir</button>
+                  </div>
                 </div>
-                <div class="card-footer">
-                  <button type="submit" class="btn-sm btn-info">Abrir</button>
-                </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
+        </template>
+        
+        <template v-else>
+          <div class="row" v-if="movimento">
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">operador activo</h4>
+                  <p>{{ movimento.operador.nome }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+            
+            
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">{{ movimento.caixa.nome ?? '' }}</h4>
+                  <p class="text-uppercase">{{ movimento.status ?? '' }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Valor de Abertura</h4>
+                  <p>{{ formatValor(movimento.valor_abertura) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Total de Depósitos</h4>
+                  <p>{{ formatValor(movimento.valor_arrecadado_depositos) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Total de Pag. Facturado</h4>
+                  <p>{{ formatValor(movimento.valor_facturado_pagamento) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h4 class="text-uppercase">Total arrecadado</h4>
+                  <p>{{ formatValor(movimento.valor_arrecadado_total) }}</p>
+                </div>
+                <div class="icon">
+                  <i class="ion ion-bag"></i>
+                </div>
+                <Link :href="route('mc.depositos.index')" class="small-box-footer"
+                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
+                ></Link>
+              </div>
+            </div>
+  
+          </div>
+          
+          
+          <div class="row" v-else>
+            <div class="col-12 col-md-12">
+              <div class="alert alert-warning alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                  <h2><i class="icon fas fa-info"></i>Atenção!</h2> 
+                  <h4 class="mt-4">Operador(a) {{ user.nome }}, Infelizmente ainda não tens acesso a um caixa por favor, entra em contacto com administrador do sistema ou com o gestor(a) do caixa!</h4>
+                </div>
+            </div>
+          </div>
+    
+        </template>
+        
       </div>
     </div>
   </MainLayouts>
 </template>
   
+<script setup>
+  import { computed } from "vue";
+  import { usePage } from "@inertiajs/inertia-vue3";
+
+  const user = computed(() => {
+    return usePage().props.value.auth.user;
+  });
+</script>
+  
 <script>
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["caixas", "movimento", "ultimo_movimento"],
+  props: ["caixas", "movimento", "ultimo_movimento", "utilizadores", "operador"],
   components: {
     Link,
   },
@@ -196,6 +339,7 @@ export default {
     return {
       form: this.$inertia.form({
         valor_inicial: 0,
+        operador_id: this.operador.codigo_importado,
         // valor_inicial: this.ultimo_movimento ? this.ultimo_movimento.valor_arrecadado_total : 0,
         caixa_id: "",
       }),

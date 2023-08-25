@@ -25,6 +25,9 @@ class MovimentoController extends Controller
         
     public function abertura()
     {
+        $user = auth()->user();
+        
+        
         $movimento = MovimentoCaixa::with('operador', 'caixa')
         ->where('operador_id', Auth::user()->codigo_importado)
         ->where('status', 'aberto')
@@ -40,11 +43,20 @@ class MovimentoController extends Controller
         $caixas = Caixa::where('status', 'fechado')->get();
         
         $ultimo_movimento = MovimentoCaixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'fechado')->where('status_admin', 'validado')->latest()->first();
+        
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+
+        $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
     
         $header = [
             "caixas" => $caixas,
             "movimento" => $movimento,
             "ultimo_movimento" => $ultimo_movimento,
+            "utilizadores" => $utilizadores,
+            "operador" => $user
         ];
         
         return Inertia::render('Operacoes/Movimentos/Abertura', $header);
