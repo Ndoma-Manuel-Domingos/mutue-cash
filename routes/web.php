@@ -157,5 +157,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/saldo/{id}', 'PagamentosEstudanteController@saldo');
 
     Route::get('/operacoes/caixas', [CaixaController::class, 'index']);
-    Route::post('/operacoes/caixas', [CaixaController::class, 'store']);
+    Route::post('/operacoes/caixas/store', [CaixaController::class, 'store']);
+    Route::post('/operacoes/caixas/update', [CaixaController::class, 'update']);
+    Route::get('/operacoes/caixas/show/{id}', [CaixaController::class, 'show']);
+    Route::get('/operacoes/caixas/delete/{id}', [CaixaController::class, 'destroy']);
 });

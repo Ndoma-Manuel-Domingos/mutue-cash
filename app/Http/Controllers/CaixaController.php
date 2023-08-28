@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class CaixaController extends Controller
 {
@@ -24,55 +25,114 @@ class CaixaController extends Controller
         
     public function index()
     {
-        $caixas = Caixa::with('operador')->get();
+        $data['items'] = Caixa::with('operador_que_abriu')->paginate(15);
+
+        $data['total_geral'] = Caixa::with('operador')->count();
         
-        return Inertia::render('Operacoes/Caixa/Index', $caixas);
+        return Inertia::render('Operacoes/Caixas/Index', $data);
+    }
+
+    public function show($id)
+    {
+        $caixa = Caixa::find($id);
+        
+        return response()->json($caixa, 200);
     }
     
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required',
+            'nome' => 'required|unique:tb_caixas,nome,except,codigo',
         ], [
             'nome.required' => "A designação do Caixa é Obrigatório!",
+            'nome.unique' => "A designação do Caixa que informou já se encontra registado!",
         ]);
+
+        DB::beginTransaction();
         
         try {
             $create = Caixa::create([
-                'nome' => $request->nome,
-                'nome' => 'fechado',
+                'nome' => strtoupper($request->nome),
+                'status' => 'fechado',
+                'code' => NULL,
+                'bloqueio' => 'N',
+                'operador_id' => NULL,
+                'created_by' => auth()->user()->codigo_importado,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'Não foi possível registar este caixa!',
             ]);
         }
+
+        DB::rollBack();
        
-        return redirect()->back();
+        return response()->json([
+            'message' => 'Operação realizada com sucesso!',
+            'data' => $create
+        ]);
     }
 
 
     public function update(Request $request)
     {
+
+        $caixa = Caixa::find($request->codigo);
+        
         $request->validate([
             'nome' => 'required',
         ], [
             'nome.required' => "A designação do Caixa é Obrigatório!",
         ]);
+
+        DB::beginTransaction();
         
         try {
-            $create = Caixa::create([
-                'nome' => $request->nome,
-                'nome' => 'fechado',
+            $update = $caixa->update([
+                'nome' => strtoupper($request->nome),
+                'status' => $request->status,
+                'code' => $request->code,
+                'bloqueio' => $request->bloqueio,
+                'operador_id' => NULL,
+                'created_by' => auth()->user()->codigo_importado,
+                'updated_at' => Carbon::now()
             ]);
         } catch (\Throwable $th) {
-            return response()->json([
-                'message' => 'Não foi possível registar este caixa!',
-            ]);
+            DB::rollBack();
+            return response()->json(['message' => 'Não foi possível editar este caixa! - '.$th->getMessage()]);
         }
-       
-        return redirect()->back();
 
+        DB::commit();
+       
+        return response()->json([
+            'message' => 'Operação realizada com sucesso!',
+            'data' => $update
+        ]);
+    }
+
+
+    public function destroy($id)
+    {
+        $caixa = Caixa::find($id);
+
+        DB::beginTransaction();
+
+        try {
+            $delete=$caixa->delete();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Não foi possível editar este caixa!']);
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Operação realizada com sucesso!',
+            'data' => $delete
+        ]);
     }
     
           
@@ -108,5 +168,6 @@ class CaixaController extends Controller
         $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
         return $pdf->stream();
     }
+    
     
 }

@@ -51,14 +51,14 @@
               <p>Pagamentos</p>
             </Link>
           </li>
-          <!-- <li class="nav-item" title="CRIAR CAIXAS">
+          <li class="nav-item" title="CRIAR CAIXAS" v-if="user.type_user == 'Administrador'">
             <Link
               href="/operacoes/caixas"
               class="nav-link" :class="{active: $page.component == 'Operacoes/Caixas/Index',}">
               <i class="far fa-circle nav-icon"></i>
               <p>Criar Caixas</p>
             </Link>
-          </li> -->
+          </li>
 
         </ul>
       </li>
@@ -227,8 +227,7 @@
                 title: response.data ? "Atenção" : "Sucesso!",
                 text: response.data ? response.data.message : "Conta encerrada com sucesso!",
               });
-            // window.location.reload();
-          
+              window.location.reload();
           })
           .catch((error) => {
             console.error(error);
