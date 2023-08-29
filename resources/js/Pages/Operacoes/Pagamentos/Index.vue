@@ -125,7 +125,7 @@
                       <th>Valor a pagar</th>
                       <th>Valor pago</th>
                       <th>Data da factura</th>
-                      <th>Saldo Restante</th>
+                      <th>Reserva Actual</th>
                       <th>Operador</th>
                       <th class="text-center">Ver detalhes</th>
                       <th class="text-center">Ver Factura</th>

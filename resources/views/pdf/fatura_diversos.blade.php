@@ -242,8 +242,8 @@
                         Total de prestações<br>
                     @endif
                     Troco<br>
-                    Saldo Anterior<br>
-                    Saldo Actual<br>
+                    Reserva Anterior<br>
+                    Reserva Actual<br>
                     <span>&nbsp;</span>
                 </th>
                 <th style="text-align:right;padding: 0px;font-size:9px;">

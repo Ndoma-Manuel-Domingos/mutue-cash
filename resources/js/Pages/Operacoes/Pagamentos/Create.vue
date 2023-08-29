@@ -84,7 +84,7 @@
                       <th>Nº</th>
                       <th>Nome Completo</th>
                       <th>Bilhete</th>
-                      <th>Saldo</th>
+                      <th>Reserva</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -664,7 +664,7 @@
                 >
                   <thead>
                     <tr>
-                      <th>Saldo disponível</th>
+                      <th>Reserva Disponível</th>
                       <th>Valor em falta</th>
                       <th>valor a pagar</th>
                     </tr>
@@ -716,7 +716,7 @@
                     
                     <div class="row" v-if="condicao_troco == true" >
                       <div class="col-12 col-md-6" style="margin-top: 24;">
-                        <label class="text-red">Salvar troco como saldo?</label>
+                        <label class="text-red">Salvar troco como Reserva?</label>
                       </div>
                       <div class="col-12 col-md-6" style="margin-top: 30;">
                         <input class="form-control" type="checkbox" v-model="switch1"/>

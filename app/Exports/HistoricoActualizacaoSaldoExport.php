@@ -39,8 +39,8 @@ class HistoricoActualizacaoSaldoExport implements FromCollection,
     {
         return[
             'Data Actualização',
-            'Saldo Anterior',
-            'Saldo Actual',
+            'Reserva Anterior',
+            'Reserva Actual',
             'Criado Por',
             'Nome Aluno',
         ];

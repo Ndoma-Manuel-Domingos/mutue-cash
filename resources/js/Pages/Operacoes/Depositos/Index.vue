@@ -120,8 +120,8 @@
                       <th>Nº Matricula</th>
                       <th>Nº Candidatura</th>
                       <th>Estudante</th>
-                      <th>Saldo depositado</th>
-                      <th>Saldo após Movimento</th>
+                      <th>Valor depositado</th>
+                      <th>Reserva após Depósito</th>
                       <!-- <th>Forma Pagamento</th> -->
                       <th>Operador</th>
                       <th>Ano Lectivo</th>
