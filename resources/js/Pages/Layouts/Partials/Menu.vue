@@ -180,6 +180,53 @@
           
         </ul>
       </li>
+      
+      <li class="nav-item">
+        <a
+          href="#"
+          class="nav-link"
+          title="UTILIZADORES"
+          :class="{
+            active: $page.component.startsWith('Utilizadores/'),
+          }"
+        >
+          <i class="nav-icon fas fa-users"></i>
+          <p>
+            Gestão Utilizadores
+            <i class="right fas fa-angle-left"></i>
+          </p>
+        </a>
+        <ul class="nav nav-treeview">
+          <li class="nav-item" title="GESTÃO DE UTILIZADORES">
+            <Link
+              href="/roles/index"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Utilizadores/Roles/Index',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Perfil</p>
+            </Link>
+          </li>
+          
+          <li class="nav-item" title="DEFINIR PERMISSIONS OPERADOR">
+            <Link
+              href="/roles/utilizadores"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Utilizadores/Index',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Utilizadores</p>
+            </Link>
+          </li>
+          
+        </ul>
+      </li>
 
       <div class="ml-auto">
         <ul class="navbar-nav">

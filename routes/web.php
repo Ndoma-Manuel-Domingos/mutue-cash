@@ -7,6 +7,7 @@ use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\MovimentoController;
 use App\Http\Controllers\PagamentosController;
 use App\Http\Controllers\RelatorioController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SearhController;
 use App\Models\Caixa;
 use App\Models\Deposito;
@@ -161,4 +162,13 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/operacoes/caixas/update', [CaixaController::class, 'update']);
     Route::get('/operacoes/caixas/show/{id}', [CaixaController::class, 'show']);
     Route::get('/operacoes/caixas/delete/{id}', [CaixaController::class, 'destroy']);
+    
+    Route::get('/roles/index', [RoleController::class, 'index']);
+    Route::post('/roles/store', [RoleController::class, 'store']);
+    Route::put('/roles/update/{id}', [RoleController::class, 'update']);
+    Route::post('/roles/adicionar-permissions', [RoleController::class, 'adicionar_permissions']);
+    Route::get('/roles/permissions/{id}', [RoleController::class, 'getPermissionsRole']);
+    Route::get('/roles/utilizadores', [RoleController::class, 'getUtilizadores']);
+    Route::post('/roles/utilizadores-roles', [RoleController::class, 'adicionar_perfil_utilizador']);
+    Route::get('/roles/utilizador-perfil/{id}', [RoleController::class, 'getPerfilUtilizador']);
 });

@@ -27,7 +27,6 @@ class MovimentoController extends Controller
     {
         $user = auth()->user();
         
-        
         $movimento = MovimentoCaixa::with('operador', 'caixa')
         ->where('operador_id', Auth::user()->codigo_importado)
         ->where('status', 'aberto')
@@ -64,17 +63,23 @@ class MovimentoController extends Controller
     
     public function aberturaStore(Request $request)
     {
+
         $request->validate([
             'caixa_id' => 'required',
             'operador_id' => 'required',
             'valor_inicial' => 'required|numeric',
         ], [
             'caixa_id.required' => "Caixa Invalido!",
-            'operador_id.required' => "Caixa Invalido!",
+            'operador_id.required' => "Operador Invalido!",
             'valor_inicial.required' => "Valor de abertura invalido!",
             'valor_inicial.numeric' => "Valor da abertura do caixa deve serve um valor númerico!",
         ]);
         
+        $user = auth()->user();
+        
+        if($user->codigo_importado == null){
+            $user->update(['codigo_importado' => $user->pk_utilizador]);
+        }
         
         // $verificar = MovimentoCaixa::where('operador_id', $request->operador_id Auth::user()->codigo_importado)
         $verificar = MovimentoCaixa::where('operador_id', $request->operador_id)
@@ -246,7 +251,7 @@ class MovimentoController extends Controller
         ->orderBy('codigo', 'desc')
         ->paginate(10)
         ->withQueryString();
-        
+    
         $header = [
             "items" => $movimentos,
             "caixas" => $caixas,

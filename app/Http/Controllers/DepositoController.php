@@ -9,6 +9,8 @@ use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\Matricula;
 use App\Models\MovimentoCaixa;
+use App\Models\Paramento;
+use App\Models\Paramentro;
 use App\Models\PreInscricao;
 use App\Models\Utilizador;
 use Illuminate\Http\Request;
@@ -29,9 +31,7 @@ class DepositoController extends Controller
     
     public function index(Request $request)
     {
-    
         $user = auth()->user();
-        
                 
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
@@ -107,6 +107,7 @@ class DepositoController extends Controller
         }
         
         $data['total_depositado'] = $valor_deposito;
+        $data['valor_a_depositar_padrao'] = Paramentro::where('Designacao', "Mutue Cash")->where('estado', '1')->first();
         
         return Inertia::render('Operacoes/Depositos/Index', $data);
     }

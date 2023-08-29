@@ -10,7 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable;
+    use HasRoles;
 
     protected $primaryKey = "pk_utilizador";
 
@@ -31,44 +32,4 @@ class User extends Authenticatable
         return $this->hasOne(GrupoUtilizador::class, 'fk_utilizador', 'pk_utilizador');
     }
 
-    // /**
-    //  * The attributes that are mass assignable.
-    //  *
-    //  * @var array<int, string>
-    //  */
-    // protected $fillable = [
-    //     'name',
-    //     'email',
-    //     'telefone',
-    //     'tipo_de_documento',
-    //     'numero_documento',
-    //     'canal',
-    //     'username',
-    //     'grauacademico',
-    //     'faculdade',
-    //     'estado',
-    //     'foto',
-    //     'status',
-    //     'ano_lectivo_id',
-    //     'password',
-    // ];
-
-    // /**
-    //  * The attributes that should be hidden for serialization.
-    //  *
-    //  * @var array<int, string>
-    //  */
-    // protected $hidden = [
-    //     'password',
-    //     'remember_token',
-    // ];
-
-    // /**
-    //  * The attributes that should be cast.
-    //  *
-    //  * @var array<string, string>
-    //  */
-    // protected $casts = [
-    //     'email_verified_at' => 'datetime',
-    // ];
 }

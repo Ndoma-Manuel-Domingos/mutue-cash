@@ -308,7 +308,7 @@
 
   
   export default {
-    props: ["items", "utilizadores", "total_depositado"],
+    props: ["items", "utilizadores", "total_depositado", "valor_a_depositar_padrao"],
     components: { Link, Paginacao },
     data() {
       return { 
@@ -331,7 +331,7 @@
           disabled: false,
           disabled2: false,
           // falta ser paramentrizado 5000
-          valor_a_depositar: 0,
+          valor_a_depositar: this.valor_a_depositar_padrao.Valor ?? 0,
           nome_estudante: null,
           bilheite_estudante: null,
           curso_estudante: null,

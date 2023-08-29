@@ -190,11 +190,11 @@
                         >
                           <option value="">Selecione</option>
                           <option
-                            :value="item.utilizadores.codigo_importado"
+                            :value="item.utilizadores.codigo_importado ?? item.utilizadores.pk_utilizador"
                             v-for="item in utilizadores"
                             :key="item.utilizadores.codigo_importado"
                           >
-                            {{ item.utilizadores.nome }}
+                            {{ item.utilizadores.nome }} 
                           </option>
                         </select>
                         <div class="p-0" v-if="form.errors.operador_id">
@@ -346,7 +346,8 @@ export default {
     return {
       form: this.$inertia.form({
         valor_inicial: 0,
-        operador_id: this.operador.codigo_importado,
+        operador_id: "",
+        // operador_id: this.operador.codigo_importado ?? this.operador.pk_utilizador,
         // valor_inicial: this.ultimo_movimento ? this.ultimo_movimento.valor_arrecadado_total : 0,
         caixa_id: "",
       }),
@@ -398,6 +399,8 @@ export default {
       }
 
       this.form.valor_inicial = this.removerFormatacaoAOA(this.form.valor_inicial);
+
+      console.log(this.form);
 
       this.form.post("/movimentos/abertura-caixa", {
         preverseScroll: true,

@@ -64,7 +64,7 @@
             </div>
             <div class="info">
               <a href="#" class="d-block pb-1">{{ user.nome }}</a>
-              <h6>{{ user.type_user }}</h6>
+              <h6>{{ user.type_user ==  'Administrador' ? 'Admininistrador/Financeiro' : user.type_user }}</h6>
             </div>
         </div>
 

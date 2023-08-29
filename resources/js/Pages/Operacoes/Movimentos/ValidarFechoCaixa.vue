@@ -138,7 +138,7 @@
                   <tbody>
                     <tr v-for="item in items.data" :key="item.codigo">
                       <td>{{ item.codigo ?? ''}}</td>
-                      <td>{{ item.operador.nome ?? '' }}</td>
+                      <td>{{ item.operador ? item.operador.nome :  '' }}</td>
                       <td>{{ item.caixa.nome ?? '' }} </td>
                       <td class="text-uppercase">{{ item.status ?? '' }}</td>
                       <td class="text-uppercase">{{ item.status_admin ?? '' }}</td>
