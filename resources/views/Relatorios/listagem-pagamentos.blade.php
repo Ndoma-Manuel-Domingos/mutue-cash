@@ -121,7 +121,7 @@
                 <th style="text-align: center;padding: 4px 2px" >Valor a pagar</th>
                 <th style="text-align: center;padding: 4px 2px" >Valor pago</th>
                 <th style="text-align: center;padding: 4px 2px" >Data da factura</th>
-                <th style="text-align: center;padding: 4px 2px" >Saldo Restante</th>
+                <th style="text-align: center;padding: 4px 2px" >Reserva Restante</th>
                 <th style="text-align: center;padding: 4px 2px" >Operador</th>
             </tr>
 

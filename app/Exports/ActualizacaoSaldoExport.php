@@ -45,8 +45,8 @@ class ActualizacaoSaldoExport implements FromCollection,
         return[
             'Estudante',
             'Data Actualização',
-            'Saldo Anterior',
-            'Saldo Actual',
+            'Rserva Anterior',
+            'Reserva Actual',
             'Criado Por',
         ];
     }

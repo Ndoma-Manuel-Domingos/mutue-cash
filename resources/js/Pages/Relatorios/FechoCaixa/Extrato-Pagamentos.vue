@@ -116,7 +116,7 @@
                       <th>Valor a pagar</th>
                       <th>Valor pago</th>
                       <th>Data da factura</th>
-                      <th>Saldo Restante</th>
+                      <th>Reserva Actual</th>
                       <th>Operador</th>
                       <th class="text-center">Ver detalhes</th>
                       <th class="text-center">Impressões</th>
@@ -215,7 +215,7 @@
                         <th>Data da validação</th>
                         <!-- <th>Anexo</th> -->
                         <!-- <th>Ver recibo</th> -->
-                        <th>Feito com saldo</th>
+                        <th>Feito com a Reserva?</th>
                       </tr>
                     </thead>
                     <tbody>

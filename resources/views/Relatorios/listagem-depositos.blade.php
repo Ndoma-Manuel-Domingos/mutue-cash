@@ -110,8 +110,8 @@
                 <th style="text-align: center;padding: 4px 2px" >Nº Deposito</th>
                 <th style="text-align: center;padding: 4px 2px" >Matricula</th>
                 <th style="text-align: center;padding: 4px 2px" >Estudante</th>
-                <th style="text-align: center;padding: 4px 2px" >Saldo depositado</th>
-                <th style="text-align: center;padding: 4px 2px" >Saldo apos Movimento</th>
+                <th style="text-align: center;padding: 4px 2px" >Valor depositado</th>
+                <th style="text-align: center;padding: 4px 2px" >Reserva após Depósito</th>
                 <th style="text-align: center;padding: 4px 2px" >Forma Pagamento</th>
                 <th style="text-align: center;padding: 4px 2px" >Operador</th>
                 <th style="text-align: center;padding: 4px 2px" >Ano Lectivo</th>

@@ -50,7 +50,7 @@ class PagamentosExport implements FromCollection,
             'Valor a pagar',
             'Valor pago',
             'Data da factura',
-            'Saldo Restante',
+            'Reserva Actual',
         ];
     }
 

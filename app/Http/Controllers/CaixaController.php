@@ -68,7 +68,7 @@ class CaixaController extends Controller
             ]);
         }
 
-        DB::rollBack();
+        DB::commit();
        
         return response()->json([
             'message' => 'Operação realizada com sucesso!',

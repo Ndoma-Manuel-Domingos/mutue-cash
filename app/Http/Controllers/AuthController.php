@@ -30,16 +30,19 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('userName', $request->get('email'))
-        ->where('password', md5($request->password))
-        ->first();
-        
-        if($user){
-            
-            if(!$this->user_validado($user)){
+            ->where('password', md5($request->password))
+            ->first();
+
+        if ($user) {
+
+            if (!$this->user_validado($user)) {
                 return back()->withErrors([
                     "acesso" => "Acesso registro",
                 ]);
-            }else{
+            } else {
+                if ($user->codigo_importado == null) {
+                    $user->update(['codigo_importado' => $user->pk_utilizador]);
+                }
                 Auth::login($user);
                 // LoginAcesso::create([ 'ip' => $request->ip(), 'maquina' => "", 'browser' => $request->userAgent(), 'user_name' => $request->user()->nome, 'outra_informacao' => $request->path(), 'user_id' => $request->user()->pk_utilizador]);
                 return redirect()->route('mc.dashboard');
@@ -53,20 +56,18 @@ class AuthController extends Controller
     }
 
     public function logout()
-    { 
+    {
         $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-        
+
         $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";
         $messag2 = "Gostariamos de lembrar ao caro utilizador que não fez o fecho do caixa que abriu.";
-    
-        if($verificar_caixa_aberto)
-        {
-            $message = $messag2;
-            Auth::logout();
+
+        if ($verificar_caixa_aberto) {
             return response()->json(['message' => $message]);
         }
-    
+
         Auth::logout();
+
         return Inertia::location('/login');
     }
 }

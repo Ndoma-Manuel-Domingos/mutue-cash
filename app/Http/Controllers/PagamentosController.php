@@ -2150,7 +2150,7 @@ class PagamentosController extends Controller
 
             $pagmnt_total_com_saldo = 1;
             //Pagamento com saldo na fatura
-            $result['message'] = 'Pagamento efectuado com seu saldo disponível! Por favor, verifique a fatura gerada pelo sistema.';
+            $result['message'] = 'Pagamento efectuado com a sua reserva disponível! Por favor, verifique a fatura gerada pelo sistema.';
             try {
                 try {
 

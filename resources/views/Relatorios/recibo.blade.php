@@ -72,9 +72,9 @@
                         {{--   --}}
                         {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
                         <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
-                            Nº Deposito: {{ $item->codigo ?? '' }}</th>
+                            Nº de Depósito: {{ $item->codigo ?? '' }}</th>
                         <th style="text-align: left;padding: 4px; background-color: lightgray;">
-                            {{ $item->codigo_matricula_id ? 'Nº de Matricula:' : $item->candidato ? 'Nº do Candidato: ' : NULL }} {{$item->codigo_matricula_id ?? $item->candidato->Codigo ?? '' }}
+                            {{ $item->codigo_matricula_id > 0 ? 'Nº de Matricula:' : ($item->candidato ? 'Nº do Candidato: ' : 'Estudante') }} {{$item->codigo_matricula_id ?? $item->candidato->Codigo ?? '' }}
                         </th>
                     </tr>
 
@@ -82,11 +82,11 @@
                         {{-- <th style="text-align: left;padding: 4px; background-color: lightgray;"></th>  --}}
                         {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
                         <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
-                            Data Movimento: {{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}
+                            Data do Movimento: {{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}
                         </th>
 
                         <th style="text-align: left;padding: 4px; background-color: lightgray;">
-                            Estudante: {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? $item->candidato->Nome_Completo ?? '' }}
+                            {{ $item->codigo_matricula_id > 0 ? 'Estudante:' : ($item->candidato ? 'Candidato: ' : 'Estudante') }} {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? $item->candidato->Nome_Completo ?? '' }}
                         </th>
                     </tr>
 
@@ -110,8 +110,8 @@
                     Descrição&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </th> --}}
                 <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Valor Depositado</th>
-                <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Valor após deposito</th>
-                <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Saldo Dispoível</th>
+                <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Valor após depósito</th>
+                <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Reserva Disponível</th>
                 {{-- <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 0px;">Multa</th>
                 <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 0px;">Desc.</th>
                 <th style="background-color: #2e306e; color:white;border:solid 1px white; padding: 0px;">Total</th> --}}
@@ -173,9 +173,9 @@
                         {{--   --}}
                         {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
                         <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
-                            Nº Deposito: {{ $item->codigo ?? '' }}</th>
+                            Nº de Depósito: {{ $item->codigo ?? '' }}</th>
                         <th style="text-align: left;padding: 4px; background-color: lightgray;">
-                            {{ $item->codigo_matricula_id ? 'Nº de Matricula:' : $item->candidato ? 'Nº do Candidato: ' : NULL }} {{$item->codigo_matricula_id ?? $item->candidato->Codigo ?? '' }}
+                            {{ $item->codigo_matricula_id > 0 ? 'Nº de Matricula:' : ($item->candidato ? 'Nº do Candidato: ' : 'Estudante') }} {{$item->codigo_matricula_id ?? $item->candidato->Codigo ?? '' }}
                         </th>
                     </tr>
 
@@ -183,11 +183,11 @@
                         {{-- <th style="text-align: left;padding: 4px; background-color: lightgray;"></th>  --}}
                         {{-- <th style="text-align: right;padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;</th> --}}
                         <th style="text-align: left;padding: 4px; border-top: solid 1px lightgray;border-left: solid 1px lightgray; border-right: solid 1px lightgray;">
-                            Data Movimento: {{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}
+                            Data do Movimento: {{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}
                         </th>
 
                         <th style="text-align: left;padding: 4px; background-color: lightgray;">
-                            Estudante: {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? $item->candidato->Nome_Completo ?? '' }}
+                            {{ $item->codigo_matricula_id > 0 ? 'Estudante:' : ($item->candidato ? 'Candidato: ' : 'Estudante') }} {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? $item->candidato->Nome_Completo ?? '' }}
                         </th>
                     </tr>
 
@@ -212,7 +212,7 @@
                 </th> --}}
                 <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Valor Depositado</th>
                 <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Valor após deposito</th>
-                <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Saldo Dispoível</th>
+                <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 5px;text-align: right!important;">Reserva Disponível</th>
                 {{-- <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 0px;">Multa</th>
                 <th style="background-color: #2e306e; color:white; border:solid 1px white; padding: 0px;">Desc.</th>
                 <th style="background-color: #2e306e; color:white;border:solid 1px white; padding: 0px;">Total</th> --}}

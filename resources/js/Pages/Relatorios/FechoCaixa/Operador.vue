@@ -154,7 +154,7 @@
             <div class="small-box bg-info">
               <div class="inner">
                 <h4>{{ formatValor((+totalPagamentos) + (+valor_deposito)) }}</h4>
-                <p>Saldo Final</p>
+                <p>Reserva Final</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>

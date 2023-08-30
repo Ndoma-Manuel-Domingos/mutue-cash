@@ -102,7 +102,7 @@
                       <th>Valor a Pagar</th>
                       <th>Valor Pago</th>
                       <th>Data</th>
-                      <th>Saldo Restante</th>
+                      <th>Reserva</th>
                       <!-- <th class="text-center">Detalhe</th> -->
                       <!-- <th class="text-center">Imprimir</th> -->
                     </tr>
@@ -222,7 +222,7 @@
                     <th>Estado</th>
                     <th>Data da validação</th>
                     <th>Anexo</th>
-                    <th>Feito com saldo</th>
+                    <th>Feito com a Reserva?</th>
                   </tr>
                 </thead>
                 <tbody>
