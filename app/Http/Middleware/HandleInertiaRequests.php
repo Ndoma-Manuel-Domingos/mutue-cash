@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Facades\Toast;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -45,10 +47,12 @@ class HandleInertiaRequests extends Middleware
                         "nome" => $request->user()->nome,
                         "usename" => $request->user()->userName,
                         "type_user" => $request->user()->tipo_grupo->grupo->designacao,
-                        "perfils" => $request->user()->roles()->get()
+                        "perfils" => $request->user()->roles()->get(),
+                        "auth" => $request->user()->load('roles.permissions', 'permissions'),
                     ] : null
                 ];
-            }
+            },
+            // 'toasts' => Toast::all()
         ]);
     }
 }

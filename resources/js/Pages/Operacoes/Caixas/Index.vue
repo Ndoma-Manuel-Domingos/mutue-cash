@@ -4,10 +4,14 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Listas de Caixas </h1>
+            <h1 class="m-0">Listas de Caixas</h1>
           </div>
           <div class="col-sm-4">
-            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+            <button
+              class="btn btn-dark float-right mr-1"
+              type="button"
+              @click="voltarPaginaAnterior"
+            >
               <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
             </button>
           </div>
@@ -20,89 +24,33 @@
 
     <div class="content">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-12 col-md-12">
-            <div class="card">
-              <form action="">
-                <div class="card-body">
-                  <div class="row">
-                  
-                    <!-- <div class="col-12 col-md-3">
-                      <div class="form-group">
-                        <label for="">Operadores</label>
-                          <select v-model="operador" class="form-control">
-                            <option value="">TODOS</option>
-                            <option v-for="item in utilizadores" :key="item" :value="item.utilizadores.codigo_importado">
-                              {{ item.utilizadores.nome ?? '' }}
-                            </option>
-                          </select>
-                        </div>
-                    </div> -->
-                  
-                    <!-- <div class="col-12 col-md-3">
-                      <div class="form-group">
-                        <label for="">Data Inicio</label>
-                        <input
-                          type="date"
-                          placeholder="informe do Inicio"
-                          class="form-control"
-                          v-model="data_inicio"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div class="col-12 col-md-3">
-                      <div class="form-group">
-                        <label for="">Data Final</label>
-                        <input
-                          type="date"
-                          placeholder="informe do final"
-                          class="form-control"
-                          v-model="data_final"
-                        />
-                      </div>
-                    </div> -->
-                    
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
 
         <div class="row">
           <div class="col-12 col-md-12">
             <div class="card">
               <div class="card-header">
-                
-                <button
-                  class="btn btn-info float-left"
-                  type="button"
-                >
+                <button class="btn btn-info float-left" type="button">
                   <i class="fas fa-list"></i>
-                  {{ (total_geral) }} Registos
+                  {{ total_geral }} Registos
                 </button>
-              
+
                 <button
                   class="btn btn-info float-right"
                   type="button"
                   data-toggle="modal"
                   data-target="#modalCaixas"
+                  v-if="user.auth.can['criar caixa']"
                 >
                   <i class="fas fa-plus"></i>
                   Novos Caixas
                 </button>
-                
-                <button
-                  class="btn btn-success float-right mr-1"
-                  type="button">
+
+                <button class="btn btn-success float-right mr-1" type="button">
                   <i class="fas fa-file-excel"></i>
                   EXCEL
                 </button>
-                
-                <button
-                  class="btn btn-danger float-right mr-1"
-                  type="button">
+
+                <button class="btn btn-danger float-right mr-1" type="button">
                   <i class="fas fa-file-pdf"></i>
                   PDF
                 </button>
@@ -127,23 +75,82 @@
                   <tbody>
                     <tr v-for="(item, index) in items.data" :key="item.codigo">
                       <td>{{ ++index }}</td>
-                      <td>{{ item.codigo ?? ''}}</td>
-                      <td class="text-bold text-info">{{ item.nome ?? ''}}</td>
-                      <td :class="item.code ? (item.code!=='null' ? 'text-bold text-center':'text-red text-bold text-center'): 'text-black text-center'">{{ item.code ?? 'NULL'}}</td>
-                      <td :class="item.status ? (item.status=='aberto' ? 'text-success text-bold':'text-red text-bold'): 'text-black'" style="text-transform: capitalize;">{{ item.status ?? 'Indefinido' }}</td>
-                      <td :class="item.bloqueio ? (item.bloqueio=='Y' ? 'text-success text-bold':'text-red text-bold'): 'text-black'">{{ item.bloqueio ? (item.bloqueio=='Y' ? 'Bloqueado':'Desbloqueado'): 'Não definido' }}</td>
-                      <td>{{ item.operador_que_abriu ? item.operador_que_abriu.nome: 'Sem operador' }}</td>
-                      <td>{{ item.created_at ? item.created_at: 'Sem data' }}</td>
-                      <td>{{ item.updated_at ? item.updated_at: 'Sem actualização'}}</td>
+                      <td>{{ item.codigo ?? "" }}</td>
+                      <td class="text-bold text-info">{{ item.nome ?? "" }}</td>
+                      <td
+                        :class="
+                          item.code
+                            ? item.code !== 'null'
+                              ? 'text-bold text-center'
+                              : 'text-red text-bold text-center'
+                            : 'text-black text-center'
+                        "
+                      >
+                        {{ item.code ?? "NULL" }}
+                      </td>
+                      <td
+                        :class="
+                          item.status
+                            ? item.status == 'aberto'
+                              ? 'text-success text-bold'
+                              : 'text-red text-bold'
+                            : 'text-black'
+                        "
+                        style="text-transform: capitalize"
+                      >
+                        {{ item.status ?? "Indefinido" }}
+                      </td>
+                      <td
+                        :class="
+                          item.bloqueio
+                            ? item.bloqueio == 'Y'
+                              ? 'text-success text-bold'
+                              : 'text-red text-bold'
+                            : 'text-black'
+                        "
+                      >
+                        {{
+                          item.bloqueio
+                            ? item.bloqueio == "Y"
+                              ? "Bloqueado"
+                              : "Desbloqueado"
+                            : "Não definido"
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          item.operador_que_abriu
+                            ? item.operador_que_abriu.nome
+                            : "Sem operador"
+                        }}
+                      </td>
+                      <td>
+                        {{ item.created_at ? item.created_at : "Sem data" }}
+                      </td>
+                      <td>
+                        {{
+                          item.updated_at ? item.updated_at : "Sem actualização"
+                        }}
+                      </td>
                       <td class="text-center">
-                        <bottom href="#" class="btn-sm btn-success mx-1" @click="editarItem(item)">
-                          <i class="fas fa-edit "></i>
+                        <bottom
+                          href="#"
+                          class="btn-sm btn-success mx-1"
+                          @click="editarItem(item)"
+                          v-if="user.auth.can['alterar caixa']"
+                        >
+                          <i class="fas fa-edit"></i>
                           Editar
                         </bottom>
                       </td>
                       <td class="text-center">
-                        <bottom type="button" @click="deleteItem(item)" class="btn-sm btn-danger mx-1">
-                          <i class="fas fa-edit "></i>
+                        <bottom
+                          type="button"
+                          @click="deleteItem(item)"
+                          class="btn-sm btn-danger mx-1"
+                          v-if="user.auth.can['excluir caixa']"
+                        >
+                          <i class="fas fa-edit"></i>
                           Excluir
                         </bottom>
                       </td>
@@ -154,11 +161,13 @@
 
               <div class="card-footer">
                 <Link href="" class="text-secondary">
-                TOTAL REGISTROS: {{ items.data.length }}
+                  TOTAL REGISTROS: {{ items.data.length }}
                 </Link>
-                <Paginacao :links="items.links"
-                    :prev="items.prev_page_url"
-                    :next="items.next_page_url" />
+                <Paginacao
+                  :links="items.links"
+                  :prev="items.prev_page_url"
+                  :next="items.next_page_url"
+                />
               </div>
             </div>
           </div>
@@ -250,7 +259,7 @@
                   </div>
                 </div>
               </div>
-                
+
               <div class="row">
                 <div class="col-12 col-md-6 mb-3">
                   <div class="form-group">
@@ -305,56 +314,65 @@
           </div>
 
           <div class="modal-body">
-            <h5 class="text-bold text-danger">Tem certeza que pretende excluir o {{ caixa.nome }} ?</h5>
+            <h5 class="text-bold text-danger">
+              Tem certeza que pretende excluir o {{ caixa.nome }} ?
+            </h5>
           </div>
           <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-black" data-dismiss="modal">
               NÃO
             </button>
-            <button type="submit" @click="confirmDeleteItem(caixa)" class="btn btn-primary">SIM</button>
+            <button
+              type="submit"
+              @click="confirmDeleteItem(caixa)"
+              class="btn btn-primary"
+            >
+              SIM
+            </button>
           </div>
         </div>
       </div>
     </div>
-
   </MainLayouts>
 </template>
   
 <script>
-  import { sweetSuccess, sweetError } from "../../../components/Alert";
-  import Paginacao from "../../../Shared/Paginacao"
-  import { Link } from "@inertiajs/inertia-vue3";
+import { sweetSuccess, sweetError } from "../../../components/Alert";
+import Paginacao from "../../../Shared/Paginacao";
+import { Link } from "@inertiajs/inertia-vue3";
 
-  
-  export default {
-    props: ["items", "total_geral"],
-    components: { Link, Paginacao },
-    data() {
-      return { 
-    
-        isUpdate: false,
-        itemId: null,
-        
-        data_inicio: new Date().toISOString().substr(0, 10),
-        data_final: new Date().toISOString().substr(0, 10),
-        operador: "",
+export default {
+  props: ["items", "total_geral"],
+  components: { Link, Paginacao },
+  data() {
+    return {
+      isUpdate: false,
+      itemId: null,
 
-        params: {},
-        caixa: {codigo:0},
+      data_inicio: new Date().toISOString().substr(0, 10),
+      data_final: new Date().toISOString().substr(0, 10),
+      operador: "",
 
-        editedIndex: -1,
-        
-        form: this.$inertia.form({
-          disabled: false,
-          disabled2: false,
-        }),
+      params: {},
+      caixa: { codigo: 0 },
+
+      editedIndex: -1,
+
+      form: this.$inertia.form({
+        disabled: false,
+        disabled2: false,
+      }),
     };
   },
-  
+      
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+  },
+
   mounted() {
     this.params.data_inicio = this.data_inicio;
-
-    // this.updateData();
   },
 
   watch: {
@@ -364,7 +382,7 @@
       if (val.sortBy.length != 0) {
         this.params.sort_by = val.sortBy[0];
         this.params.order_by = val.sortDesc[0] ? "desc" : "asc";
-      }else {
+      } else {
         this.params.sort_by = null;
         this.params.order_by = null;
       }
@@ -374,60 +392,39 @@
       this.params.operador = val;
       this.updateData();
     },
-    // data_inicio: function (val) {
-    //   this.params.data_inicio = val;
-    //   this.updateData();
-    // },
-    // data_final: function (val) {
-    //   this.params.data_final = val;
-    //   this.updateData();
-    // },
   },
-  
+
   methods: {
-    // updateData() {
-    //   this.$Progress.start();
-    //   this.$inertia.get("/depositos/operacoes/caixas", this.params, {
-    //     preserveState: true,
-    //     preverseScroll: true,
-    //     onSuccess: () => {
-    //       this.$Progress.finish();
-    //     },
-    //   });
-    // },
-    
     formatarMoeda() {
       // Remover caracteres que não são números
-      let valor = this.form.valor_a_depositar.replace(/\D/g, '');
+      let valor = this.form.valor_a_depositar.replace(/\D/g, "");
 
       // Converter o valor para número
       valor = Number(valor) / 100; // Dividir por 100 para ter o valor em reais
 
       // Formatar o número para moeda
-      this.form.valor_a_depositar = valor.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'AOA'
+      this.form.valor_a_depositar = valor.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "AOA",
       });
-
     },
-    
+
     removerFormatacaoAOA(valor) {
       // Remover caracteres não numéricos, exceto a vírgula
-      const valorNumerico = valor.replace(/[^\d,]/g, '');
-    
+      const valorNumerico = valor.replace(/[^\d,]/g, "");
+
       // Remover vírgulas repetidas, mantendo apenas uma
-      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ',');
-    
+      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ",");
+
       // Substituir a vírgula por ponto decimal para obter o valor numérico
-      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, '.');
-    
+      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, ".");
+
       return valorNumericoFinal;
     },
 
     async submit() {
-    
       this.$Progress.start();
-              
+
       if (!this.form) {
         Swal.fire({
           title: "Atenção",
@@ -435,19 +432,21 @@
           icon: "warning",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
-          onClose: () => { },
+          onClose: () => {},
         });
         this.$Progress.fail();
         return;
       }
-    
-      if (this.form.codigo > 1) {
 
+      if (this.form.codigo > 1) {
         try {
           // Faça uma requisição POST para o backend Laravel
-          
-          const response = await axios.post('/operacoes/caixas/update', this.form);
-          
+
+          const response = await axios.post(
+            "/operacoes/caixas/update",
+            this.form
+          );
+
           this.form.reset();
           this.$Progress.finish();
           sweetSuccess(response.data.message);
@@ -458,13 +457,14 @@
           sweetError(error.data.message);
           this.$Progress.fail();
         }
-        
       } else {
-        
         try {
           // Faça uma requisição POST para o backend Laravel
-          const response = await axios.post('/operacoes/caixas/store', this.form);
-          
+          const response = await axios.post(
+            "/operacoes/caixas/store",
+            this.form
+          );
+
           this.form.reset();
           this.$Progress.finish();
           sweetSuccess(response.data.message);
@@ -476,7 +476,6 @@
           this.$Progress.fail();
         }
       }
-    
     },
 
     applyCurrencyMask() {
@@ -526,62 +525,71 @@
         return "00-00-0000";
       }
     },
-    
-    editarItem(item) {  
+
+    editarItem(item) {
       this.form = item;
       // this.editedIndex = this.items.indexOf(item);
       $("#modalEditCaixa").modal("show");
     },
 
-    deleteItem(item) {  
+    deleteItem(item) {
       this.caixa = item;
       $("#modalEliminarCaixa").modal("show");
     },
 
-    confirmDeleteItem(item) {  
+    confirmDeleteItem(item) {
       this.caixa = item;
-      axios.get(`/operacoes/caixas/delete/${item.codigo}`).then((response) => {
-        this.$Progress.finish();
-        sweetSuccess(response.data.message);
-        this.updateData();
-        $("#modalCaixas").modal("hide");
-      })
-      .catch((error) => {
-        this.$Progress.fail();
-        sweetError(error.data.message);
-      });
+      axios
+        .get(`/operacoes/caixas/delete/${item.codigo}`)
+        .then((response) => {
+          this.$Progress.finish();
+          sweetSuccess(response.data.message);
+          this.updateData();
+          $("#modalCaixas").modal("hide");
+        })
+        .catch((error) => {
+          this.$Progress.fail();
+          sweetError(error.data.message);
+        });
     },
 
-    disableTo(){
-      if(this.codigo_matricula){
-        this.disabled2=false;
-        this.disabled=true;
-      }else if(this.candidato_id){
-        this.disabled2=true;
-        this.disabled=false;
-      }else{
-        this.disabled2=false;
-        this.disabled=false;
+    disableTo() {
+      if (this.codigo_matricula) {
+        this.disabled2 = false;
+        this.disabled = true;
+      } else if (this.candidato_id) {
+        this.disabled2 = true;
+        this.disabled = false;
+      } else {
+        this.disabled2 = false;
+        this.disabled = false;
       }
     },
-    
+
     imprimirPDF() {
-      window.open(`/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(
+        `/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+        "_blank"
+      );
     },
-    
+
     imprimirEXCEL() {
-      window.open(`/depositos/excel?data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(
+        `/depositos/excel?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+        "_blank"
+      );
     },
-    
-    imprimirComprovativo(item) 
-    {
-      window.open(`/depositos/imprimir-comprovativo?codigo=${item.codigo}`, "_blank");
+
+    imprimirComprovativo(item) {
+      window.open(
+        `/depositos/imprimir-comprovativo?codigo=${item.codigo}`,
+        "_blank"
+      );
     },
 
     voltarPaginaAnterior() {
       window.history.back();
     },
-    
   },
 };
 </script>

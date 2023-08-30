@@ -64,7 +64,10 @@
             </div>
             <div class="info">
               <a href="#" class="d-block pb-1">{{ user.nome }}</a>
-              <h6>{{ user.type_user ==  'Administrador' ? 'Admininistrador/Financeiro' : user.type_user }}</h6>
+              <h6 v-for="perfil in user.perfils" :key="perfil">
+                <!-- {{ user.type_user ==  'Administrador' ? 'Admininistrador/Financeiro' : user.type_user }}  -->
+                {{ perfil.name }}
+              </h6>
             </div>
         </div>
 

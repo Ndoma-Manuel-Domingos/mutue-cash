@@ -21,7 +21,44 @@ class MovimentoController extends Controller
     {
         $this->middleware('auth');
     }
+        
+    public function diariosOperador()
+    {
+        $user = auth()->user();
+        
+        $movimento = MovimentoCaixa::with('operador', 'caixa')
+        ->where('operador_id', Auth::user()->codigo_importado)
+        ->where('status', 'aberto')
+        ->first();
+        
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
+        $caixas = Caixa::where('status', 'fechado')->get();
+        
+        $ultimo_movimento = MovimentoCaixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'fechado')->where('status_admin', 'validado')->latest()->first();
+        
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+
+        $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
     
+        $header = [
+            "caixas" => $caixas,
+            "movimento" => $movimento,
+            "ultimo_movimento" => $ultimo_movimento,
+            "utilizadores" => $utilizadores,
+            "operador" => $user
+        ];
+        
+        return Inertia::render('Operacoes/Movimentos/Diaro-Operador', $header);
+    }    
         
     public function abertura()
     {
@@ -210,6 +247,7 @@ class MovimentoController extends Controller
     
     public function validarFechoCaixa(Request $request)
     {
+  
         
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
@@ -223,34 +261,69 @@ class MovimentoController extends Controller
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
         
-        $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$admins->pk_grupo, $validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])
-        ->with('utilizadores')
-        ->get();
         
         $caixas = Caixa::get();
+                    
+        if(auth()->user()->hasRole(['Gestor de Caixa']))
+        {
+                
+            $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
+                $query->where('updated_at', '>=' ,Carbon::parse($value) );
+            })
+            ->when($request->data_final, function($query, $value){
+                $query->where('updated_at', '<=' ,Carbon::parse($value));
+            })
+            ->when($request->operador, function($query, $value){
+                $query->where('operador_id', $value);
+            })
+            ->when($request->caixa_id, function($query, $value){
+                $query->where('caixa_id', $value);
+            })
+            ->with(['operador', 'caixa'])->where('status', 'fechado')
+            ->orderBy('codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();        
+        }
         
-        if($request->data_inicio){
-            $request->data_inicio = $request->data_inicio;
-        }else{
-            $request->data_inicio = date('Y-m-d');
+        
+        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor']))
+        {
+        
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date('Y-m-d');
+            }
+                
+            $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })
+            ->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })
+            ->when($request->operador, function($query, $value){
+                $query->where('operador_id', $value);
+            })
+            ->when($request->caixa_id, function($query, $value){
+                $query->where('caixa_id', $value);
+            })
+            ->with(['operador', 'caixa'])->where('status', 'fechado')
+            ->orderBy('codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString(); 
         }
             
-        $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
-            $query->where('updated_at', '>=' ,Carbon::parse($value) );
-        })
-        ->when($request->data_final, function($query, $value){
-            $query->where('updated_at', '<=' ,Carbon::parse($value));
-        })
-        ->when($request->operador, function($query, $value){
-            $query->where('operador_id', $value);
-        })
-        ->when($request->caixa_id, function($query, $value){
-            $query->where('caixa_id', $value);
-        })
-        ->with(['operador', 'caixa'])->where('status', 'fechado')
-        ->orderBy('codigo', 'desc')
-        ->paginate(10)
-        ->withQueryString();
+               
+        if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
+            $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
+            $utilizadores = GrupoUtilizador::whereHas('utilizadores', function ($query) {
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        }
+           
     
         $header = [
             "items" => $movimentos,

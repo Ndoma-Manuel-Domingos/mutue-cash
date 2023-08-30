@@ -6,7 +6,9 @@
       role="menu"
       data-accordion="false"
     >
+    
       <li class="nav-item">
+      <!-- <li class="nav-item" v-if="user.roles['Gestor de Caixa']"> -->
         <Link
           :href="route('mc.dashboard')"
           class="nav-link"
@@ -30,7 +32,7 @@
           </p>
         </a>
         <ul class="nav nav-treeview">
-          <li class="nav-item" title="DEPOSITOS">
+          <li class="nav-item" title="DEPOSITOS" v-if="user.auth.can['listar deposito']">
             <Link
               :href="route('mc.depositos.index')"
               class="nav-link"
@@ -43,7 +45,7 @@
               <p>Deposito</p>
             </Link>
           </li>
-          <li class="nav-item" title="PAGAMENTOS">
+          <li class="nav-item" title="PAGAMENTOS" v-if="user.auth.can['listar pagamento']">
             <Link
               :href="route('mc.pagamentos.index')"
               class="nav-link" :class="{active: $page.component == 'Operacoes/Pagamentos/Index',}">
@@ -51,12 +53,12 @@
               <p>Pagamentos</p>
             </Link>
           </li>
-          <li class="nav-item" title="CRIAR CAIXAS" v-if="user.type_user == 'Administrador'">
+          <li class="nav-item" title="CRIAR CAIXAS" v-if="user.auth.can['listar caixa']">
             <Link
               href="/operacoes/caixas"
               class="nav-link" :class="{active: $page.component == 'Operacoes/Caixas/Index',}">
               <i class="far fa-circle nav-icon"></i>
-              <p>Criar Caixas</p>
+              <p>Lista dos Caixas</p>
             </Link>
           </li>
 
@@ -76,7 +78,22 @@
           </p>
         </a>
         <ul class="nav nav-treeview">
-          <li class="nav-item" title="ABERTURA DO CAIXA">
+        
+          <li class="nav-item" title="ABERTURA DO CAIXA" v-if="user.auth.can['relatorio diario caixa']">
+            <Link
+              href="/movimentos/diarios-operador"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Operacoes/Movimentos/Diario-Operador',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Diários</p>
+            </Link>
+          </li>
+        
+          <li class="nav-item" title="ABERTURA DO CAIXA" v-if="user.auth.can['abertura caixa']">
             <Link
               :href="route('mc.movimentos-abertura-caixa')"
               class="nav-link"
@@ -89,7 +106,8 @@
               <p>Abertura Caixa</p>
             </Link>
           </li>
-          <li class="nav-item" title="FECHO DE CAIXA">
+          
+          <li class="nav-item" title="FECHO DE CAIXA" v-if="user.auth.can['fecho caixa']">
             <Link
               :href="route('mc.movimentos-fecho-caixa')"
               class="nav-link"
@@ -103,7 +121,8 @@
           </li>
           
           
-          <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.type_user == 'Administrador'">
+          <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.auth.can['validar caixa']">
+          <!-- <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.type_user == 'Administrador'"> -->
             <Link
               :href="route('mc.movimentos-validar-fecho-caixa')"
               class="nav-link"
@@ -117,10 +136,9 @@
           </li>
 
         </ul>
-      </li>
-      
+      </li>      
 
-      <li class="nav-item">
+      <li class="nav-item" v-if="user.auth.can['listar relatorio']">
         <a
           href="#"
           class="nav-link"
@@ -150,7 +168,7 @@
             </Link>
           </li>
           
-          <li class="nav-item" title="EXTRATOS DE DEPÓSITOS">
+          <li class="nav-item" title="EXTRATOS DE DEPÓSITOS" v-if="user.auth.can['extrato deposito']">
             <Link
               :href="route('mc.extrato-depositos.index')"
               class="nav-link"
@@ -164,7 +182,7 @@
             </Link>
           </li>
           
-          <li class="nav-item" title="EXTRATOS DOS PAGAMENTOS">
+          <li class="nav-item" title="EXTRATOS DOS PAGAMENTOS" v-if="user.auth.can['extrato pagamento']">
             <Link
               :href="route('mc.extrato-pagamentos.index')"
               class="nav-link"
@@ -181,7 +199,7 @@
         </ul>
       </li>
       
-      <li class="nav-item">
+      <li class="nav-item" v-if="user.auth.can['criar operador']">
         <a
           href="#"
           class="nav-link"
@@ -197,7 +215,7 @@
           </p>
         </a>
         <ul class="nav nav-treeview">
-          <li class="nav-item" title="GESTÃO DE UTILIZADORES">
+          <li class="nav-item" title="GESTÃO DE UTILIZADORES" v-if="user.auth.can['criar operador']">
             <Link
               href="/roles/index"
               class="nav-link"
@@ -211,7 +229,7 @@
             </Link>
           </li>
           
-          <li class="nav-item" title="DEFINIR PERMISSIONS OPERADOR">
+          <li class="nav-item" title="DEFINIR PERMISSIONS OPERADOR" v-if="user.auth.can['criar operador']">
             <Link
               href="/roles/utilizadores"
               class="nav-link"
@@ -227,8 +245,9 @@
           
         </ul>
       </li>
-
-      <div class="ml-auto">
+      
+      
+      <div class="ml-auto" >
         <ul class="navbar-nav">
           <li class="nav-item text-left">
               <!-- href="/logout"
@@ -256,14 +275,32 @@
   import { usePage } from "@inertiajs/inertia-vue3";
   import { Link } from "@inertiajs/inertia-vue3";
 
-  const user = computed(() => {
-    return usePage().props.value.auth.user;
-  });
+  // const user = computed(() => {
+  //   return usePage().props.value.auth.user;
+  // });
+  
 </script>
 
 <script>
 
   export default {
+    data: () => ({
+      perfil:"",
+      user_roles: [],
+      roles: [],
+    }),
+    
+    computed: {
+      user() {
+        return this.$page.props.auth.user;
+      },
+    },
+    
+    mounted() {
+      // alert(JSON.stringify(this.user.auth.can['abertura caixa']))
+      // this.getUserRoles();
+    }, 
+  
     methods: {
       logout(){
         axios
@@ -280,7 +317,20 @@
             console.error(error);
           });
         
-      }
+      },
+      
+      // getUserRoles() {
+      //   alert(JSON.stringify(user))
+
+      //   this.user.auth.roles.forEach((role) => {
+      //     this.user_roles.push(role.name);
+      //   });
+      //   for (let index = 0; index < this.user_roles.length; index++) {
+      //     const element = this.user_roles[index];
+      //     this.roles[element] = true;
+      //     this.perfil = element; //R29102020
+      //   }
+      // },
     },
   };
 </script>

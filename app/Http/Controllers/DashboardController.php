@@ -32,16 +32,9 @@ class DashboardController extends Controller
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
+
         
-        
-        if($request->data_inicio){
-            $request->data_inicio = $request->data_inicio;
-        }else{
-            $request->data_inicio = date("Y-m-d");
-        }
-        
-        if($user->tipo_grupo->grupo->designacao == "Administrador"){
-            
+        if(auth()->user()->hasRole(['Gestor de Caixa'])){
             $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
                 $query->where("ano_lectivo_id" ,$value);
             })
@@ -64,8 +57,15 @@ class DashboardController extends Controller
             ->where('estado', 1)
             ->where('forma_pagamento', 6)
             ->sum('valor_depositado');
-            
-        }else {
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor']))
+        {
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
         
             $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
                 $query->where("ano_lectivo_id" ,$value);
@@ -89,23 +89,38 @@ class DashboardController extends Controller
             ->where('estado', 1)
             ->where('forma_pagamento', 6)
             ->where('fk_utilizador', $user->codigo_importado)
-            ->sum('valor_depositado');
-        
+            ->sum('valor_depositado');  
         }
+            
         
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
-        $header = [
-            "total_depositado" => $valor_deposito,
-            'total_pagamento' => $totalPagamentos,
-            'caixa' => $caixa,
-            'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
-            
-            "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
-            
-            "ano_lectivos" => $user->roles()->get(),
-            
-        ];
+        try {
+            $header = [
+                "total_depositado" => $valor_deposito,
+                'total_pagamento' => $totalPagamentos,
+                'caixa' => $caixa,
+                'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
+                
+                "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+                
+                "ano_lectivos" => $user->roles()->get(),
+                "usuario" => $user
+            ];
+            //code...
+        } catch (\Throwable $th) {
+            $header = [
+                "total_depositado" => $valor_deposito ?? Null,
+                'total_pagamento' => $totalPagamentos ?? Null,
+                'caixa' => $caixa ?? Null,
+                'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
+                
+                "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+                
+                "ano_lectivos" => $user->roles()->get(),
+                "usuario" => $user
+            ];
+        }
         
         return Inertia::render('Dashboard', $header);
     }

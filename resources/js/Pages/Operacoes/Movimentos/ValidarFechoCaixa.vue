@@ -30,7 +30,7 @@
                 <div class="card-body">
                   <div class="row">
                   
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio operador']">
                       <div class="form-group">
                         <label for="">Operadores</label>
                         <select v-model="operador" class="form-control">
@@ -46,7 +46,7 @@
                       </div>
                     </div>
                     
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio operador']">
                       <div class="form-group">
                         <label for="caixa_id">Caixas</label>
                         <select v-model="caixa_id" id="caixa_id" class="form-control">
@@ -62,7 +62,7 @@
                       </div>
                     </div>
 
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio caixa']">
                       <div class="form-group">
                         <label for="">Data Inicio</label>
                         <input
@@ -74,7 +74,7 @@
                       </div>
                     </div>
 
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio caixa']">
                       <div class="form-group">
                         <label for="">Data Final</label>
                         <input
@@ -201,6 +201,12 @@
         caixa_id: "",
         params: {},
     };
+  },
+  
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
   },
   
   watch: {
