@@ -25,7 +25,7 @@
     <div class="content">
       <div class="container-fluid">
         
-        <template v-if="user.type_user == 'Administrador'">
+        <!-- <template v-if="user.type_user == 'Administrador'"> -->
           <div class="row" v-if="movimento">
             <div class="col-lg-3 col-6">
               <div class="small-box bg-info">
@@ -211,8 +211,8 @@
               </form>
             </div>
           </div>
-        </template>
-        
+        <!-- </template> -->
+<!--         
         <template v-else>
           <div class="row" v-if="movimento">
           
@@ -319,7 +319,7 @@
           </div>
     
         </template>
-        
+         -->
       </div>
     </div>
   </MainLayouts>

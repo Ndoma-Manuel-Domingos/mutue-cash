@@ -94,7 +94,7 @@
           <div class="col-12 col-md-6">
             <div class="row">
               <div class="col-12 col-md-12">
-                <form action="">
+                <form action="" v-if="user.auth.can['relatorio caixa']">
                   <div class="card">
                     <div class="card-header text-info">
                       <i class="fas fa-hand-point-down" style="font-size: 30pt;"></i>
@@ -150,6 +150,13 @@ export default {
       
     };
   },
+      
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+  },
+  
   watch: {
     options: function (val) {
       this.params.page = val.page;

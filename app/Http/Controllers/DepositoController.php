@@ -44,16 +44,17 @@ class DepositoController extends Controller
          // utilizadores adiministrativos
          // utilizadores área financeira
          // utilizadores tesouraria
-         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
-         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
-         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
-         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
         
         
         $total_depositado = 0;
        
-        if($user->tipo_grupo->grupo->designacao == "Administrador"){
-            
+        
+        if(auth()->user()->hasRole(['Gestor de Caixa'])){
+        
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
                  $query->where('created_at', '>=' ,Carbon::parse($value) );
              })->when($request->data_final, function($query, $value){
@@ -73,11 +74,17 @@ class DepositoController extends Controller
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })->sum('valor_depositar');
-    
-            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         
-        }else {
-                
+        }
+       
+        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor'])){
+           
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+           
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
                 $query->where('created_at', '>=' ,Carbon::parse($value) );
             })->when($request->data_final, function($query, $value){
@@ -101,10 +108,19 @@ class DepositoController extends Controller
             ->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
             
-            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function($query){
+        }
+       
+       
+        if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
                 $query->where('codigo_importado', auth()->user()->codigo_importado);
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         }
+ 
         
         $data['total_depositado'] = $valor_deposito;
         $data['valor_a_depositar_padrao'] = Paramentro::where('Designacao', "Mutue Cash")->where('estado', '1')->first();

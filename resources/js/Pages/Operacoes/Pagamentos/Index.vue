@@ -21,13 +21,15 @@
 
     <div class="content">
       <div class="container-fluid">
+      
         <div class="row">
           <div class="col-12 col-md-12">
             <div class="card">
               <form action="">
                 <div class="card-body">
                   <div class="row">
-                    <div class="col-12 col-md-3">
+                  
+                    <div class="col-12 col-md-3"  v-if="user.auth.can['relatorio operador']">
                       <div class="form-group">
                         <label for="">Operadores</label>
                         <select v-model="operador" class="form-control">
@@ -42,8 +44,9 @@
                         </select>
                       </div>
                     </div>
+                    
 
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio caixa']">
                       <div class="form-group">
                         <label for="">Anos Lectivos</label>
                         <select v-model="ano_lectivo" class="form-control">
@@ -59,7 +62,7 @@
                       </div>
                     </div>
 
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio caixa']">
                       <div class="form-group">
                         <label for="">Data Inicio</label>
                         <input
@@ -71,7 +74,7 @@
                       </div>
                     </div>
 
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio caixa']">
                       <div class="form-group">
                         <label for="">Data Final</label>
                         <input
@@ -96,8 +99,11 @@
                 <Link
                   :href="route('mc.pagamentos.create')"
                   class="btn btn-info float-right"
-                  type="button">
+                  type="button"
+                  v-if="user.auth.can['criar pagamento']"
+                  >
                   Novos Pagamentos
+                  
                 </Link>
 
                 <button class="btn btn-success float-right mr-1" type="button" @click="imprimirEXCEL">
@@ -308,6 +314,13 @@ export default {
 
     };
   },
+        
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+  },
+  
   watch: {
     options: function (val) {
       this.params.page = val.page;

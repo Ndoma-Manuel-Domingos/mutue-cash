@@ -4,10 +4,17 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Depósito de valores efetuados no período de {{ formatarData(data_inicio) }} a {{ formatarData(data_final) }}</h1>
+            <h1 class="m-0">
+              Depósito de valores efetuados no período de
+              {{ formatarData(data_inicio) }} a {{ formatarData(data_final) }}
+            </h1>
           </div>
           <div class="col-sm-4">
-            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+            <button
+              class="btn btn-dark float-right mr-1"
+              type="button"
+              @click="voltarPaginaAnterior"
+            >
               <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
             </button>
           </div>
@@ -20,6 +27,7 @@
 
     <div class="content">
       <div class="container-fluid">
+      
         <div class="row">
           <div class="col-12 col-md-12">
             <div class="card">
@@ -27,19 +35,23 @@
                 <div class="card-body">
                   <div class="row">
                   
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio operador']">
                       <div class="form-group">
                         <label for="">Operadores</label>
-                          <select v-model="operador" class="form-control">
-                            <option value="">TODOS</option>
-                            <option v-for="item in utilizadores" :key="item" :value="item.utilizadores.codigo_importado">
-                              {{ item.utilizadores.nome ?? '' }}
-                            </option>
-                          </select>
-                        </div>
+                        <select v-model="operador" class="form-control">
+                          <option value="">TODOS</option>
+                          <option
+                            v-for="item in utilizadores"
+                            :key="item"
+                            :value="item.utilizadores.codigo_importado"
+                          >
+                            {{ item.utilizadores.nome ?? "" }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
-                  
-                    <div class="col-12 col-md-3">
+
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio caixa']">
                       <div class="form-group">
                         <label for="">Data Inicio</label>
                         <input
@@ -50,8 +62,8 @@
                         />
                       </div>
                     </div>
-                    
-                    <div class="col-12 col-md-3">
+
+                    <div class="col-12 col-md-3" v-if="user.auth.can['relatorio caixa']">
                       <div class="form-group">
                         <label for="">Data Final</label>
                         <input
@@ -62,6 +74,7 @@
                         />
                       </div>
                     </div>
+                    
                     
                   </div>
                 </div>
@@ -74,25 +87,23 @@
           <div class="col-12 col-md-12">
             <div class="card">
               <div class="card-header">
-                
-                <button
-                  class="btn btn-info float-left"
-                  type="button"
-                >
+                <button class="btn btn-info float-left" type="button">
                   <i class="fas fa-money-bill"></i>
                   {{ formatValor(total_depositado) }}
                 </button>
-              
+
                 <button
                   class="btn btn-info float-right"
                   type="button"
                   data-toggle="modal"
                   data-target="#modalDeposito"
+                  
+                  v-if="user.auth.can['criar deposito']"
                 >
                   <i class="fas fa-plus"></i>
                   Novos Depositos
                 </button>
-                
+
                 <button
                   class="btn btn-success float-right mr-1"
                   type="button"
@@ -101,7 +112,7 @@
                   <i class="fas fa-file-excel"></i>
                   EXCEL
                 </button>
-                
+
                 <button
                   class="btn btn-danger float-right mr-1"
                   type="button"
@@ -132,16 +143,28 @@
                   <tbody>
                     <tr v-for="item in items.data" :key="item.codigo">
                       <td>{{ item.codigo }}</td>
-                      <td>{{ item.codigo_matricula_id?? 'Candidato'}}</td>
-                      <td>{{item.Codigo_PreInscricao?? 'Estudante Regular'}}</td>
+                      <td>{{ item.codigo_matricula_id ?? "Candidato" }}</td>
                       <td>
-                        {{ item.matricula ? item.matricula.admissao.preinscricao.Nome_Completo : item.candidato ? item.candidato.Nome_Completo : '' }}
+                        {{ item.Codigo_PreInscricao ?? "Estudante Regular" }}
+                      </td>
+                      <td>
+                        {{
+                          item.matricula
+                            ? item.matricula.admissao.preinscricao.Nome_Completo
+                            : item.candidato
+                            ? item.candidato.Nome_Completo
+                            : ""
+                        }}
                       </td>
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
                       <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
-                      <td>{{ item.user ? item.user.nome : '' }}</td>
-                      <td>{{ item.ano_lectivo ? item.ano_lectivo.Designacao: '' }}</td>
+                      <td>{{ item.user ? item.user.nome : "" }}</td>
+                      <td>
+                        {{
+                          item.ano_lectivo ? item.ano_lectivo.Designacao : ""
+                        }}
+                      </td>
                       <td>{{ item.created_at }}</td>
                       <td class="text-center">
                         <Link @click="imprimirComprovativo(item)">
@@ -159,11 +182,13 @@
 
               <div class="card-footer">
                 <Link href="" class="text-secondary">
-                TOTAL REGISTROS: {{ items.data.length }}
+                  TOTAL REGISTROS: {{ items.data.length }}
                 </Link>
-                <Paginacao :links="items.links"
-                    :prev="items.prev_page_url"
-                    :next="items.next_page_url" />
+                <Paginacao
+                  :links="items.links"
+                  :prev="items.prev_page_url"
+                  :next="items.next_page_url"
+                />
               </div>
             </div>
           </div>
@@ -297,51 +322,60 @@
         </div>
       </div>
     </div>
-
   </MainLayouts>
 </template>
   
 <script>
-  import { sweetSuccess, sweetError } from "../../../components/Alert";
-  import Paginacao from "../../../Shared/Paginacao"
-  import { Link } from "@inertiajs/inertia-vue3";
+import { sweetSuccess, sweetError } from "../../../components/Alert";
+import Paginacao from "../../../Shared/Paginacao";
+import { Link } from "@inertiajs/inertia-vue3";
 
-  
-  export default {
-    props: ["items", "utilizadores", "total_depositado", "valor_a_depositar_padrao"],
-    components: { Link, Paginacao },
-    data() {
-      return { 
-    
-        isUpdate: false,
-        itemId: null,
+export default {
+  props: [
+    "items",
+    "utilizadores",
+    "total_depositado",
+    "valor_a_depositar_padrao",
+  ],
+  components: { Link, Paginacao },
         
-        data_inicio: new Date().toISOString().substr(0, 10),
-        data_final: new Date().toISOString().substr(0, 10),
-        operador: "",
-        
-        depositos: [],
-        params: {},
-        
-        contemDeposito: false,
-        
-        form: this.$inertia.form({
-          codigo_matricula: null,
-          candidato_id: "",
-          disabled: false,
-          disabled2: false,
-          // falta ser paramentrizado 5000
-          valor_a_depositar: this.valor_a_depositar_padrao.Valor ?? 0,
-          nome_estudante: null,
-          bilheite_estudante: null,
-          curso_estudante: null,
-        }),
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+  },
+
+  data() {
+    return {
+      isUpdate: false,
+      itemId: null,
+
+      data_inicio: new Date().toISOString().substr(0, 10),
+      data_final: new Date().toISOString().substr(0, 10),
+      operador: "",
+
+      depositos: [],
+      params: {},
+
+      contemDeposito: false,
+
+      form: this.$inertia.form({
+        codigo_matricula: null,
+        candidato_id: "",
+        disabled: false,
+        disabled2: false,
+        // falta ser paramentrizado 5000
+        valor_a_depositar: this.valor_a_depositar_padrao.Valor ?? 0,
+        nome_estudante: null,
+        bilheite_estudante: null,
+        curso_estudante: null,
+      }),
     };
   },
-  
+
   mounted() {
     this.params.data_inicio = this.data_inicio;
-    this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
+    this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar);
     // this.params.data_final = this.data_final;
     this.updateData();
   },
@@ -353,7 +387,7 @@
       if (val.sortBy.length != 0) {
         this.params.sort_by = val.sortBy[0];
         this.params.order_by = val.sortDesc[0] ? "desc" : "asc";
-      }else {
+      } else {
         this.params.sort_by = null;
         this.params.order_by = null;
       }
@@ -377,7 +411,7 @@
       this.updateData();
     },
   },
-  
+
   methods: {
     updateData() {
       this.$Progress.start();
@@ -389,39 +423,37 @@
         },
       });
     },
-    
+
     formatarMoeda() {
       // Remover caracteres que não são números
-      let valor = this.form.valor_a_depositar.replace(/\D/g, '');
+      let valor = this.form.valor_a_depositar.replace(/\D/g, "");
 
       // Converter o valor para número
       valor = Number(valor) / 100; // Dividir por 100 para ter o valor em reais
 
       // Formatar o número para moeda
-      this.form.valor_a_depositar = valor.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'AOA'
+      this.form.valor_a_depositar = valor.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "AOA",
       });
-
     },
-    
+
     removerFormatacaoAOA(valor) {
       // Remover caracteres não numéricos, exceto a vírgula
-      const valorNumerico = valor.replace(/[^\d,]/g, '');
-    
+      const valorNumerico = valor.replace(/[^\d,]/g, "");
+
       // Remover vírgulas repetidas, mantendo apenas uma
-      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ',');
-    
+      const valorSemVirgulasRepetidas = valorNumerico.replace(/(,)\1+/g, ",");
+
       // Substituir a vírgula por ponto decimal para obter o valor numérico
-      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, '.');
-    
+      const valorNumericoFinal = valorSemVirgulasRepetidas.replace(/,/g, ".");
+
       return valorNumericoFinal;
     },
 
     async submit() {
-    
       this.$Progress.start();
-              
+
       if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < 5000) {
         Swal.fire({
           title: "Atenção",
@@ -429,39 +461,41 @@
           icon: "warning",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
-          onClose: () => { },
+          onClose: () => {},
         });
         this.$Progress.fail();
         return;
       }
-    
+
       if (this.isUpdate) {
-        
       } else {
-        
         try {
-        
-          this.form.valor_a_depositar = this.removerFormatacaoAOA(this.form.valor_a_depositar);
+          this.form.valor_a_depositar = this.removerFormatacaoAOA(
+            this.form.valor_a_depositar
+          );
           // Faça uma requisição POST para o backend Laravel
-          const response = await axios.post('/depositos/store', this.form);
-          
+          const response = await axios.post("/depositos/store", this.form);
+
           this.form.reset();
           this.$Progress.finish();
           sweetSuccess(response.data.message);
           $("#modalDeposito").modal("hide");
-          this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
-          
+          this.form.valor_a_depositar = this.formatValor(
+            this.form.valor_a_depositar
+          );
+
           this.imprimirComprovativo(response.data.data);
-          
-            // Faça algo com a resposta, se necessário
+
+          // Faça algo com a resposta, se necessário
         } catch (error) {
           // Lide com erros, se houver
           sweetError("Primeiro deves fazer abertura do caixa");
-          this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar)
+          this.form.valor_a_depositar = this.formatValor(
+            this.form.valor_a_depositar
+          );
           this.$Progress.fail();
         }
       }
-    
     },
 
     pesqisar_estudante(e) {
@@ -476,7 +510,8 @@
           } else {
             this.form.codigo_estudante = response.data.dados.Codigo;
             this.form.nome_estudante = response.data.dados.Nome_Completo;
-            this.form.bilheite_estudante = response.data.dados.Bilhete_Identidade;
+            this.form.bilheite_estudante =
+              response.data.dados.Bilhete_Identidade;
             this.form.curso_estudante = response.data.dados.Designacao;
             sweetSuccess("Estudante Encontrado com sucesso!");
           }
@@ -535,52 +570,58 @@
         return "00-00-0000";
       }
     },
-    
-    editarItem(item) {   
+
+    editarItem(item) {
       this.form.clearErrors();
-      
+
       // this.form.clearErrors();
       // this.form.codigo_matricula = item.codigo_matricula_id,
       // this.form.valor_a_depositar = item.valor_depositar,
       // this.form.nome_estudante = item.matricula.admissao.preinscricao.Nome_Completo,
       // this.form.bilheite_estudante = item.matricula.admissao.preinscricao.Bilhete_Identidade,
       // this.form.curso_estudante = item.matricula.admissao.preinscricao.Bilhete_Identidade,
-      
+
       // this.isUpdate = true;
       // this.itemId = item.codigo;
-
     },
 
-    disableTo(){
-      if(this.codigo_matricula){
-        this.disabled2=false;
-        this.disabled=true;
-      }else if(this.candidato_id){
-        this.disabled2=true;
-        this.disabled=false;
-      }else{
-        this.disabled2=false;
-        this.disabled=false;
+    disableTo() {
+      if (this.codigo_matricula) {
+        this.disabled2 = false;
+        this.disabled = true;
+      } else if (this.candidato_id) {
+        this.disabled2 = true;
+        this.disabled = false;
+      } else {
+        this.disabled2 = false;
+        this.disabled = false;
       }
     },
-    
+
     imprimirPDF() {
-      window.open(`/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(
+        `/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+        "_blank"
+      );
     },
-    
+
     imprimirEXCEL() {
-      window.open(`/depositos/excel?data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(
+        `/depositos/excel?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+        "_blank"
+      );
     },
-    
-    imprimirComprovativo(item) 
-    {
-      window.open(`/depositos/imprimir-comprovativo?codigo=${item.codigo}`, "_blank");
+
+    imprimirComprovativo(item) {
+      window.open(
+        `/depositos/imprimir-comprovativo?codigo=${item.codigo}`,
+        "_blank"
+      );
     },
 
     voltarPaginaAnterior() {
       window.history.back();
     },
-    
   },
 };
 </script>

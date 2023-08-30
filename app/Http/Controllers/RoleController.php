@@ -20,9 +20,15 @@ class RoleController extends Controller
      */
     public function index()
     {
-        //
-        $data['roles'] = Role::where('sistema', 'cash')->paginate(5);
-        $data['permissions'] = Permission::where('sistema', 'cash')->paginate(20);
+        $user = auth()->user();
+        
+        // if($user->can('abertura caixa')){
+        //     return back()->toast('This notification comes from the server side =)');
+        //     // return redirect()->back();
+        // }
+       
+        $data['roles'] = Role::where('sistema', 'cash')->paginate(20);
+        $data['permissions'] = Permission::where('sistema', 'cash')->paginate(40);
         
         return Inertia::render('Utilizadores/Roles/Index', $data);
     }
@@ -45,6 +51,9 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        
+        
         $request->validate([
             'name' => 'required|unique:roles'
         ], [
@@ -93,6 +102,8 @@ class RoleController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $user = auth()->user();
+        
         $request->validate([
             'nome' => 'required'
         ], [
@@ -125,6 +136,8 @@ class RoleController extends Controller
      */
     public function adicionar_permissions(Request $request)
     {
+        $user = auth()->user();
+        
         $request->validate(
             ['role_id' => 'required'],
             ['permissions_id' => 'required'],
@@ -158,6 +171,8 @@ class RoleController extends Controller
      */
     public function getPermissionsRole($role_id)
     {
+        $user = auth()->user();
+        
         $permissions = Role::with('permissions')
             ->where('id', $role_id)
             ->first();
@@ -167,7 +182,10 @@ class RoleController extends Controller
     
     public function getUtilizadores()
     {
-    
+        
+        $user = auth()->user();
+        
+        
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
@@ -182,6 +200,9 @@ class RoleController extends Controller
     
     public function adicionar_perfil_utilizador(Request $request)
     {
+    
+        $user = auth()->user();
+        
         $request->validate(
             ['role_id' => 'required'],
             ['user_id' => 'required'],
@@ -206,6 +227,9 @@ class RoleController extends Controller
      */
     public function getPerfilUtilizador($user_id)
     {
+    
+        $user = auth()->user();
+        
         $user = User::with(['roles'])
             ->where('codigo_importado', $user_id)
             ->first();
