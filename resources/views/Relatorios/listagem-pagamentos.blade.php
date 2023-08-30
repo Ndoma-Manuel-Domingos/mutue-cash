@@ -130,13 +130,13 @@
             @foreach ($items as $index => $item)
                 <tr>
                     <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td style="text-align: center;">{{ $item->factura->matriculas ? $item->factura->matriculas->admissao->preinscricao->Nome_Completo : $item->preinscricao ? $item->preinscricao->Nome_Completo:NULL }}</td>
+                    <td style="text-align: center;">{{ $item->factura->matriculas ? $item->factura->matriculas->admissao->preinscricao->Nome_Completo : ($item->preinscricao ? $item->preinscricao->Nome_Completo:NULL) }}</td>
                     <td style="text-align: center;">{{ $item->codigo_factura ?? '' }}</td>
                     <td style="text-align: center;">{{ number_format($item->ValorAPagar ?? 0, 2, ',', '.') }} kz</td>
                     <td style="text-align: center;">{{ number_format($item->valor_depositado ?? 0, 2, ',', '.') }} kz</td>
                     <td style="text-align: center;">{{ date("Y-m-d", strtotime($item->DataRegisto ?? ''))  }}</td>
                     <td style="text-align: center;">{{ number_format($item->Troco ?? 0, 2, ',', '.') }} kz</td>
-                    <td style="text-align: center;">{{ $item->operador_novos ? $item->operador_novos->nome : $item->operador_antigo ? $item->operador_antigo->nome : NULL }}</td>
+                    <td style="text-align: center;">{{ $item->operador_novos ? $item->operador_novos->nome : ($item->operador_antigo ? $item->operador_antigo->nome : NULL) }}</td>
                 </tr>
             @endforeach
         </tbody>
