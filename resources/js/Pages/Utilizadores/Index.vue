@@ -25,9 +25,8 @@
                 <div class="col-12 col-md-12">
                   <div class="card">
                     <div class="card-header">
-    
                     </div>
-      
+                    
                     <div class="table-responsive">
                       <table class="table table-hover text-nowrap">
                         <thead>
@@ -35,7 +34,7 @@
                             <th>Nº</th>
                             <th>Codigo</th>
                             <th>Nome</th>
-                            <th width="100px">Perfil</th>
+                            <th width="150px">Perfil</th>
                             <th width="50px">Acção</th>
                           </tr>
                         </thead>
@@ -44,31 +43,37 @@
                             <td>{{ ++index }}</td>
                             <td>{{ item.codigo_importado ?? item.pk_utilizador }}</td>
                             <td>{{ item.nome ?? "" }}</td>
-                            <td v-for="role in item.roles" :key="role"> {{ role.name ?? 'sem Perfil' }} |</td>
+                            <td> 
+                              <template v-for="role in item.roles" :key="role">
+                                <span>{{ role.name ?? 'sem Perfil' }} |</span>
+                              </template>
+                            </td>
                             <td>
                             
                             <a
                               class="btn-sm btn-info mx-1"
                               @click="adicionar_perfil(item)"
                             >
-                              <!-- <i class="fas fa-plus"></i> -->
                               <i class="fas fa-redo-alt"></i>
                                Perfil
                             </a>
                             
-                            <a
+                            <!-- <a
                               class="btn-sm btn-danger mx-1"
                               @click="remover_perfil(item)"
                             >
                               <i class="fas fa-trash"></i>
                                Perfil
-                            </a>
+                            </a> -->
                           </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
                    
+                   <!-- <div class="card-footer">
+                    <p><strong>Obs: Sabendo que um utilizador por ter vários perfil, para remover um perfil em especifico do utilizador clica sobre o mesmo perfil!</strong></p>
+                   </div> -->
                   </div>
                 </div>
               </div>
@@ -112,7 +117,7 @@
                           <td>{{ item.name ?? "" }}</td>
                           <td class="text-right">
                             <input
-                              type="radio"
+                              type="checkbox"
                               v-model="form_perfil.role_id"
                               style="width: 20px; height: 20px"
                               :value="item.id"
@@ -157,7 +162,7 @@
       return {
         form_perfil: this.$inertia.form({
           user_id: "",
-          role_id: "",
+          role_id: [],
         }),
   
         title: "",
@@ -190,19 +195,20 @@
     methods: {
 
       adicionar_perfil(item) {
-        
+    
         this.title = item.nome ?? "";
         this.form_perfil.user_id = item.codigo_importado ?? "";
-  
+
         this.$Progress.start();
         axios
           .get(`/roles/utilizador-perfil/${item.codigo_importado}`, {
             params: {},
           })
           .then((response) => {
-            this.form_perfil.role_id = "";
-            response.data.utilizador.roles.forEach(role => {
-              this.form_perfil.role_id = role.id;
+              this.form_perfil.role_id = [];
+              response.data.utilizador.roles.forEach(role => {
+                this.form_perfil.role_id.push(role.id);
+              // this.form_perfil.role_id = role.id;
             });
             
             this.$Progress.finish();
@@ -211,39 +217,76 @@
             this.$Progress.fail();
           });
   
-        $("#modelActualizarPerfil").modal("show");
+        $("#modelActualizarPerfil").modal("show");    
+      
       },
       
       remover_perfil(item) {
-  
-        this.$Progress.start();
-        axios
-          .get(`/roles/utilizador-remover-perfil/${item.codigo_importado}`, {
-            params: {},
-          })
-          .then((response) => {
-            window.location.reload();
-            this.$Progress.finish();
-          })
-          .catch((error) => {
-            this.$Progress.fail();
-          });
+        
+        Swal.fire({
+          title: 'Atenção!',
+          text: "Têm certeza que desaja remover este perfil ao utilizador?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sim, Excluir!'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            
+            this.$Progress.start();
+            axios.get(`/roles/utilizador-remover-perfil/${item.codigo_importado}`, {
+                params: {},
+              })
+              .then((response) => {
+                
+                Swal.fire(
+                  'Exluido!',
+                  'Perfil excluido com successo',
+                  'success'
+                )
+              
+                window.location.reload();
+                this.$Progress.finish();
+              })
+              .catch((error) => {
+                this.$Progress.fail();
+            });
+          
+            
+          }
+        })
 
       },
   
       actualizar_perfil() {
-        this.form_perfil.post("/roles/utilizadores-roles", {
-          preverseScroll: true,
-          onSuccess: () => {
-            this.form_perfil.reset();
-            this.$Progress.finish();
-            sweetSuccess("Dados salvos com sucesso");
-            $("#modelActualizarPerfil").modal("hide");
-          },
-          onError: (errors) => {
-            sweetError("Ocorreu um erro ao Cadastrar Perfil!");
-          },
-        });
+      
+        Swal.fire({
+          title: 'Atenção!',
+          text: "Têm certeza que desaja adicionar este perfil ao utilizador?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sim, Adicionar!'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            
+            this.form_perfil.post("/roles/utilizadores-roles", {
+              preverseScroll: true,
+              onSuccess: () => {
+                this.form_perfil.reset();
+                this.$Progress.finish();
+                sweetSuccess("Dados salvos com sucesso");
+                $("#modelActualizarPerfil").modal("hide");
+              },
+              onError: (errors) => {
+                sweetError("Ocorreu um erro ao Cadastrar Perfil!");
+              },
+            });
+          }
+        })
+      
       },
 
       voltarPaginaAnterior() {

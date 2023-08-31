@@ -26,7 +26,7 @@
       <div class="container-fluid">
         
         <!-- <template v-if="user.type_user == 'Administrador'"> -->
-          <div class="row" v-if="movimento">
+          <!-- <div class="row" v-if="movimento">
             <div class="col-lg-3 col-6">
               <div class="small-box bg-info">
                 <div class="inner">
@@ -102,21 +102,6 @@
                 ></Link>
               </div>
             </div>
-            
-            <!-- <div class="col-lg-3 col-6">
-              <div class="small-box bg-info">
-                <div class="inner">
-                  <h4 class="text-uppercase">Total de Pag. Recebido</h4>
-                  <p>{{ formatValor(movimento.valor_arrecadado_pagamento) }}</p>
-                </div>
-                <div class="icon">
-                  <i class="ion ion-bag"></i>
-                </div>
-                <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                ></Link>
-              </div>
-            </div> -->
   
             <div class="col-lg-3 col-6">
               <div class="small-box bg-info">
@@ -133,9 +118,9 @@
               </div>
             </div>
   
-          </div>
+          </div> -->
   
-          <div class="row" v-else>
+          <div class="row" v-if="user.auth.can['abertura caixa']">
             <div class="col-12 col-md-6">
               <form action="" @submit.prevent="submit">
                 <div class="card">
@@ -325,15 +310,6 @@
   </MainLayouts>
 </template>
   
-<script setup>
-  import { computed } from "vue";
-  import { usePage } from "@inertiajs/inertia-vue3";
-
-  const user = computed(() => {
-    return usePage().props.value.auth.user;
-  });
-</script>
-  
 <script>
 import { Link } from "@inertiajs/inertia-vue3";
 
@@ -358,6 +334,14 @@ export default {
       params: {},
     };
   },
+  
+      
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+  },
+  
   mounted(){
     this.form.valor_inicial = this.formatValor(this.form.valor_inicial)
   },

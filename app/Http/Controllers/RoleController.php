@@ -222,8 +222,10 @@ class RoleController extends Controller
             $user->removeRole($role);
         }
         
-        $roles = Role::findById($request->role_id);
-        $user->assignRole($roles);
+        foreach ($request->role_id as $value) {
+            $roles = Role::findById($value);
+            $user->assignRole($roles);
+        }
      
         return redirect()->back();
     }
