@@ -95,18 +95,32 @@ class DashboardController extends Controller
         
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
-        $header = [
-            "total_depositado" => $valor_deposito,
-            'total_pagamento' => $totalPagamentos,
-            'caixa' => $caixa,
-            'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
-            
-            "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
-            
-            "ano_lectivos" => $user->roles()->get(),
-            "usuario" => $user,
-            
-        ];
+        try {
+            $header = [
+                "total_depositado" => $valor_deposito,
+                'total_pagamento' => $totalPagamentos,
+                'caixa' => $caixa,
+                'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
+                
+                "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+                
+                "ano_lectivos" => $user->roles()->get(),
+                "usuario" => $user
+            ];
+            //code...
+        } catch (\Throwable $th) {
+            $header = [
+                "total_depositado" => $valor_deposito ?? Null,
+                'total_pagamento' => $totalPagamentos ?? Null,
+                'caixa' => $caixa ?? Null,
+                'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
+                
+                "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+                
+                "ano_lectivos" => $user->roles()->get(),
+                "usuario" => $user
+            ];
+        }
         
         return Inertia::render('Dashboard', $header);
     }

@@ -122,7 +122,7 @@ class DepositoController extends Controller
         }
  
         
-        $data['total_depositado'] = $valor_deposito;
+        $data['total_depositado'] = $valor_deposito ?? NULL;
         $data['valor_a_depositar_padrao'] = Paramentro::where('Designacao', "Mutue Cash")->where('estado', '1')->first();
         
         return Inertia::render('Operacoes/Depositos/Index', $data);
