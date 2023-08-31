@@ -182,16 +182,23 @@ class RoleController extends Controller
     
     public function getUtilizadores()
     {
-        
         $user = auth()->user();
-        
         
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
 
-        $data["utilizadores"] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        $array_utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])
+        ->orWhere('fk_utilizador', Auth::user()->pk_utilizador)
+        ->with('utilizadores')
+        ->pluck('fk_utilizador');
+        // ->get();
+        
+        // $data["utilizadores"] = $array_utilizadores;
+        
+        $data["utilizadores"] = User::with('roles')->whereIn('pk_utilizador', $array_utilizadores)->get();
+        
         $data['roles'] = Role::where('sistema', 'cash')->get();
     
         return Inertia::render('Utilizadores/Index', $data);;
@@ -200,7 +207,6 @@ class RoleController extends Controller
     
     public function adicionar_perfil_utilizador(Request $request)
     {
-    
         $user = auth()->user();
         
         $request->validate(
@@ -210,11 +216,29 @@ class RoleController extends Controller
             ['user_id.required' => "Obrigatória"]
         ); 
         
-        $roles = Role::findById($request->role_id);
-        $user = User::where('codigo_importado', $request->user_id)->first();
+        $user = User::with('roles')->where('codigo_importado', $request->user_id)->first();
         
+        foreach ($user->roles as $role){
+            $user->removeRole($role);
+        }
+        
+        $roles = Role::findById($request->role_id);
         $user->assignRole($roles);
      
+        return redirect()->back();
+    }
+    
+    
+    public function removerPerfilUtilizador($id)
+    {
+        $user = auth()->user();
+
+        $user = User::with('roles')->where('codigo_importado', $id)->first();
+        
+        foreach ($user->roles as $role){
+            $user->removeRole($role);
+        }
+
         return redirect()->back();
     }
     

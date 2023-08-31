@@ -172,7 +172,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::put('/roles/update/{id}', [RoleController::class, 'update'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::post('/roles/adicionar-permissions', [RoleController::class, 'adicionar_permissions'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/permissions/{id}', [RoleController::class, 'getPermissionsRole'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    Route::get('/roles/utilizadores', [RoleController::class, 'getUtilizadores'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::get('/roles/utilizadores', [RoleController::class, 'getUtilizadores']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::post('/roles/utilizadores-roles', [RoleController::class, 'adicionar_perfil_utilizador'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/utilizador-perfil/{id}', [RoleController::class, 'getPerfilUtilizador'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::get('/roles/utilizador-remover-perfil/{id}', [RoleController::class, 'removerPerfilUtilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
 });

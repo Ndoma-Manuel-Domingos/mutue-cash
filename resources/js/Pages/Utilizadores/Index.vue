@@ -35,23 +35,33 @@
                             <th>Nº</th>
                             <th>Codigo</th>
                             <th>Nome</th>
-                            <th>Perfil</th>
+                            <th width="100px">Perfil</th>
                             <th width="50px">Acção</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr v-for="(item, index) in utilizadores" :key="item">
                             <td>{{ ++index }}</td>
-                            <td>{{ item.utilizadores.codigo_importado ?? item.utilizadores.pk_utilizador }}</td>
-                            <td>{{ item.utilizadores.nome ?? "" }}</td>
-                            <td>sem perfil</td>
+                            <td>{{ item.codigo_importado ?? item.pk_utilizador }}</td>
+                            <td>{{ item.nome ?? "" }}</td>
+                            <td v-for="role in item.roles" :key="role"> {{ role.name ?? 'sem Perfil' }} |</td>
                             <td>
+                            
                             <a
                               class="btn-sm btn-info mx-1"
                               @click="adicionar_perfil(item)"
                             >
-                              <i class="fas fa-plus"></i>
-                              Actualizar Perfil
+                              <!-- <i class="fas fa-plus"></i> -->
+                              <i class="fas fa-redo-alt"></i>
+                               Perfil
+                            </a>
+                            
+                            <a
+                              class="btn-sm btn-danger mx-1"
+                              @click="remover_perfil(item)"
+                            >
+                              <i class="fas fa-trash"></i>
+                               Perfil
                             </a>
                           </td>
                           </tr>
@@ -181,12 +191,12 @@
 
       adicionar_perfil(item) {
         
-        this.title = item.utilizadores.nome ?? "";
-        this.form_perfil.user_id = item.utilizadores.codigo_importado ?? "";
+        this.title = item.nome ?? "";
+        this.form_perfil.user_id = item.codigo_importado ?? "";
   
         this.$Progress.start();
         axios
-          .get(`/roles/utilizador-perfil/${item.utilizadores.codigo_importado}`, {
+          .get(`/roles/utilizador-perfil/${item.codigo_importado}`, {
             params: {},
           })
           .then((response) => {
@@ -202,6 +212,23 @@
           });
   
         $("#modelActualizarPerfil").modal("show");
+      },
+      
+      remover_perfil(item) {
+  
+        this.$Progress.start();
+        axios
+          .get(`/roles/utilizador-remover-perfil/${item.codigo_importado}`, {
+            params: {},
+          })
+          .then((response) => {
+            window.location.reload();
+            this.$Progress.finish();
+          })
+          .catch((error) => {
+            this.$Progress.fail();
+          });
+
       },
   
       actualizar_perfil() {
