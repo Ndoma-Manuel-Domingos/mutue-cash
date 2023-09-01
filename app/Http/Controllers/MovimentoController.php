@@ -122,40 +122,40 @@ class MovimentoController extends Controller
         $verificar = MovimentoCaixa::where('operador_id', $request->operador_id)
         ->where('status', 'aberto')
         ->first();
+
+        $caixa = Caixa::findOrFail($request->caixa_id);
+
+        // dd($verificar);
         
-        if(!$verificar){
-        
-            $caixa = Caixa::findOrFail($request->caixa_id);
+        if(filled($verificar)){
             
-            $create = MovimentoCaixa::create([
-                'caixa_id' => $caixa->codigo,
-                'operador_id' => $request->operador_id,
-                'operador_admin_id' => NULL,
-                'valor_abertura' => $request->valor_inicial,
-                'valor_arrecadado_total' => $request->valor_inicial,
-                'valor_arrecadado_depositos' => 0,
-                'valor_arrecadado_pagamento' => 0,
-                'status' => 'aberto',
-                'status_admin' => 'pendente',
-                'created_by' => Auth::user()->codigo_importado,
-                'updated_by' => $request->operador_id,
-                'deleted_by' => $request->operador_id,
-            ]);
-            
-            $caixa->status = "aberto";
-            $caixa->operador_id = $request->operador_id;
-            $caixa->created_by = Auth::user()->codigo_importado;
-            $caixa->code = $this->gerarNumeroUnico();
-            $caixa->update();
-            
-            return redirect()->back();
+            $caixa_aberto = $verificar ? Caixa::findOrFail($verificar->caixa_id) : null;
+
+            return redirect()->back()->with('error', 'o operador que pretendes associar o '.$caixa->nome.', já está associado ao '.$caixa_aberto->nome.' que não foi ainda encerrado');
         }
        
-        
-        return response()->json([
-            'message' => 'Não foi possíve fazer abertura do caixa!',
+        $create = MovimentoCaixa::create([
+            'caixa_id' => $caixa->codigo,
+            'operador_id' => $request->operador_id,
+            'operador_admin_id' => NULL,
+            'valor_abertura' => $request->valor_inicial,
+            'valor_arrecadado_total' => $request->valor_inicial,
+            'valor_arrecadado_depositos' => 0,
+            'valor_arrecadado_pagamento' => 0,
+            'status' => 'aberto',
+            'status_admin' => 'pendente',
+            'created_by' => Auth::user()->codigo_importado,
+            'updated_by' => $request->operador_id,
+            'deleted_by' => $request->operador_id,
         ]);
-
+        
+        $caixa->status = "aberto";
+        $caixa->operador_id = $request->operador_id;
+        $caixa->created_by = Auth::user()->codigo_importado;
+        $caixa->code = $this->gerarNumeroUnico();
+        $caixa->update();
+        
+        return redirect()->back();
     }
     
     public function fecho()

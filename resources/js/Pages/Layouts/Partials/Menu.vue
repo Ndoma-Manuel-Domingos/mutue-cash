@@ -210,7 +210,7 @@
         >
           <i class="nav-icon fas fa-users"></i>
           <p>
-            Gestão Utilizadores
+            Gestão de Utilizadores
             <i class="right fas fa-angle-left"></i>
           </p>
         </a>
@@ -303,19 +303,18 @@
   
     methods: {
       logout(){
-        axios
-          .post("/logout")
-          .then((response) => {
-              Swal.fire({
-                icon: response.data? "warning" : "success!",
-                title: response.data ? "Atenção" : "Sucesso!",
-                text: response.data ? response.data.message : "Conta encerrada com sucesso!",
-              });
-              window.location.reload();
-          })
-          .catch((error) => {
-            console.error(error);
+        axios.post("/logout").then((response) => {
+          Swal.fire({
+            icon: response.data? "warning" : "success!",
+            title: response.data ? "Atenção" : "Sucesso!",
+            text: response.data ? response.data.message : "Conta encerrada com sucesso!",
           });
+          setTimeout(() => {
+            window.location.reload();
+          }, 2500);
+        }).catch((error) => {
+          console.error(error);
+        });
         
       },
       

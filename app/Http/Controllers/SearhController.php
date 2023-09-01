@@ -56,7 +56,7 @@ class SearhController extends Controller
         $this->prazoExpiracaoService = new  prazoExpiracaoService();
         $this->extenso = new  Extenso();
 
-        $this->middleware(['auth']);
+        $this->middleware('auth');
     }
 
     public function search(Request $request)

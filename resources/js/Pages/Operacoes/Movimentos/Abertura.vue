@@ -119,6 +119,16 @@
             </div>
   
           </div> -->
+          
+          <div class="row" v-if="$page.props.flash.error">
+            <div class="col-12 col-md-12">
+              <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                  <h2><i class="icon fas fa-info"></i>Atenção!</h2> 
+                  <h4 class="mt-4">Caro Utilizador, {{$page.props.flash.error}}</h4>
+                </div>
+            </div>
+          </div>
   
           <div class="row" v-if="user.auth.can['abertura caixa']">
             <div class="col-12 col-md-6">
@@ -292,6 +302,8 @@
             </div>
   
           </div>
+
+          
           
           <div class="row" v-else>
             <div class="col-12 col-md-12">
@@ -373,6 +385,19 @@ export default {
         Swal.fire({
           title: "Atenção",
           text: "O valor da abertura Invalido",
+          icon: "warning",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+          onClose: () => {},
+        });
+        this.$Progress.fail();
+        return;
+      }
+
+      if(this.$page.props.flash.error != null){
+        Swal.fire({
+          title: "Atenção",
+          text: this.$page.props.flash.error,
           icon: "warning",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",

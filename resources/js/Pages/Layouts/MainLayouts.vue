@@ -107,18 +107,19 @@
 
     methods: {
       logout(){
-        axios
-          .post("/logout")
-          .then((response) => {
-              Swal.fire({
-                icon: "warning",
-                title: "Atenção...",
-                text: response.data.message,
-              });
-          })
-          .catch((error) => {
-            console.error(error);
+        axios.post("/logout").then((response) => {
+          Swal.fire({
+            icon: response.data? "warning" : "success!",
+            title: response.data ? "Atenção" : "Sucesso!",
+            text: response.data ? response.data.message : "Conta encerrada com sucesso!",
           });
+          setTimeout(() => {
+            window.location.reload();
+          }, 2500);
+
+        }).catch((error) => {
+          console.error(error);
+        });
         
       },
       
