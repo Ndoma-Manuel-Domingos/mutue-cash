@@ -149,13 +149,13 @@
                       <td>{{ formatValor(item.valor_arrecadado_total ?? 0)}}</td>
                       <td>{{ item.created_at }}</td>
                       <td class="text-center">
-                        <Link class="btn" @click="cancelarFecho(item)">
+                        <Link class="btn" @click="cancelarFecho(item)" title="CANCELAR O FECHO DE CAIXA">
                           <i class="fas fa-ban text-danger"></i>
                         </Link>
-                        <Link class="btn" @click="validarFecho(item)">
+                        <Link class="btn" @click="validarFecho(item)" title="VALIDAR O FECHO DE CAIXA">
                           <i class="fas fa-check text-success"></i>
                         </Link>
-                        <Link class="btn" @click="imprimirComprovativo(item)">
+                        <Link class="btn" @click="imprimirComprovativo(item)" title="REIMPRIMIR O RELATÓRIO DO FECHO DE CAIXA">
                           <i class="fas fa-print text-info"></i>
                         </Link>
                       </td>

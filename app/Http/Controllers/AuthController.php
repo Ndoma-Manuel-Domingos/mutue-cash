@@ -13,6 +13,11 @@ class AuthController extends Controller
     //
     use TraitPerfil;
 
+    public function __construct()
+    {
+        $this->middleware('guest')->except('logout');
+    }
+
     public function login()
     {
         return Inertia::render('Login');

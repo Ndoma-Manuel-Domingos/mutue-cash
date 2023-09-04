@@ -125,20 +125,19 @@ class MovimentoController extends Controller
         if($user->codigo_importado == null){
             $user->update(['codigo_importado' => $user->pk_utilizador]);
         }
- 
         
         $verificar = Caixa::where('operador_id', $request->operador_id)->where('status', 'aberto')->first();
         
-        // $verificar = MovimentoCaixa::where('operador_id', $request->operador_id Auth::user()->codigo_importado)
-        // $verificar = MovimentoCaixa::where('operador_id', $request->operador_id)
-        // ->where('caixa_id', $caixa->codigo)
-        // ->where('status', 'aberto')
-        // ->first();
+        $caixa = Caixa::findOrFail($request->caixa_id);
         
-        if(!$verificar){  
-        
-            $caixa = Caixa::findOrFail($request->caixa_id);
+        if(filled($verificar)){
             
+            $caixa_aberto = $verificar ? Caixa::findOrFail($verificar->caixa_id) : null;
+
+            return redirect()->back()->with('error', 'o operador que pretendes associar o '.$caixa->nome.', já está associado ao '.$caixa_aberto->nome.' que não foi ainda encerrado');
+        }else {
+        
+        
             $create = MovimentoCaixa::create([
                 'caixa_id' => $caixa->codigo,
                 'operador_id' => $request->operador_id,
@@ -160,14 +159,11 @@ class MovimentoController extends Controller
             $caixa->code = $this->gerarNumeroUnico();
             $caixa->update();
             
+              
             return redirect()->back();
         }
-       
-        
-        return response()->json([
-            'message' => 'Não foi possíve fazer abertura do caixa!',
-        ]);
 
+      
     }
     
     public function fecho()
