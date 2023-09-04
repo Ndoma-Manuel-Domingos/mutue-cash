@@ -111,15 +111,15 @@
           .post("/logout")
           .then((response) => {
               Swal.fire({
-                icon: "warning",
-                title: "Atenção...",
-                text: response.data.message,
+                icon: response.data? "warning" : "success!",
+                title: response.data ? "Atenção" : "Sucesso!",
+                text: response.data ? response.data.message : "Conta encerrada com sucesso!",
               });
+              window.location.reload();
           })
           .catch((error) => {
             console.error(error);
           });
-        
       },
       
       bloaquearCaixa()

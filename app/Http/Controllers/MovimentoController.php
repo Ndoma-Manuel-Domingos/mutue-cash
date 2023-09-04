@@ -26,13 +26,19 @@ class MovimentoController extends Controller
     {
         $user = auth()->user();
         
-        $movimento = MovimentoCaixa::with('operador', 'caixa')
-        ->where('operador_id', Auth::user()->codigo_importado)
-        ->where('status', 'aberto')
-        ->first();
-        
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        $movimento = null;
+        
+        if($caixa){
+            $movimento = MovimentoCaixa::with('operador', 'caixa')
+            ->where('caixa_id', $caixa->codigo)
+            ->where('operador_id', $caixa->operador_id)
+            ->where('status', 'aberto')
+            ->first();
+        }
+        
         
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -57,6 +63,7 @@ class MovimentoController extends Controller
             "operador" => $user
         ];
         
+        
         return Inertia::render('Operacoes/Movimentos/Diaro-Operador', $header);
     }    
         
@@ -64,13 +71,14 @@ class MovimentoController extends Controller
     {
         $user = auth()->user();
         
-        $movimento = MovimentoCaixa::with('operador', 'caixa')
-        ->where('operador_id', Auth::user()->codigo_importado)
-        ->where('status', 'aberto')
-        ->first();
-        
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        $movimento = null;
+        
+        if($caixa){
+            $movimento = MovimentoCaixa::with('operador', 'caixa')->where('caixa_id', $caixa->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        }
         
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
@@ -117,13 +125,17 @@ class MovimentoController extends Controller
         if($user->codigo_importado == null){
             $user->update(['codigo_importado' => $user->pk_utilizador]);
         }
+ 
+        
+        $verificar = Caixa::where('operador_id', $request->operador_id)->where('status', 'aberto')->first();
         
         // $verificar = MovimentoCaixa::where('operador_id', $request->operador_id Auth::user()->codigo_importado)
-        $verificar = MovimentoCaixa::where('operador_id', $request->operador_id)
-        ->where('status', 'aberto')
-        ->first();
+        // $verificar = MovimentoCaixa::where('operador_id', $request->operador_id)
+        // ->where('caixa_id', $caixa->codigo)
+        // ->where('status', 'aberto')
+        // ->first();
         
-        if(!$verificar){
+        if(!$verificar){  
         
             $caixa = Caixa::findOrFail($request->caixa_id);
             

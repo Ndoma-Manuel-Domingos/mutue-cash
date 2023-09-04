@@ -31,7 +31,7 @@
               <div class="small-box bg-info">
                 <div class="inner">
                   <h4 class="text-uppercase">operador activo</h4>
-                  <p>{{ movimento.operador.nome }}</p>
+                  <p>{{ movimento.operador.nome ?? "" }}</p>
                 </div>
                 <div class="icon">
                   <i class="ion ion-bag"></i>
@@ -124,7 +124,7 @@
               <div class="alert alert-warning alert-dismissible">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                   <h4><i class="icon fas fa-info"></i>Atenção!</h4> 
-                  <h5 class="mt-3">Operador(a) {{ user.nome }}, ainda não tens um caixa aberto no momento!</h5>
+                  <h5 class="mt-3">Operador(a) {{ user.nome ?? '' }}, ainda não tens um caixa aberto no momento!</h5>
                 </div>
             </div>
           </div>

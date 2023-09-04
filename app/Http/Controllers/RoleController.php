@@ -183,6 +183,7 @@ class RoleController extends Controller
     public function getUtilizadores()
     {
         $user = auth()->user();
+      
         
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();

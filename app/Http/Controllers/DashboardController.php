@@ -6,6 +6,7 @@ use App\Models\AnoLectivo;
 use App\Models\Caixa;
 use App\Models\Deposito;
 use App\Models\Pagamento;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,7 @@ class DashboardController extends Controller
     
     public function dashboard(Request $request)
     {
+    
         $user = auth()->user();
         
         $request->ano_lectivo = $this->anoLectivoActivo();

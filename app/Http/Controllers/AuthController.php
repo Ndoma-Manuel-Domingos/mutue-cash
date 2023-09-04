@@ -64,10 +64,9 @@ class AuthController extends Controller
 
         if ($verificar_caixa_aberto) {
             return response()->json(['message' => $message]);
+        }else{
+            Auth::logout();
+            return Inertia::location('/login');
         }
-
-        Auth::logout();
-
-        return Inertia::location('/login');
     }
 }
