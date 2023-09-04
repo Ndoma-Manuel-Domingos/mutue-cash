@@ -110,11 +110,21 @@
         axios
           .post("/logout")
           .then((response) => {
-              Swal.fire({
-                icon: response.data? "warning" : "success!",
-                title: response.data ? "Atenção" : "Sucesso!",
-                text: response.data ? response.data.message : "Conta encerrada com sucesso!",
-              });
+          
+              if(response.data.status == 201){
+                Swal.fire({
+                  icon: "warning",
+                  title: "Atenção",
+                  text: response.data.message,
+                });
+              }else {
+                Swal.fire({
+                  icon: "success",
+                  title: "Sucesso!",
+                  text: "Conta encerrada com sucesso!",
+                });
+              }
+              
               window.location.reload();
           })
           .catch((error) => {
