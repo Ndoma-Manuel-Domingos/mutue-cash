@@ -108,65 +108,39 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/pagamentos-estudantes/todas-referencias-nao-pagas/{codigo_matricula}', [PagamentosController::class, 'getTodasReferencias'])->name('mc.todas-referencias-nao-pagas');
 
     Route::get('/pagamentos-estudantes/fatura-by-reference', [PagamentosController::class, 'faturaByReference'])->name('mc.fatura-by-reference');
-
     Route::post('/pagamentos-estudantes/pagamento/diversos/create/{codigo?}', [PagamentosController::class, 'salvarPagamentosDiversos'])->name('mc.pagamento-diversos-create');
-
     Route::post('/pagamentos-estudantes/fatura/diversos/create/{numero_matricula?}', [PagamentosController::class, 'faturaDiversos'])->name('mc.pagamento-fatura-diversos-create');
-
     Route::post('/pagamentos-preinscricao', [PagamentosController::class, 'pagamentosPreinscricao']);
-
     Route::get('/fatura/diversos/{factura_id}', [PagamentosController::class, 'imprimirFaturaDiversos']);
-
     Route::get('/fatura-recibo/inscricao/{factura_id}', [PagamentosController::class, 'pdfFatReciboIExameAcesso']);
-
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
 
 
     Route::get('/banco-formaPagamento', [SearhController::class, 'bancosFormaPagamento'])->name('mc.banco-formas-pagamento');
-
     Route::get('/aluno/{id_user}', [SearhController::class, 'pegaAluno']);
-
     Route::get('/saldo/{id_user}', [SearhController::class, 'pegaAluno']);
-
     Route::get('/get-ano-lectivo/{id_user}', [SearhController::class, 'pegaAnolectivo']);
-
     Route::get('/pega-anos-lectivos-estudante/{id_user}', [SearhController::class, 'anosLectivoEstudante']);
-
     Route::get('/pagamentos-estudantes/servicos/{id_ano_lectivo}/{id_user}', [SearhController::class, 'servicos']);
-
     Route::get('/candidato/{id_user}', [SearhController::class, 'Candidato']);
-
     Route::get('/pagamentos-estudantes/ultimo-mes/{id_user}', [SearhController::class, 'mesUltimo']);
-
     Route::get('/pagamentos-estudantes/prestacoes-por-ano/{id_ano_lectivo}/{id_user}', [SearhController::class, 'getPrestacoesPorAnoLectivo']);
-
     Route::get('/estudante/pegar-descricao-bolseiro', [SearhController::class, 'getDescricaoTiposAlunos']);
-
     Route::get('/estudante/pega-bolseiro/{id_user}', [SearhController::class, 'descontoBolsa']);
-
     Route::get('/pagamentos-estudantes/ultima-prestacao-por-ano/{id_ano_lectivo}/{id_user}', [SearhController::class, 'getUltimaPrestacaoPorAnoLectivo']);
-
     Route::get('/pagamentos-estudantes/primeira-prestacao-por-ano/{id_ano_lectivo}/{id_user}', [SearhController::class, 'getPrimeiraPrestacaoPorAnoLectivo']);
-
     Route::get('/estudante/pega-finalista/{id_user}', [SearhController::class, 'finalista']);
-
     Route::get('/estudante/referencias-nao-pagas/{id_user}', [SearhController::class, 'getTodasReferencias']);
-
     Route::get('/estudante/verifica-confirmacao-no-ano-corrente/{id_user}', [SearhController::class, 'verificaConfirmacaoNoAnoLectivoCorrente']);
-
     Route::get('/estudante/prestacoes-por-bolsa-semestre',  [SearhController::class, 'prestacoesPorBolsaSemestre']);
-
     Route::get('/ciclos',  [SearhController::class, 'ciclos']);
     Route::get('/ano-lectivo-actual',  [SearhController::class, 'anoLectivoActual']);
-
     Route::get('/saldo/{id}', 'PagamentosEstudanteController@saldo');
-
     Route::get('/operacoes/caixas', [CaixaController::class, 'index'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
     Route::post('/operacoes/caixas/store', [CaixaController::class, 'store'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
     Route::post('/operacoes/caixas/update', [CaixaController::class, 'update'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
     Route::get('/operacoes/caixas/show/{id}', [CaixaController::class, 'show'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
     Route::get('/operacoes/caixas/delete/{id}', [CaixaController::class, 'destroy'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
-    
     Route::get('/roles/index', [RoleController::class, 'index'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::post('/roles/store', [RoleController::class, 'store'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::put('/roles/update/{id}', [RoleController::class, 'update'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
@@ -176,4 +150,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/roles/utilizadores-roles', [RoleController::class, 'adicionar_perfil_utilizador'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/utilizador-perfil/{id}', [RoleController::class, 'getPerfilUtilizador'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/utilizador-remover-perfil/{id}', [RoleController::class, 'removerPerfilUtilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    
+    
+    
+    Route::get('/verificar-caixa-aberto',  [SearhController::class, 'verificarCaixaAberto']);
 });

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
 use App\Http\Controllers\Extenso;
 use App\Http\Controllers\Divida\ControloDivida;
+use App\Models\Caixa;
 use App\Models\Pagamento;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\AlunoRepository;
@@ -20,6 +21,7 @@ use App\Services\FaturaService;
 use App\Services\PagamentoService;
 use App\Services\PropinaService;
 use \Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class SearhController extends Controller
 {
@@ -91,6 +93,7 @@ class SearhController extends Controller
 
         return response()->json(["dados" => $resultado, "ano_lectivo_id"=>$ano_lectivo], 200);
     }
+    
     public function search_preinscricao(Request $request)
     {
         $user = auth()->user();
@@ -1267,6 +1270,23 @@ class SearhController extends Controller
 
         return Response()->json($data);
     }
+    
+    public function verificarCaixaAberto()
+    {
+        $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";
+        $messag2 = "Gostariamos de lembrar ao caro utilizador que não fez o fecho do caixa que abriu.";
+        $message3 = "Conta encerrada com sucesso.";
+
+        if ($verificar_caixa_aberto) {
+            return response()->json(['message' => $message, 'status' => 201]);
+        }else{
+            return response()->json(['message' => $message3, 'status' => 200]);
+        }
+    }
+    
+    
 
 
 }

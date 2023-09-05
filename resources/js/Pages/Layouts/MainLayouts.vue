@@ -102,11 +102,41 @@
   export default {
     data() {
       return {
+        result: [],
       };
     },
 
     methods: {
+      
+    
       logout(){
+        axios
+          .post("/logout")
+          .then((response) => {
+          
+              if(response.data.status == 201){
+                Swal.fire({
+                  icon: "warning",
+                  title: "Atenção",
+                  text: response.data.message,
+                });
+              }else {
+                Swal.fire({
+                  icon: "success",
+                  title: "Sucesso!",
+                  text: "Conta encerrada com sucesso!",
+                });
+              }
+              
+              window.location.reload();
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
+      
+      sair_definitivamente(){
+      
         axios
           .post("/logout")
           .then((response) => {
