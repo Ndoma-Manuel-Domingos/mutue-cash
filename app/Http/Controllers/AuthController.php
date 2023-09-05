@@ -68,11 +68,10 @@ class AuthController extends Controller
         $messag2 = "Gostariamos de lembrar ao caro utilizador que não fez o fecho do caixa que abriu.";
 
         if ($verificar_caixa_aberto) {
-            return response()->json(['message' => $message]);
+            return response()->json(['message' => $message, 'status' => 201]);
+        }else{
+            Auth::logout();
+            return Inertia::location('/login');
         }
-
-        Auth::logout();
-
-        return Inertia::location('/login');
     }
 }
