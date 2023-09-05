@@ -61,7 +61,7 @@ class DashboardController extends Controller
             ->sum('valor_depositado');
         }
         
-        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor']))
+        if(auth()->user()->hasRole(['Supervisor']))
         {
             if($request->data_inicio){
                 $request->data_inicio = $request->data_inicio;
@@ -77,7 +77,7 @@ class DashboardController extends Controller
             })->when($request->data_final, function($query, $value){
                 $query->where("data_movimento", "<=",Carbon::parse($value));
             })
-            ->where('created_by', $user->codigo_importado)
+            //->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
             
             $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
@@ -87,6 +87,39 @@ class DashboardController extends Controller
                 $query->where("DataRegisto", ">=",Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
                 $query->where("DataRegisto", "<=",Carbon::parse($value));
+            })
+            ->where('estado', 1)
+            ->where('forma_pagamento', 6)
+            //->where('fk_utilizador', $user->codigo_importado)
+            ->sum('valor_depositado');  
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa']))
+        {
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+        
+            $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
+                $query->where("ano_lectivo_id" ,$value);
+            })
+            ->when($request->data_inicio, function($query, $value){
+                $query->where("data_movimento", ">=", Carbon::parse($value));
+            })->when($request->data_final, function($query, $value){
+                $query->where("data_movimento", "<=", Carbon::parse($value));
+            })
+            ->where('created_by', $user->codigo_importado)
+            ->sum('valor_depositar');
+            
+            $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
+                $query->where("AnoLectivo" ,$value);
+            })
+            ->when($request->data_inicio, function($query, $value){
+                $query->where("DataRegisto", ">=", Carbon::parse($value));
+            })->when($request->data_final, function($query, $value){
+                $query->where("DataRegisto", "<=", Carbon::parse($value));
             })
             ->where('estado', 1)
             ->where('forma_pagamento', 6)

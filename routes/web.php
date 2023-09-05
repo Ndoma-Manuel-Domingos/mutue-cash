@@ -5,6 +5,7 @@ use App\Http\Controllers\CaixaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\MovimentoController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PagamentosController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\RoleController;
@@ -136,22 +137,23 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/ciclos',  [SearhController::class, 'ciclos']);
     Route::get('/ano-lectivo-actual',  [SearhController::class, 'anoLectivoActual']);
     Route::get('/saldo/{id}', 'PagamentosEstudanteController@saldo');
-    Route::get('/operacoes/caixas', [CaixaController::class, 'index'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
-    Route::post('/operacoes/caixas/store', [CaixaController::class, 'store'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
-    Route::post('/operacoes/caixas/update', [CaixaController::class, 'update'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
-    Route::get('/operacoes/caixas/show/{id}', [CaixaController::class, 'show'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
-    Route::get('/operacoes/caixas/delete/{id}', [CaixaController::class, 'destroy'])->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
-    Route::get('/roles/index', [RoleController::class, 'index'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    Route::post('/roles/store', [RoleController::class, 'store'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    Route::put('/roles/update/{id}', [RoleController::class, 'update'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    Route::post('/roles/adicionar-permissions', [RoleController::class, 'adicionar_permissions'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    Route::get('/roles/permissions/{id}', [RoleController::class, 'getPermissionsRole'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::get('/operacoes/caixas', [CaixaController::class, 'index']); //->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
+    Route::post('/operacoes/caixas/store', [CaixaController::class, 'store']); //->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
+    Route::post('/operacoes/caixas/update', [CaixaController::class, 'update']); //->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
+    Route::get('/operacoes/caixas/show/{id}', [CaixaController::class, 'show']); //->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
+    Route::get('/operacoes/caixas/delete/{id}', [CaixaController::class, 'destroy']); //->middleware('role_or_permission:Gestor de Caixa|criar caixa|listar caixa');
+    Route::get('/roles/index', [RoleController::class, 'index']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::post('/roles/store', [RoleController::class, 'store']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::put('/roles/update/{id}', [RoleController::class, 'update']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::post('/roles/adicionar-permissions', [RoleController::class, 'adicionar_permissions']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::get('/roles/permissions/{id}', [RoleController::class, 'getPermissionsRole']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/utilizadores', [RoleController::class, 'getUtilizadores']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    Route::post('/roles/utilizadores-roles', [RoleController::class, 'adicionar_perfil_utilizador'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    Route::get('/roles/utilizador-perfil/{id}', [RoleController::class, 'getPerfilUtilizador'])->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::post('/roles/utilizadores-roles', [RoleController::class, 'adicionar_perfil_utilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
+    Route::get('/roles/utilizador-perfil/{id}', [RoleController::class, 'getPerfilUtilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/utilizador-remover-perfil/{id}', [RoleController::class, 'removerPerfilUtilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     
-    
-    
     Route::get('/verificar-caixa-aberto',  [SearhController::class, 'verificarCaixaAberto']);
+    
+    Route::resource('notifications',  NotificationController::class)->except(['edit']);
+
 });
