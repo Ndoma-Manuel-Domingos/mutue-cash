@@ -9,6 +9,10 @@ use App\Models\GrupoUtilizador;
 use App\Models\MovimentoCaixa;
 use App\Models\User;
 use App\Models\Utilizador;
+use App\Notifications\AberturaCaixaNotification;
+use App\Notifications\FechoCaixaNotification;
+use App\Notifications\RejeicaoNotification;
+use App\Notifications\ValicaoSucessoNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +29,10 @@ class MovimentoController extends Controller
     public function diariosOperador()
     {
         $user = auth()->user();
+        
+        $notifactions = $user->notifications; 
+        
+        dd($notifactions);
         
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
@@ -159,6 +167,7 @@ class MovimentoController extends Controller
             $caixa->code = $this->gerarNumeroUnico();
             $caixa->update();
             
+            $user->notify(new AberturaCaixaNotification($create));
               
             return redirect()->back();
         }
@@ -196,6 +205,9 @@ class MovimentoController extends Controller
     
     public function fechoStore(Request $request)
     {
+    
+        $user = auth()->user();
+        
         $request->validate([
             'operador_id' => 'required',
             'caixa_id' => 'required',
@@ -227,6 +239,9 @@ class MovimentoController extends Controller
         $caixa->code = NULL;
         $caixa->update();
         
+        
+        $user->notify(new FechoCaixaNotification($movimento));
+        
         // Retorne a resposta em JSON
         return response()->json([
             'message' => 'Caixa fechado com sucesso!',
@@ -255,8 +270,6 @@ class MovimentoController extends Controller
     
     public function validarFechoCaixa(Request $request)
     {
-  
-        
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
@@ -345,8 +358,7 @@ class MovimentoController extends Controller
     
     public function validarFechoCaixaAdmin($id)
     {
-    
-        
+        $user = auth()->user();   
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
@@ -359,12 +371,15 @@ class MovimentoController extends Controller
         $movimento->operador_admin_id = Auth::user()->codigo_importado;
         $movimento->update();
         
+        $user->notify(new ValicaoSucessoNotification($movimento));
+        
         return response()->json($movimento);
         
     }
     
     public function cancelarFechoCaixaAdmin($id, $motivo)
     {
+        $user = auth()->user();
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
@@ -377,6 +392,8 @@ class MovimentoController extends Controller
         $movimento->motivo_rejeicao = $motivo;
         $movimento->operador_admin_id = Auth::user()->codigo_importado;
         $movimento->update();
+        
+        $user->notify(new RejeicaoNotification($movimento));
         
         return response()->json($movimento);
     }

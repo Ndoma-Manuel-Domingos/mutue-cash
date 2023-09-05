@@ -77,7 +77,40 @@ class DepositoController extends Controller
         
         }
        
-        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor'])){
+        if(auth()->user()->hasRole(['Supervisor'])){
+           
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+           
+            $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
+            //->where('created_by', $user->codigo_importado)
+            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
+            ->orderBy('codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+            
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
+            //->where('created_by', $user->codigo_importado)
+            ->sum('valor_depositar');
+            
+        }
+       
+        if(auth()->user()->hasRole(['Operador Caixa'])){
            
             if($request->data_inicio){
                 $request->data_inicio = $request->data_inicio;
@@ -109,7 +142,6 @@ class DepositoController extends Controller
             ->sum('valor_depositar');
             
         }
-       
        
         if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();

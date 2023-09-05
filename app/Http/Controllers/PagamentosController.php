@@ -111,7 +111,36 @@ class PagamentosController extends Controller
 
         }
            
-        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor'])){
+        if(auth()->user()->hasRole(['Supervisor'])){
+            
+            if ($request->data_inicio) {
+                $request->data_inicio = $request->data_inicio;
+            } else {
+                $request->data_inicio = date("Y-m-d");
+            }
+            
+            $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
+            ->when($request->data_inicio, function ($query, $value) {
+                $query->where('created_at', '>=', Carbon::parse($value));
+            })
+            ->when($request->data_final, function ($query, $value) {
+                $query->where('created_at', '<=', Carbon::parse($value));
+            })
+            ->when($request->operador, function ($query, $value) {
+                $query->where('fk_utilizador', $value);
+            })
+            ->when($request->ano_lectivo, function ($query, $value) {
+                $query->where('AnoLectivo', $value);
+            })
+            //->where('fk_utilizador', $user->codigo_importado)
+            ->where('forma_pagamento', 6)
+            ->orderBy('tb_pagamentos.Codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+            
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
             
             if ($request->data_inicio) {
                 $request->data_inicio = $request->data_inicio;
@@ -149,14 +178,6 @@ class PagamentosController extends Controller
             $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
                 $query->where('codigo_importado', auth()->user()->codigo_importado);
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
-        }
-           
-
-        if ($user->tipo_grupo->grupo->designacao == "Administrador") {
-
-            
-        } else {
-            
         }
 
         $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
