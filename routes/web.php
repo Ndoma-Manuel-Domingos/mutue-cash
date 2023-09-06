@@ -102,7 +102,7 @@ Route::group(["middleware" => "auth"], function () {
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search'])->name('mc.searh-estudante.index');
 
-    Route::get('/pesquisar-inscricao', [SearhController::class, 'search_preinscricao'])->name('mc.searh-estudante.index');
+    Route::get('/pesquisar-inscricao', [SearhController::class, 'search_preinscricao'])->name('mc.searh-estudante.index.');
 
     Route::get('/dados-pagamentos', [SearhController::class, 'dadosPagamentos']);
     /** ROUTAS DAS FACTURAS */
