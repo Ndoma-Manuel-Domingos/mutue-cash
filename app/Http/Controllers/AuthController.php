@@ -62,10 +62,6 @@ class AuthController extends Controller
 
     public function logout()
     {
-        Auth::logout();
-        return Inertia::location('/login');
-        
-        // dd();
     
         // $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
