@@ -302,21 +302,38 @@
     }, 
   
     methods: {
-      logout(){
-        axios.post("/logout").then((response) => {
-          Swal.fire({
-            icon: response.data? "warning" : "success!",
-            title: response.data ? "Atenção" : "Sucesso!",
-            text: response.data ? response.data.message : "Conta encerrada com sucesso!",
-          });
-          setTimeout(() => {
-            window.location.reload();
-          }, 2500);
+    
+      logout: function () {
+        this.loading = true;
+        this.axios.post("/logout").then((response) => {
+          location.reload(true);
+          if (response.status === 302 || 401) {
+            this.loading = false;
+            location.reload(true);
+          } else {
+            // throw error and go to catch block
+          }
         }).catch((error) => {
-          console.error(error);
+          this.loading = false;
+          location.replace("/login");
         });
-        
       },
+    
+    
+      // logout(){
+      //   axios.post("/logout").then((response) => {
+      //     Swal.fire({
+      //       icon: response.data? "warning" : "success!",
+      //       title: response.data ? "Atenção" : "Sucesso!",
+      //       text: response.data ? response.data.message : "Conta encerrada com sucesso!",
+      //     });
+      //     setTimeout(() => {
+      //       window.location.reload();
+      //     }, 2500);
+      //   }).catch((error) => {
+      //     console.error(error);
+      //   });
+      // },
       
       // getUserRoles() {
       //   alert(JSON.stringify(user))

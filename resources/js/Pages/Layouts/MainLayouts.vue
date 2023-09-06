@@ -23,7 +23,7 @@
             <span class="dropdown-header">2 Notifications</span>
             <div class="dropdown-divider"></div>
             
-            <template v-for="notification in this.$page.props.auth.notifications" :key="notification.id">
+            <template v-for="notification in notifications" :key="notification.id">
               <a :href="route('notifications.show', notification.id)" class="dropdown-item">
                 <i class="fas fa-envelope mr-2"></i> {{ notification.data.title }}
                 <span class="float-right text-muted text-sm">{{ notification.data.created_at }}</span>
@@ -106,35 +106,49 @@
 
 </template>
 
-<script setup>
-  import { computed } from "vue";
-  import Menu from "./Partials/Menu.vue";
-  import { usePage } from "@inertiajs/inertia-vue3";
-  import { Link } from "@inertiajs/inertia-vue3";
-
-  const user = computed(() => {
-    return usePage().props.value.auth.user;
-  });
-</script>
-
 <script>
   import { sweetSuccess, sweetError } from "../../components/Alert";
-
+  import Menu from "./Partials/Menu.vue";
+  import { Link } from "@inertiajs/inertia-vue3";
+  
   export default {
+    components: {
+      Menu,
+      Link
+    },
     data() {
       return {
         result: [],
       };
     },
+          
+    computed: {
+      user() {
+        return this.$page.props.auth.user;
+      },
+      notifications() {
+        return this.$page.props.auth.notifications;
+      },
+    },
 
     methods: {
-      
+    
+      // logout() {
+      //   this.axios.get("/logout").then((response) => {
+      //     location.reload(true);
+      //     if (response.status === 302 || 401) {
+      //       location.reload(true);
+      //     } else {
+      //       // throw error and go to catch block
+      //     }
+      //   }).catch((error) => {
+      //     location.replace("/login");
+      //   });
+      // },
     
       logout(){
         axios
-          .post("/logout")
-          .then((response) => {
-          
+          .post("/logout").then((response) => {
               if(response.data.status == 201){
                 Swal.fire({
                   icon: "warning",
@@ -148,7 +162,6 @@
                   text: "Conta encerrada com sucesso!",
                 });
               }
-              
               window.location.reload();
           })
           .catch((error) => {
@@ -156,32 +169,32 @@
           });
       },
       
-      sair_definitivamente(){
+      // sair_definitivamente(){
       
-        axios
-          .post("/logout")
-          .then((response) => {
+      //   axios
+      //     .post("/logout")
+      //     .then((response) => {
           
-              if(response.data.status == 201){
-                Swal.fire({
-                  icon: "warning",
-                  title: "Atenção",
-                  text: response.data.message,
-                });
-              }else {
-                Swal.fire({
-                  icon: "success",
-                  title: "Sucesso!",
-                  text: "Conta encerrada com sucesso!",
-                });
-              }
+      //         if(response.data.status == 201){
+      //           Swal.fire({
+      //             icon: "warning",
+      //             title: "Atenção",
+      //             text: response.data.message,
+      //           });
+      //         }else {
+      //           Swal.fire({
+      //             icon: "success",
+      //             title: "Sucesso!",
+      //             text: "Conta encerrada com sucesso!",
+      //           });
+      //         }
               
-              window.location.reload();
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      },
+      //         window.location.reload();
+      //     })
+      //     .catch((error) => {
+      //       console.error(error);
+      //     });
+      // },
       
       bloaquearCaixa()
       {

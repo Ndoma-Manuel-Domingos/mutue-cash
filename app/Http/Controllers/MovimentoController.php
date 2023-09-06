@@ -29,11 +29,7 @@ class MovimentoController extends Controller
     public function diariosOperador()
     {
         $user = auth()->user();
-        
-        $notifactions = $user->notifications; 
-        
-        dd($notifactions);
-        
+      
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
