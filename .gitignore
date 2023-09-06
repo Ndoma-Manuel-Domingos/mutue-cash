@@ -4,6 +4,7 @@
 /resources/js/ziggy.js
 /storage/*.key
 /vendor
+/node_modules.zip
 .env
 .env.backup
 .phpunit.result.cache
