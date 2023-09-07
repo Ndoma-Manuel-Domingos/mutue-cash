@@ -133,80 +133,22 @@
 
     methods: {
     
-      // logout() {
-      //   this.axios.get("/logout").then((response) => {
-      //     location.reload(true);
-      //     if (response.status === 302 || 401) {
-      //       location.reload(true);
-      //     } else {
-      //       // throw error and go to catch block
-      //     }
-      //   }).catch((error) => {
-      //     location.replace("/login");
-      //   });
-      // },
-    
       logout(){
         axios
           .post("/logout")
           .then((response) => {
-              // if(response.data.status == 201){
-              //   Swal.fire({
-              //     icon: "warning",
-              //     title: "Atenção",
-              //     text: response.data.message,
-              //   });
-              // }else {
-              //   Swal.fire({
-              //     icon: "success",
-              //     title: "Sucesso!",
-              //     text: "Conta encerrada com sucesso!",
-              //   });
-              // }
               window.location.reload();
           })
           .catch((error) => {
             console.error(error);
           });
       },
-      
-      // sair_definitivamente(){
-      
-      //   axios
-      //     .post("/logout")
-      //     .then((response) => {
-          
-      //         if(response.data.status == 201){
-      //           Swal.fire({
-      //             icon: "warning",
-      //             title: "Atenção",
-      //             text: response.data.message,
-      //           });
-      //         }else {
-      //           Swal.fire({
-      //             icon: "success",
-      //             title: "Sucesso!",
-      //             text: "Conta encerrada com sucesso!",
-      //           });
-      //         }
-              
-      //         window.location.reload();
-      //     })
-      //     .catch((error) => {
-      //       console.error(error);
-      //     });
-      // },
-      
+
       bloaquearCaixa()
       {
         axios
           .get("/movimentos/bloquear-caixa")
           .then((response) => {
-              // Swal.fire({
-              //   icon: "warning",
-              //   title: "Atenção...",
-              //   text: response.data.message,
-              // });
           })
           .catch((error) => {
             console.error(error);
