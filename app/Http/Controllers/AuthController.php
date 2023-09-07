@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cookie;
 
 class AuthController extends Controller
 {
@@ -77,15 +78,11 @@ class AuthController extends Controller
         if ($verificar_caixa_aberto) {
             return response()->json(['message' => $message, 'status' => 201]);
         }else{
-            // Iniciar a sessão (caso não tenha sido iniciada)
-            session_start();
-    
             Auth::logout();
             Session::flush();
-            // Destruir a sessão
-            session_destroy();
-            // Limpar todas as variáveis de sessão (opcional, mas uma boa prática)
-            $_SESSION = array();
+            
+            //Limpa o cookie da sessão iniciada, tivemos de partir para este metodo porque nos servidores o lgout padrão do laravel(Auth::logout()) não está a funcionar
+            Cookie::queue(Cookie::forget("mutue_cash_session"));
             
             return Inertia::location('/login');
         }

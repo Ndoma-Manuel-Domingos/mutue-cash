@@ -320,16 +320,16 @@
       logout: function () {
         this.loading = true;
         this.axios.post("/logout").then((response) => {
-          location.reload(true);
           if (response.status === 302 || 401) {
+            console.log(error);
             this.loading = false;
-            location.reload(true);
           } else {
+            window.location.replace('/login');
             // throw error and go to catch block
           }
         }).catch((error) => {
           this.loading = false;
-          location.replace("/login");
+          console.log(error);
         });
       },
     
