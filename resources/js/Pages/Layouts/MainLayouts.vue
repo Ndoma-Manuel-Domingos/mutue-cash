@@ -148,20 +148,21 @@
     
       logout(){
         axios
-          .post("/logout").then((response) => {
-              if(response.data.status == 201){
-                Swal.fire({
-                  icon: "warning",
-                  title: "Atenção",
-                  text: response.data.message,
-                });
-              }else {
-                Swal.fire({
-                  icon: "success",
-                  title: "Sucesso!",
-                  text: "Conta encerrada com sucesso!",
-                });
-              }
+          .post("/logout")
+          .then((response) => {
+              // if(response.data.status == 201){
+              //   Swal.fire({
+              //     icon: "warning",
+              //     title: "Atenção",
+              //     text: response.data.message,
+              //   });
+              // }else {
+              //   Swal.fire({
+              //     icon: "success",
+              //     title: "Sucesso!",
+              //     text: "Conta encerrada com sucesso!",
+              //   });
+              // }
               window.location.reload();
           })
           .catch((error) => {

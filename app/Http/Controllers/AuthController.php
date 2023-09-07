@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Caixa;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -60,18 +61,37 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-    
-        // $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        /*
+            // Iniciar a sessão (caso não tenha sido iniciada)
+            session_start();
 
-        // $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";
-        // $messag2 = "Gostariamos de lembrar ao caro utilizador que não fez o fecho do caixa que abriu.";
+            Auth::logout();
+            Session::flush();
 
-        // if ($verificar_caixa_aberto) {
-        //     return response()->json(['message' => $message, 'status' => 201]);
-        // }else{
-            
-        // }
+            // Destruir a sessão
+            session_destroy();
+
+            // Limpar todas as variáveis de sessão (opcional, mas uma boa prática)
+            $_SESSION = array();
+
+            // Redirecionar para a página de login ou outra página desejada após o logout
+            header("Location: login.php");
+            exit;
+        */
+
+        $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+        $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";
+        $messag2 = "Gostariamos de lembrar ao caro utilizador que não fez o fecho do caixa que abriu.";
+
+        if ($verificar_caixa_aberto) {
+            return response()->json(['message' => $message, 'status' => 201]);
+        }else{
+            Auth::logout();
+            Session::flush();
+            return redirect('/login');
+        }
     }
 }
