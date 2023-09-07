@@ -32,8 +32,6 @@ class MovimentoController extends Controller
         
         $notifactions = $user->notifications; 
         
-        dd($notifactions);
-        
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
@@ -74,6 +72,32 @@ class MovimentoController extends Controller
         
         return Inertia::render('Operacoes/Movimentos/Diaro-Operador', $header);
     }    
+    
+    public function caixasAbertos()
+    {
+        $user = auth()->user();
+        
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+            
+        }
+        
+        $data_inicio = date("Y-m-d");
+        
+        $movimentos = MovimentoCaixa::with(['operador_created', 'operador', 'caixa'])->where('status', 'aberto')->where('created_at', '>=' ,Carbon::parse($data_inicio))->get();
+           
+    
+        $header = [
+            "movimentos" => $movimentos,
+            "operador" => $user
+        ];
+        
+        
+        return Inertia::render('Operacoes/Movimentos/Caixas-Abertos', $header);
+    } 
         
     public function abertura()
     {
@@ -175,9 +199,24 @@ class MovimentoController extends Controller
       
     }
     
-    public function fecho()
+    public function fechoAdmin(Request $request)
     {
+        $movimento = MovimentoCaixa::find($request->url_caixa_fecho);
     
+        $caixa = Caixa::find($movimento->caixa_id);
+       
+        $header = [
+            "caixa" => $caixa,
+            "movimento" => $movimento,
+            "operador" => Utilizador::where('codigo_importado', Auth::user()->codigo_importado)->first()
+        ];
+        
+        return Inertia::render('Operacoes/Movimentos/Fecho', $header);
+    }
+        
+    public function fecho(Request $request)
+    {
+
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
@@ -202,7 +241,7 @@ class MovimentoController extends Controller
         
         return Inertia::render('Operacoes/Movimentos/Fecho', $header);
     }
-    
+        
     public function fechoStore(Request $request)
     {
     

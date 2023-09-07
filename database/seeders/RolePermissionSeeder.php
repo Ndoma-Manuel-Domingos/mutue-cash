@@ -23,6 +23,8 @@ class RolePermissionSeeder extends Seeder
         $alterar_caixa = Permission::create(['name' => 'alterar caixa']);
         $excluir_caixa = Permission::create(['name' => 'excluir caixa']);
         $listar_caixa = Permission::create(['name' => 'listar caixa']);
+        $visualizar_caixa_abertos = Permission::create(['name' => 'visualizar caixa abertos']);
+                
         
         $criar_operador = Permission::create(['name' => 'criar operador']);
         $alterar_operador = Permission::create(['name' => 'alterar operador']);
@@ -86,6 +88,7 @@ class RolePermissionSeeder extends Seeder
             $extrato_deposito,
             $relatorio_operador,
             $relatorio_diario,
+            $visualizar_caixa_abertos
         ]);
         
         $supervisor_caixa = Role::create(['name' => 'Supervisor'])->syncPermissions([
@@ -98,6 +101,7 @@ class RolePermissionSeeder extends Seeder
             $listar_pagamento,
             $relatorio_operador,
             $relatorio_diario_caixa,
+            $visualizar_caixa_abertos
         ]);
         
         $operador_caixa = Role::create(['name' => 'Operador Caixa'])->syncPermissions([

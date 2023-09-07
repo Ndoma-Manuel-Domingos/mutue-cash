@@ -23,7 +23,7 @@
             <span class="dropdown-header">2 Notifications</span>
             <div class="dropdown-divider"></div>
             
-            <template v-for="notification in this.$page.props.auth.notifications" :key="notification.id">
+            <template v-for="notification in notifications" :key="notification.id">
               <a :href="route('notifications.show', notification.id)" class="dropdown-item">
                 <i class="fas fa-envelope mr-2"></i> {{ notification.data.title }}
                 <span class="float-right text-muted text-sm">{{ notification.data.created_at }}</span>
@@ -106,25 +106,31 @@
 
 </template>
 
-<script setup>
-  import { computed } from "vue";
-  import Menu from "./Partials/Menu.vue";
-  import { usePage } from "@inertiajs/inertia-vue3";
-  import { Link } from "@inertiajs/inertia-vue3";
-
-  const user = computed(() => {
-    return usePage().props.value.auth.user;
-  });
-</script>
 
 <script>
   import { sweetSuccess, sweetError } from "../../components/Alert";
-
+  import Menu from "./Partials/Menu.vue";
+  import { Link } from "@inertiajs/inertia-vue3";
+  
   export default {
+    components: {
+      Link,
+      Menu
+    },
     data() {
       return {
         result: [],
       };
+    },
+    
+    computed: {
+      user() {
+        return this.$page.props.auth.user;
+      },
+      
+      notifications() {
+        return this.$page.props.auth.notifications;
+      },
     },
 
     methods: {
@@ -147,9 +153,16 @@
                   title: "Sucesso!",
                   text: "Conta encerrada com sucesso!",
                 });
+                
+                // Limpar cookies relacionados à sessão
+                document.cookie.split(";").forEach(function(cookie) {
+                    var eqPos = cookie.indexOf("=");
+                    var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                });
+                window.location.replace('/login');
               }
               
-              window.location.reload();
           })
           .catch((error) => {
             console.error(error);

@@ -67,9 +67,11 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/depositos/imprimir-comprovativo', [DepositoController::class, 'imprimir']);
 
     Route::get('/movimentos/diarios-operador', [MovimentoController::class, 'diariosOperador']);
+    Route::get('/movimentos/caixas-abertos', [MovimentoController::class, 'caixasAbertos']);
     
     Route::get('/movimentos/abertura-caixa', [MovimentoController::class, 'abertura'])->name('mc.movimentos-abertura-caixa');
     Route::post('/movimentos/abertura-caixa', [MovimentoController::class, 'aberturaStore'])->name('mc.movimentos-abertura-caixa-store');
+    Route::get('/movimentos/fecho-caixa-por-admin', [MovimentoController::class, 'fechoAdmin']);
     Route::get('/movimentos/fecho-caixa', [MovimentoController::class, 'fecho'])->name('mc.movimentos-fecho-caixa');
     Route::post('/movimentos/fecho-caixa', [MovimentoController::class, 'fechoStore'])->name('mc.movimentos-fecho-caixa-store');
     Route::get('/movimentos/imprimir-comprovativo', [MovimentoController::class, 'imprimir']);

@@ -79,6 +79,20 @@
         </a>
         <ul class="nav nav-treeview">
         
+          <li class="nav-item" title="CAIXAS ABERTOS" v-if="user.auth.can['visualizar caixa abertos']">
+            <Link
+              href="/movimentos/caixas-abertos"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Operacoes/Movimentos/Abertura',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Caixas Abertos</p>
+            </Link>
+          </li>
+        
           <li class="nav-item" title="ABERTURA DO CAIXA" v-if="user.auth.can['relatorio diario caixa']">
             <Link
               href="/movimentos/diarios-operador"
