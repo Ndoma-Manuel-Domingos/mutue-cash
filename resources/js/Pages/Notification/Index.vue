@@ -68,10 +68,7 @@ export default {
     },
   },
   
-  watch: {
-
-  },
-  
+ 
   methods: {
   
     destroy(notification) {

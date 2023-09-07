@@ -66,8 +66,9 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
+        
         $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";

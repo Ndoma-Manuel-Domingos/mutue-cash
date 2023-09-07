@@ -106,7 +106,6 @@
 
 </template>
 
-
 <script>
   import { sweetSuccess, sweetError } from "../../components/Alert";
   import Menu from "./Partials/Menu.vue";
@@ -134,7 +133,6 @@
     },
 
     methods: {
-      
     
       logout(){
         axios
@@ -168,44 +166,12 @@
             console.error(error);
           });
       },
-      
-      sair_definitivamente(){
-      
-        axios
-          .post("/logout")
-          .then((response) => {
-          
-              if(response.data.status == 201){
-                Swal.fire({
-                  icon: "warning",
-                  title: "Atenção",
-                  text: response.data.message,
-                });
-              }else {
-                Swal.fire({
-                  icon: "success",
-                  title: "Sucesso!",
-                  text: "Conta encerrada com sucesso!",
-                });
-              }
-              
-              window.location.reload();
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      },
-      
+
       bloaquearCaixa()
       {
         axios
           .get("/movimentos/bloquear-caixa")
           .then((response) => {
-              // Swal.fire({
-              //   icon: "warning",
-              //   title: "Atenção...",
-              //   text: response.data.message,
-              // });
           })
           .catch((error) => {
             console.error(error);
