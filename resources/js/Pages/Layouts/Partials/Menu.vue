@@ -79,6 +79,20 @@
         </a>
         <ul class="nav nav-treeview">
         
+          <li class="nav-item" title="CAIXAS ABERTOS" v-if="user.auth.can['visualizar caixa abertos']">
+            <Link
+              href="/movimentos/caixas-abertos"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Operacoes/Movimentos/Abertura',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Caixas Abertos</p>
+            </Link>
+          </li>
+        
           <li class="nav-item" title="ABERTURA DO CAIXA" v-if="user.auth.can['relatorio diario caixa']">
             <Link
               href="/movimentos/diarios-operador"
@@ -306,16 +320,16 @@
       logout: function () {
         this.loading = true;
         this.axios.post("/logout").then((response) => {
-          location.reload(true);
           if (response.status === 302 || 401) {
+            console.log(error);
             this.loading = false;
-            location.reload(true);
           } else {
+            window.location.replace('/login');
             // throw error and go to catch block
           }
         }).catch((error) => {
           this.loading = false;
-          location.replace("/login");
+          console.log(error);
         });
       },
     

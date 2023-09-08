@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ListagemTodosMovimentoExport;
+use App\Jobs\JobValidacaoCaixaOperadorNotificacao;
 use App\Models\Caixa;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
@@ -16,6 +17,7 @@ use App\Notifications\ValicaoSucessoNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -29,7 +31,9 @@ class MovimentoController extends Controller
     public function diariosOperador()
     {
         $user = auth()->user();
-      
+        
+        $notifactions = $user->notifications; 
+        
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
@@ -70,6 +74,32 @@ class MovimentoController extends Controller
         
         return Inertia::render('Operacoes/Movimentos/Diaro-Operador', $header);
     }    
+    
+    public function caixasAbertos()
+    {
+        $user = auth()->user();
+        
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+            
+        }
+        
+        $data_inicio = date("Y-m-d");
+        
+        $movimentos = MovimentoCaixa::with(['operador_created', 'operador', 'caixa'])->where('status', 'aberto')->where('created_at', '>=' ,Carbon::parse($data_inicio))->get();
+           
+    
+        $header = [
+            "movimentos" => $movimentos,
+            "operador" => $user
+        ];
+        
+        
+        return Inertia::render('Operacoes/Movimentos/Caixas-Abertos', $header);
+    } 
         
     public function abertura()
     {
@@ -171,9 +201,24 @@ class MovimentoController extends Controller
       
     }
     
-    public function fecho()
+    public function fechoAdmin(Request $request)
     {
+        $movimento = MovimentoCaixa::find($request->url_caixa_fecho);
     
+        $caixa = Caixa::find($movimento->caixa_id);
+       
+        $header = [
+            "caixa" => $caixa,
+            "movimento" => $movimento,
+            "operador" => Utilizador::where('codigo_importado', Auth::user()->codigo_importado)->first()
+        ];
+        
+        return Inertia::render('Operacoes/Movimentos/Fecho', $header);
+    }
+        
+    public function fecho(Request $request)
+    {
+
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
@@ -198,7 +243,7 @@ class MovimentoController extends Controller
         
         return Inertia::render('Operacoes/Movimentos/Fecho', $header);
     }
-    
+        
     public function fechoStore(Request $request)
     {
     
@@ -354,20 +399,54 @@ class MovimentoController extends Controller
     
     public function validarFechoCaixaAdmin($id)
     {
-        $user = auth()->user();   
+        // $user = auth()->user();   
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
-        
+
         $movimento = MovimentoCaixa::findOrFail($id);
-        $movimento->status_admin = 'validado';
-        $movimento->operador_admin_id = Auth::user()->codigo_importado;
-        $movimento->update();
+        $user = User::where('codigo_importado', $movimento->operador_id)->first();
+        $pessoa = DB::table('tb_pessoa')->where('pk_pessoa', json_decode($user->ref_pessoa,true)['pk']??Null)->first();
+        $dados_caixa = Caixa::where('operador_id', $movimento->operador_id)->first();
         
-        $user->notify(new ValicaoSucessoNotification($movimento));
+        try {
+            $movimento->status_admin = 'validado';
+            $movimento->operador_admin_id = Auth::user()->codigo_importado;
+            $movimento->update();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return Response()->json($th->getMessage(), 201);
+        }
+        
+        try {
+            //code...
+            $user->notify(new ValicaoSucessoNotification($movimento));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return Response()->json($th->getMessage(), 201);
+        }
+
+        try {
+            $dados['email'] = 'brunoneto256@gmail.com';//$pessoa->email;
+            $dados['nome_user']= $user->nome;
+            $dados['caixa']= $dados_caixa->nome;
+            $dados['data_abertura_caixa']= $dados_caixa->created_at;
+            $dados['data_fecho_caixa']= $dados_caixa->updated_at;
+            $dados['data_validacao']= $movimento->updated_at;
+            $dados['descricao']= 'Validado';
+            $dados['admin']= $movimento->operador_admin;
+            $dados['ano']= date('Y');
+            $dados['assunto']= 'Validação do Caixa do Operador';
+            $dados['linkLogin'] = getenv('APP_URL');
+
+            JobValidacaoCaixaOperadorNotificacao::dispatch($dados)->delay(now()->addSecond('5'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return Response()->json($th->getMessage(), 201);
+        }
         
         return response()->json($movimento);
         
@@ -375,21 +454,56 @@ class MovimentoController extends Controller
     
     public function cancelarFechoCaixaAdmin($id, $motivo)
     {
-        $user = auth()->user();
+        // $user = auth()->user();
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
         }
-        
+
         $movimento = MovimentoCaixa::findOrFail($id);
-        $movimento->status_admin = 'nao validado';
-        $movimento->motivo_rejeicao = $motivo;
-        $movimento->operador_admin_id = Auth::user()->codigo_importado;
-        $movimento->update();
+        $user = User::where('codigo_importado', $movimento->operador_id)->first();
+        $pessoa = DB::table('tb_pessoa')->where('pk_pessoa', json_decode($user->ref_pessoa,true)['pk']??Null)->first();
+        $dados_caixa = Caixa::where('operador_id', $movimento->operador_id)->first();
         
-        $user->notify(new RejeicaoNotification($movimento));
+        try {
+            $movimento->status_admin = 'nao validado';
+            $movimento->motivo_rejeicao = $motivo;
+            $movimento->operador_admin_id = Auth::user()->codigo_importado;
+            $movimento->update();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return Response()->json($th->getMessage(), 201);
+        }
+        
+        try {
+            //code...
+            $user->notify(new RejeicaoNotification($movimento));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return Response()->json($th->getMessage(), 201);
+        }
+
+        try {
+            $dados['email'] = 'brunoneto256@gmail.com';//$pessoa->email;
+            $dados['nome_user']= $user->nome;
+            $dados['caixa']= $dados_caixa->nome;
+            $dados['data_abertura_caixa']= $dados_caixa->created_at;
+            $dados['data_fecho_caixa']= $dados_caixa->updated_at;
+            $dados['data_validacao']= $movimento->updated_at;
+            $dados['movimento']= $movimento;
+            $dados['descricao']= 'Rejeitado/Cancelado';
+            $dados['moti']= 'Rejeitado/Cancelado';
+            $dados['ano']= date('Y');
+            $dados['assunto']= 'Validação do Caixa do Operador';
+            $dados['linkLogin'] = getenv('APP_URL');
+
+            JobValidacaoCaixaOperadorNotificacao::dispatch($dados)->delay(now()->addSecond('5'));
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return Response()->json($th->getMessage(), 201);
+        }
         
         return response()->json($movimento);
     }
