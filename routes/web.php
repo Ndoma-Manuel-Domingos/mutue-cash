@@ -65,6 +65,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/depositos/pdf', [DepositoController::class, 'pdf']);
     Route::get('/depositos/excel', [DepositoController::class, 'excel']);
     Route::get('/depositos/imprimir-comprovativo', [DepositoController::class, 'imprimir']);
+    Route::get('/imprimir-comprovativo-ticket', [DepositoController::class, 'ticket']);
 
     Route::get('/movimentos/diarios-operador', [MovimentoController::class, 'diariosOperador']);
     Route::get('/movimentos/caixas-abertos', [MovimentoController::class, 'caixasAbertos']);
@@ -117,7 +118,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/fatura/diversos/{factura_id}', [PagamentosController::class, 'imprimirFaturaDiversos']);
     Route::get('/fatura-recibo/inscricao/{factura_id}', [PagamentosController::class, 'pdfFatReciboIExameAcesso']);
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
-
+    Route::get('/imprimir-factura-ticket/{factura_id}', [PagamentosController::class, 'FaturaTicket']);
 
     Route::get('/banco-formaPagamento', [SearhController::class, 'bancosFormaPagamento'])->name('mc.banco-formas-pagamento');
     Route::get('/aluno/{id_user}', [SearhController::class, 'pegaAluno']);

@@ -299,5 +299,27 @@ class DepositoController extends Controller
     }
     
     
+    public function ticket(Request $request)
+    {
+        $request->codigo = 1;
     
+        $data['item'] = Deposito::when($request->data_inicio, function($query, $value){
+            $query->where('created_at', '>=' ,Carbon::parse($value) );
+        })->when($request->data_final, function($query, $value){
+            $query->where('created_at', '<=' ,Carbon::parse($value));
+        })
+        ->when($request->operador, function($query, $value){
+            $query->where('created_by', $value);
+        })
+        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
+        ->findOrFail($request->codigo);
+        
+        
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.ticket-deposito', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
+        
+    }
+        
 }

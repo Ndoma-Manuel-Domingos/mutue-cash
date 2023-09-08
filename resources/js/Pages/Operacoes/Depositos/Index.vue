@@ -137,7 +137,8 @@
                       <th>Operador</th>
                       <th>Ano Lectivo</th>
                       <th>Data</th>
-                      <th>Acções</th>
+                      <th>A4</th>
+                      <th>Ticket</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -170,10 +171,12 @@
                         <Link @click="imprimirComprovativo(item)">
                           <i class="fas fa-print text-danger"></i>
                         </Link>
-                        <!-- <Link class="btn-sm btn-success mx-1" @click="editarItem(item)">
-                          <i class="fas fa-edit "></i>
-                          Editar
-                        </Link> -->
+                      </td>
+                      
+                      <td class="text-center">
+                        <Link @click="imprimirComprovativoTicket(item)">
+                          <i class="fas fa-print text-danger"></i>
+                        </Link>
                       </td>
                     </tr>
                   </tbody>
@@ -306,6 +309,39 @@
                     </div>
                   </div>
                 </div>
+                
+                
+                <div class="col-12 col-md-6"></div>
+                
+                <div class="col-12 col-md-1 mb-3 text-center">
+                  <div class="form-group">
+                    <label for="" class="form-label">A4</label>
+                    <div class="input-group">
+                      <input
+                        type="radio"
+                        v-model="form.factura"
+                        value="A4"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                
+                <div class="col-12 col-md-1 mb-3 text-center">
+                  <div class="form-group">
+                    <label for="" class="form-label">TICKET</label>
+                    <div class="input-group">
+                      <input
+                        type="radio"
+                        value="ticket"
+                        v-model="form.factura"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
               </div>
             </div>
             <div class="modal-footer justify-content-between">
@@ -369,6 +405,8 @@ export default {
         nome_estudante: null,
         bilheite_estudante: null,
         curso_estudante: null,
+        factura: null,
+        
       }),
     };
   },
@@ -619,6 +657,12 @@ export default {
       );
     },
 
+    imprimirComprovativoTicket(item) {
+      window.open(
+        `/imprimir-comprovativo-ticket?codigo=${item.codigo}`,
+        "_blank"
+      );
+    },
     voltarPaginaAnterior() {
       window.history.back();
     },

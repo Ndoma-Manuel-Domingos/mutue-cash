@@ -1827,8 +1827,7 @@ class PagamentosController extends Controller
         return Response()->json($result);
         //}
     }
-    
-    
+
     public function imprimirFaturaDiversos(Request $request, $id)
     {
         // ESTA FUNÇÃO É UTILIZADA PARA IMPRIMIR FACTURAS. FUNÇÃO EM USO
@@ -1995,4 +1994,6 @@ class PagamentosController extends Controller
 
         return $pdf->stream('fatura.pdf');
     }
-}
+
+}    
+ 

@@ -2505,12 +2505,6 @@ class PagamentosController extends Controller
             $id_aluno = $aluno->user_id;
         }
 
-        // if ($fatura->codigo_descricao == 5) {
-        //     $id = base64_encode(base64_encode(base64_encode($id)));
-        //     return redirect('estudante/fatura/negociacao/show/' . $id);
-        // }
-
-
         $data['aluno'] = DB::table('tb_preinscricao')
             ->leftJoin('tb_admissao', 'tb_admissao.pre_incricao', 'tb_preinscricao.Codigo')
             ->leftJoin('tb_matriculas', 'tb_matriculas.Codigo_Aluno', 'tb_admissao.codigo')
@@ -2756,4 +2750,173 @@ class PagamentosController extends Controller
 
         return $pdf->stream('fatura.pdf');
     }
+    
+    
+    public function FaturaTicket(Request $request, $id)
+    {
+        // ESTA FUNÇÃO É UTILIZADA PARA IMPRIMIR FACTURAS. FUNÇÃO EM USO
+        $id = base64_decode(base64_decode(base64_decode($id)));
+        
+        $fatura = DB::table('factura')->where('Codigo', $id)->first();
+        
+        $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($fatura->CodigoMatricula);
+
+        if ($fatura->codigo_descricao == 5) {
+            $id = base64_encode(base64_encode(base64_encode($id)));
+            return redirect('estudante/fatura/negociacao/show/' . $id);
+        }
+
+        $id_aluno = $aluno->admissao->preinscricao->user_id;
+        $data['aluno'] = DB::table('tb_preinscricao')
+            ->join('tb_admissao', 'tb_admissao.pre_incricao', 'tb_preinscricao.Codigo')
+            ->join('tb_matriculas', 'tb_matriculas.Codigo_Aluno', 'tb_admissao.codigo')
+            ->join('tb_cursos', 'tb_cursos.codigo', '=', 'tb_matriculas.Codigo_Curso')
+            ->join('tb_turmas', 'tb_turmas.Codigo_Curso', '=', 'tb_cursos.codigo')
+            ->join('tb_periodos', 'tb_periodos.codigo', '=', 'tb_preinscricao.Codigo_Turno')
+            ->join('polos', 'polos.id', '=', 'tb_preinscricao.polo_id')
+            ->join('factura', 'factura.CodigoMatricula', '=', 'tb_matriculas.Codigo')
+            ->join('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'factura.ano_lectivo')
+            ->leftjoin('negociacao_dividas', 'negociacao_dividas.codigo_fatura', 'factura.Codigo')
+            ->leftjoin('meses_calendario as tb_mes_inicial', 'tb_mes_inicial.id', 'negociacao_dividas.id_mes_inicial')
+            ->leftjoin('meses_calendario as tb_mes_final', 'tb_mes_final.id', 'negociacao_dividas.id_mes_final')
+            ->select(
+                '*',
+                'factura.Codigo as numero_fatura',
+                'factura.Troco as troco',
+                'tb_matriculas.Codigo as codigo_matricula',
+                'tb_cursos.sigla as curso',
+                'polos.designacao as polo',
+                'tb_periodos.Designacao as turno',
+                'tb_ano_lectivo.Designacao as anoLectivo',
+                'polos.designacao as polo',
+                'factura.TotalPreco as TotalFatura',
+                'factura.ValorAPagar as valor_apagar',
+                'factura.Desconto as desconto',
+                'tb_preinscricao.Nome_Completo',
+                'tb_preinscricao.Contactos_Telefonicos',
+                'tb_preinscricao.saldo',
+                'factura.TotalMulta as multa',
+                'tb_ano_lectivo.Designacao as anoDesignacao',
+                'tb_ano_lectivo.Codigo as anoCodigo',
+                'factura.ValorEntregue as valor_depositado',
+                'tb_turmas.Designacao as turma',
+                'tb_turmas.Codigo_Classe as classe',
+                'factura.obs',
+                'factura.estado',
+                'tb_mes_final.designacao as mes_final',
+                'tb_mes_inicial.designacao as mes_inicial',
+                'negociacao_dividas.id as negociacao',
+                'negociacao_dividas.qtd_prestacoes',
+                'negociacao_dividas.mesesQuitar',
+                'negociacao_dividas.valorRestante',
+                'negociacao_dividas.valorPrestacoes',
+                'negociacao_dividas.primeiroValorApagar',
+                'tb_matriculas.Codigo as codigo_matricula',
+                'tb_preinscricao.codigo_tipo_candidatura as codigo_tipo_candidatura'
+            )
+            ->where('tb_preinscricao.user_id', $id_aluno)
+            ->where('factura.Codigo', $id)
+            ->first();
+
+
+        $polo_aluno = $data['aluno']->polo;
+        $curso_aluno = $data['aluno']->curso;
+        $turno_aluno = $data['aluno']->turno;
+        $nome_aluno = $data['aluno']->Nome_Completo;
+        $codigo_aluno = $data['aluno']->codigo_matricula;
+
+        if ($data['aluno'] && (int)$data['aluno']->anoLectivo <= 2019) {
+
+            $data['faturas'] = DB::table('factura_items')
+                ->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
+                ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', 'factura_items.CodigoProduto')
+                ->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
+                ->join('tb_admissao', 'tb_admissao.codigo', 'tb_matriculas.Codigo_Aluno')
+                ->leftjoin('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'factura_items.codigo_anoLectivo')
+                ->join('tb_preinscricao', 'tb_preinscricao.Codigo', 'tb_admissao.pre_incricao')
+                ->leftJoin('mes_temp', 'mes_temp.id', '=', 'factura_items.mes_temp_id')
+                ->leftJoin('inscricao_avaliacoes', 'inscricao_avaliacoes.codigo_factura', '=', 'factura.Codigo')
+                ->leftJoin('tb_grade_curricular', 'tb_grade_curricular.Codigo', '=', 'inscricao_avaliacoes.codigo_grade')
+                ->leftJoin('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+                ->leftjoin('tb_grade_curricular as tbgc', 'tbgc.Codigo', 'tb_tipo_servicos.codigo_grade_currilular')
+                ->leftjoin('tb_disciplinas as tbd', 'tbd.Codigo', 'tbgc.Codigo_Disciplina')
+                ->select(
+                    DB::raw('ANY_VALUE(factura_items.Codigo) as codigoItem'),
+                    DB::raw('(factura_items.Total) as total'),
+                    DB::raw('(factura_items.preco) as preco'),
+                    DB::raw('(tbd.Designacao) as cadeira'),
+                    DB::raw('(tb_tipo_servicos.Descricao) as servico'),
+                    DB::raw('(tb_disciplinas.Designacao) as disciplina'),
+                    DB::raw('(tb_ano_lectivo.Designacao) as anoLectivo'),
+                    DB::raw('(factura_items.Mes) as mes'),
+                    DB::raw('(mes_temp.prestacao) as prestacao'),
+                    DB::raw('(factura_items.Quantidade) as qtd'),
+                    DB::raw('(factura_items.descontoProduto) as desconto'),
+                    DB::raw('(factura_items.estado) as estado'),
+                    DB::raw('(factura_items.Multa) as multa')
+                )
+                ->where('tb_preinscricao.user_id', $id_aluno)
+                ->where('factura.Codigo', $id)
+                ->distinct('codigoItem')
+                ->get();
+        } else {
+
+            $data['faturas'] = DB::table('factura_items')
+                ->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
+                ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', 'factura_items.CodigoProduto')
+                ->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
+                ->join('tb_admissao', 'tb_admissao.codigo', 'tb_matriculas.Codigo_Aluno')
+                ->leftjoin('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'factura_items.codigo_anoLectivo')
+                ->join('tb_preinscricao', 'tb_preinscricao.Codigo', 'tb_admissao.pre_incricao')
+                ->leftJoin('mes_temp', 'mes_temp.id', '=', 'factura_items.mes_temp_id')
+                ->leftJoin('inscricao_avaliacoes', 'inscricao_avaliacoes.codigo_factura', '=', 'factura.Codigo')
+                ->leftJoin('tb_grade_curricular', 'tb_grade_curricular.Codigo', '=', 'inscricao_avaliacoes.codigo_grade')
+                ->leftJoin('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+                ->leftjoin('tb_grade_curricular as tbgc', 'tbgc.Codigo', 'tb_tipo_servicos.codigo_grade_currilular')
+                ->leftjoin('tb_disciplinas as tbd', 'tbd.Codigo', 'tbgc.Codigo_Disciplina')
+                ->select(
+                    DB::raw('ANY_VALUE(factura_items.Codigo) as codigoItem'),
+                    DB::raw('ANY_VALUE(factura_items.Total) as total'),
+                    DB::raw('ANY_VALUE(factura_items.preco) as preco'),
+                    DB::raw('ANY_VALUE(tbd.Designacao) as cadeira'),
+                    DB::raw('ANY_VALUE(tb_tipo_servicos.Descricao) as servico'),
+                    DB::raw('ANY_VALUE(tbd.Designacao) as disciplina'),
+                    DB::raw('ANY_VALUE(tb_ano_lectivo.Designacao) as anoLectivo'),
+                    DB::raw('ANY_VALUE(inscricao_avaliacoes.codigo_tipo_avaliacao) as avaliacao'),
+                    DB::raw('ANY_VALUE(mes_temp.designacao) as mes'),
+                    DB::raw('ANY_VALUE(mes_temp.prestacao) as prestacao'),
+                    DB::raw('ANY_VALUE(factura_items.Quantidade) as qtd'),
+                    DB::raw('ANY_VALUE(factura_items.descontoProduto) as desconto'),
+                    DB::raw('ANY_VALUE(factura_items.Multa) as multa'),
+                    DB::raw('ANY_VALUE(factura_items.estado) as estado')
+                )->where('tb_preinscricao.user_id', $id_aluno)
+                ->where('factura.Codigo', $id)
+                ->distinct('codigoItem')
+                ->get();
+        }
+
+        $data['conta1'] = DB::table('tb_local_pagamento')->where('codigo', 1)->first();
+        $data['conta2'] = DB::table('tb_local_pagamento')->where('codigo', 3)->first();
+        $data['conta3'] = DB::table('tb_local_pagamento')->where('codigo', 9)->first();
+        
+
+        $data['total_apagar'] = $data['aluno']->valor_apagar;
+        $data['extenso'] = $this->valor_por_extenso($data['total_apagar'], false);
+
+        $data['qtdPrestacoes'] = count($this->parametro_uma->totalPrestacoesPagarPorAno($fatura->ano_lectivo, $data['aluno']->codigo_tipo_candidatura));
+            
+        \QrCode::size(250)
+            ->format('png')
+            ->generate("Nº matrícula: $codigo_aluno \n Nome: $nome_aluno \n Curso: $curso_aluno \n Polo: $polo_aluno  
+                Periodo: $turno_aluno \n Servico: 'Diversos'", public_path('images/qrcode.png'));
+
+        //Recuperar os pagamentos por referências by Ndongala Nguinamau
+        $data['aluno']->numero_fatura;
+        $data['pagamento'] = PagamentoPorReferencia::where('factura_codigo', $data['aluno']->numero_fatura)->first();
+
+        $pdf = PDF::loadView('Relatorios.ticket-pagamento', $data);
+
+        return $pdf->stream('ticket-pagamento.pdf');
+    }
+   
 }
