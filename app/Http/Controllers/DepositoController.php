@@ -164,7 +164,7 @@ class DepositoController extends Controller
     {
         $request->validate([
             'codigo_matricula' => 'required',
-            'valor_a_depositar' => 'required|numeric',
+            'valor_a_depositar' => 'required|numeric'
 
         ], [
             'codigo_matricula.required' => "Codigo de matricula Invalido!",

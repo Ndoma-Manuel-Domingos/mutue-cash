@@ -430,7 +430,7 @@ class MovimentoController extends Controller
         }
 
         try {
-            $dados['email'] = 'brunoneto256@gmail.com';//$pessoa->email;
+            $dados['email'] = $pessoa->email;
             $dados['nome_user']= $user->nome;
             $dados['caixa']= $dados_caixa->nome;
             $dados['data_abertura_caixa']= $dados_caixa->created_at;
@@ -486,7 +486,7 @@ class MovimentoController extends Controller
         }
 
         try {
-            $dados['email'] = 'brunoneto256@gmail.com';//$pessoa->email;
+            $dados['email'] = $pessoa->email;
             $dados['nome_user']= $user->nome;
             $dados['caixa']= $dados_caixa->nome;
             $dados['data_abertura_caixa']= $dados_caixa->created_at;
