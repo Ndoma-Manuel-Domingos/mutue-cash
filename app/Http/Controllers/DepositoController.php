@@ -180,6 +180,7 @@ class DepositoController extends Controller
             ], 401);
         }
         
+        
         $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
                 
         $resultado = Matricula::where('tb_matriculas.Codigo', $request->codigo_matricula)
@@ -189,20 +190,20 @@ class DepositoController extends Controller
         ->first();
         
         $saldo_apos_movimento = $resultado->saldo + $request->valor_a_depositar;
-
+        
         // registramos o deposito 
         $create = Deposito::create([
             'codigo_matricula_id' => $request->codigo_matricula,
             'Codigo_PreInscricao' => $resultado->Codigo,
-            'canal_cominucacao_id' => 1,
             'valor_depositar' => $request->valor_a_depositar,
             'saldo_apos_movimento' => $saldo_apos_movimento,
             'forma_pagamento_id' => 6,
             'data_movimento' => date("Y-m-d"),
             'ano_lectivo_id' => $this->anoLectivoActivo(),
             'created_by' => Auth::user()->codigo_importado,
-            'updated_by' => Auth::user()->codigo_importado,
+            'updated_by' => Auth::user()->codigo_importado
         ]);
+
         
         // actualizamos os dados do aluno
         $preinscricao = PreInscricao::findOrFail($resultado->Codigo);

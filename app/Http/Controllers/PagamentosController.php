@@ -1773,7 +1773,9 @@ class PagamentosController extends Controller
                     $pagou_negociacao = $this->divida->pagouNegociacao($matricula->codigo_matricula);
 
                     if ($divida_antiga > 0 && ($pagou_negociacao == 0)) {
-                        return response()->json('Caro estudante, tem dívida de ano(s) anterior(es)! Por favor efectue o pagamento da sua dívida ou faça uma negociação. Caso a sua dívida nao esteja atualizada não se preocupe. Por favor contacte o suporte mutue.', 201);
+                        $result['message'] = 'Caro estudante, tem dívida de ano(s) anterior(es)! Por favor efectue o pagamento da sua dívida ou faça uma negociação. Caso a sua dívida nao esteja atualizada não se preocupe. Por favor contacte o suporte mutue.';
+                        return response()->json($result, 201);
+                       // return response()->json('Caro estudante, tem dívida de ano(s) anterior(es)! Por favor efectue o pagamento da sua dívida ou faça uma negociação. Caso a sua dívida nao esteja atualizada não se preocupe. Por favor contacte o suporte mutue.', 201);
                     }
                 }
 
