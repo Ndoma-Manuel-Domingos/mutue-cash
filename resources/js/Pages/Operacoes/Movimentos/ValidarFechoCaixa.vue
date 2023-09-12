@@ -144,7 +144,7 @@
                       <td class="text-uppercase">{{ item.status_admin ?? '' }}</td>
                       <td class="text-uppercase text-center text-danger">{{ item.motivo_rejeicao ?? 'Nenhum motivo' }}</td>
                       <td>{{ formatValor(item.valor_abertura ?? 0)}}</td>
-                      <td>{{ formatValor(item.valor_arrecadado_pagamento ?? 0)}}</td>
+                      <td>{{ formatValor(item.valor_facturado_pagamento ?? 0)}}</td>
                       <td>{{ formatValor(item.valor_arrecadado_depositos ?? 0)}}</td>
                       <td>{{ formatValor(item.valor_arrecadado_total ?? 0)}}</td>
                       <td>{{ item.created_at }}</td>
@@ -292,7 +292,7 @@
                   })
                   .catch(error => {
                     Swal.showValidationMessage(
-                      `Request failed: ${error}`
+                      `Por favor, insira uma senha correcta`
                     )
                   })
               },

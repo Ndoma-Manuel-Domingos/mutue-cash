@@ -40,8 +40,9 @@
               <div class="col-lg-6 col-12 col-md-12">
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>{{ formatValor(total_depositado ?? 0) }}</h4>
-                    <p>Total Valor Depositado.</p>
+                  
+                    <h4>{{ formatValor(valor_arrecadado_depositos ?? 0) }}</h4>
+                    <p>Total Depositado.</p>
                   </div>
                   <div class="icon">
                     <i class="ion ion-bag"></i>
@@ -57,7 +58,7 @@
               <div class="col-lg-6 col-12 col-md-12">
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>{{ formatValor(total_pagamento ?? 0) }}</h4>
+                    <h4>{{ formatValor(valor_facturado_pagamento ?? 0) }}</h4>
                     <p>Total de Pagamentos.</p>
                   </div>
                   <div class="icon">
@@ -74,8 +75,8 @@
               <div class="col-lg-12 col-12 col-md-12">
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>{{ formatValor((+total_depositado)+(+total_pagamento)) }}</h4>
-                    <p>Total Valor arrecadado.</p>
+                    <h4>{{ formatValor(valor_arrecadado_total ?? 0) }}</h4>
+                    <p>Total arrecadado.</p>
                   </div>
                   <div class="icon">
                     <i class="ion ion-stats-bars"></i>
@@ -136,7 +137,7 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["total_depositado", "total_pagamento", "ano_lectivos", "ano_lectivo_activo_id", "caixa"],
+  props: ["valor_arrecadado_depositos", "valor_facturado_pagamento", "valor_arrecadado_total", "ano_lectivos", "ano_lectivo_activo_id", "caixa"],
   components: {
     Link,
   },

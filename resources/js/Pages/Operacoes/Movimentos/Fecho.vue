@@ -112,7 +112,7 @@
                     <div class="form-group col-12 col-md-3">
                       <label for="valor_facturado" class="form-label"
                         ><Link :href="route('mc.pagamentos.index')"
-                          >TOTAL DE FACTURADO</Link
+                          >VALOR FACTURADO</Link
                         ></label
                       >
                       <input

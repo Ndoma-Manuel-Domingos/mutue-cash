@@ -162,6 +162,7 @@ class PagamentosController extends Controller
                 $query->where('AnoLectivo', $value);
             })
             ->where('fk_utilizador', $user->codigo_importado)
+            ->where('status_pagamento', 'pendente')
             ->where('forma_pagamento', 6)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(10)
@@ -436,6 +437,12 @@ class PagamentosController extends Controller
 
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
+        }
+        
+        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        if (!filled($caixas)) {
+            $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+            return response()->json($result, 201);
         }
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
@@ -771,6 +778,8 @@ class PagamentosController extends Controller
                         $pagamento_saldo['Codigo_PreInscricao'] = $codigo;
                         $pagamento_saldo['DataRegisto'] = date('Y-m-d H:i:s');
                         $pagamento_saldo['codigo_factura'] = $fatura_paga->codigo;
+                        $pagamento_saldo['caixa_id'] = $caixas->codigo;
+                        $pagamento_saldo['status_pagamento'] = 'pendente';
                         $pagamento_saldo['pagamento_saldo'] = $saldo_novo;
                         $pagamento_saldo['estado'] = 1;
                         $pagamento_saldo['corrente'] = 1;
@@ -878,6 +887,9 @@ class PagamentosController extends Controller
                     $data['codigo_factura'] = $fact_aluno->Codigo;
                     $data['estado'] = 1;
                     $data['corrente'] = 1;
+                    $data['caixa_id'] = $caixas->codigo;
+                    $data['status_pagamento'] = 'pendente';
+                    
                     $data['Observacao'] = "Pagamento efectuado por Cash";
                     $data['fk_utilizador'] = auth()->user()->codigo_importado;
                     $data['Utilizador'] = auth()->user()->codigo_importado;
@@ -1097,6 +1109,8 @@ class PagamentosController extends Controller
                         'codigo_matricula_id' => $codigo_matricula,
                         'Codigo_PreInscricao' => $codigo,
                         'valor_depositar' => $novo_saldo,
+                        'caixa_id' => $caixas->codigo,
+                        'status' => 'pendente',
                         'saldo_apos_movimento' => $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
                         'created_by' => auth()->user()->codigo_importado,
                         'ano_lectivo_id' => $fatura_paga->ano_factura,
@@ -1172,7 +1186,12 @@ class PagamentosController extends Controller
 
     public function salvarPagamentoComSaldo(Request $request, $referencia, $user_id)
     {
-
+        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        if (!filled($caixas)) {
+            $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+            return response()->json($result, 201);
+        }
+        
         $anoCorrente = $this->anoAtualPrincipal->index();
 
         $ano = DB::table('tb_ano_lectivo')
@@ -1234,6 +1253,8 @@ class PagamentosController extends Controller
             $pagamento['Totalgeral'] = $fact_aluno->ValorAPagar;
             $pagamento['DataRegisto'] = date('Y-m-d H:i:s');
             $pagamento['codigo_factura'] = $fact_aluno->Codigo;
+            $pagamento['caixa_id'] = $caixas->codigo;
+            $pagamento['status_pagamento'] = 'pendente';
             $pagamento['estado'] = 1;
             $pagamento['Observacao'] =  'Pagamento efectuado com saldo no Mutue Cash!';
             $pagamento['corrente'] = 1;
@@ -2183,6 +2204,8 @@ class PagamentosController extends Controller
                     $pagamento['Observacao'] = 'Pagamento efectuado por Cash';
                     $pagamento['AnoLectivo'] = $fact_aluno->ano_lectivo;
                     $pagamento['Codigo_PreInscricao'] = $preinscricao->Codigo;
+                    $pagamento['caixa_id'] = $caixas->codigo;
+                    $pagamento['status_pagamento'] = 'pendente';
                     $pagamento['valor_depositado'] = $valor_apagar;
                     $pagamento['Totalgeral'] = $valor_apagar;
                     $pagamento['fk_utilizador'] =  auth()->user()->codigo_importado;
@@ -2360,6 +2383,8 @@ class PagamentosController extends Controller
                     $pagamento['AnoLectivo'] = $anoCorrente;
                     $pagamento['Codigo_PreInscricao'] = $preinscricao->Codigo;
                     $pagamento['valor_depositado'] = $preinscricao->saldo;
+                    $pagamento['caixa_id'] = $caixas->codigo;
+                    $pagamento['status_pagamento'] = 'pendente';
                     $pagamento['Totalgeral'] =  $valor_apagar;
                     $pagamento['DataRegisto'] = date('Y-m-d H:i:s');
                     $pagamento['codigo_factura'] = $codigo_fatura;

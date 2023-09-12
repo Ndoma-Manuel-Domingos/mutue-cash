@@ -135,6 +135,7 @@
                       <th>Reserva após Depósito</th>
                       <!-- <th>Forma Pagamento</th> -->
                       <th>Operador</th>
+                      <th>Caixa</th>
                       <th>Ano Lectivo</th>
                       <th>Data</th>
                       <th>A4</th>
@@ -161,6 +162,7 @@
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
                       <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
                       <td>{{ item.user ? item.user.nome : "" }}</td>
+                      <td>{{ item.caixa ? item.caixa.nome : "" }}</td>
                       <td>
                         {{
                           item.ano_lectivo ? item.ano_lectivo.Designacao : ""
@@ -319,6 +321,7 @@
                     <div class="input-group">
                       <input
                         type="radio"
+                        selected
                         v-model="form.factura"
                         value="A4"
                         class="form-control"
@@ -334,7 +337,7 @@
                     <div class="input-group">
                       <input
                         type="radio"
-                        value="ticket"
+                        value="Ticket"
                         v-model="form.factura"
                         class="form-control"
                       />
@@ -522,7 +525,14 @@ export default {
             this.form.valor_a_depositar
           );
 
-          this.imprimirComprovativo(response.data.data);
+          if(response.data.data.tipo_folha == 'Ticket'){
+            this.imprimirComprovativoTicket(response.data.data);
+          }
+          
+          if(response.data.data.tipo_folha == 'A4'){
+            this.imprimirComprovativo(response.data.data);
+          }
+
 
           // Faça algo com a resposta, se necessário
         } catch (error) {
