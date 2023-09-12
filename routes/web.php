@@ -69,6 +69,7 @@ Route::group(["middleware" => "auth"], function () {
 
     Route::get('/movimentos/diarios-operador', [MovimentoController::class, 'diariosOperador']);
     Route::get('/movimentos/caixas-abertos', [MovimentoController::class, 'caixasAbertos']);
+    Route::get('/movimentos/registrar-saidas', [MovimentoController::class, 'registrarSaidas']);
     
     Route::get('/movimentos/abertura-caixa', [MovimentoController::class, 'abertura'])->name('mc.movimentos-abertura-caixa');
     Route::post('/movimentos/abertura-caixa', [MovimentoController::class, 'aberturaStore'])->name('mc.movimentos-abertura-caixa-store');

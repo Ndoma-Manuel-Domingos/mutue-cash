@@ -38,7 +38,7 @@ class DashboardController extends Controller
             return redirect()->route('mc.bloquear-caixa');
         }
 
-        $movimentos = null;
+        $movimentos = [];
         
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
             

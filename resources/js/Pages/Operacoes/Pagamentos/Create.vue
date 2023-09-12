@@ -199,55 +199,54 @@
               </div>
               <div class="card-body">
                 <div class="row">
+                  <label for="" class="form-label">Selecione Facturas a Pagar</label>
                   <div class="col-12 col-md-12 mt-2 mb-2">
-                    <div class="input-group">
-                      <select
-                        class="form-control"
-                        :disabled="isFormDisabled"
-                        @change="faturaByReference"
-                        v-model="numero_fatura_nao_paga"
+                    <select
+                      class="form-control"
+                      :disabled="isFormDisabled"
+                      @change="faturaByReference"
+                      v-model="numero_fatura_nao_paga"
+                    >
+                      <option disabled>Selecione Facturas a Pagar</option>
+                      <option
+                        v-for="item in referencias_nao_pagas"
+                        :key="item.codigo_fatura"
+                        :value="item.codigo_fatura"
                       >
-                        <option disabled>Selecione Facturas a Pagar</option>
-                        <option
-                          v-for="item in referencias_nao_pagas"
-                          :key="item.codigo_fatura"
-                          :value="item.codigo_fatura"
+                        <span
+                          v-if="item.mes_temp > 0 && item.tipo_fatura != 5"
+                          >Propinas ({{ item.codigo_fatura }})</span
                         >
-                          <span
-                            v-if="item.mes_temp > 0 && item.tipo_fatura != 5"
-                            >Propinas ({{ item.codigo_fatura }})</span
-                          >
-                          <span v-else-if="item.tipo_fatura == 5"
-                            >Negociação de dívidas ({{
-                              item.codigo_fatura
-                            }})</span
-                          >
-                          <span v-else-if="item.codigo_tipo_avaliacao == 7"
-                            >Inscrição de Recursos ({{
-                              item.codigo_fatura
-                            }})</span
-                          >
-                          <span v-else-if="item.codigo_tipo_avaliacao == 22"
-                            >Inscrição de Melhorias ({{
-                              item.codigo_fatura
-                            }})</span
-                          >
-                          <span v-else-if="item.codigo_tipo_avaliacao == 11"
-                            >Inscrição de Exame Especial ({{
-                              item.codigo_fatura
-                            }})</span
-                          >
-                          <span v-else-if="item.tipo_fatura == 3"
-                            >Inscrição de Cadeiras ({{
-                              item.codigo_fatura
-                            }})</span
-                          >
-                          <span v-else
-                            >Outros Serviços ({{ item.codigo_fatura }})</span
-                          >
-                        </option>
-                      </select>
-                    </div>
+                        <span v-else-if="item.tipo_fatura == 5"
+                          >Negociação de dívidas ({{
+                            item.codigo_fatura
+                          }})</span
+                        >
+                        <span v-else-if="item.codigo_tipo_avaliacao == 7"
+                          >Inscrição de Recursos ({{
+                            item.codigo_fatura
+                          }})</span
+                        >
+                        <span v-else-if="item.codigo_tipo_avaliacao == 22"
+                          >Inscrição de Melhorias ({{
+                            item.codigo_fatura
+                          }})</span
+                        >
+                        <span v-else-if="item.codigo_tipo_avaliacao == 11"
+                          >Inscrição de Exame Especial ({{
+                            item.codigo_fatura
+                          }})</span
+                        >
+                        <span v-else-if="item.tipo_fatura == 3"
+                          >Inscrição de Cadeiras ({{
+                            item.codigo_fatura
+                          }})</span
+                        >
+                        <span v-else
+                          >Outros Serviços ({{ item.codigo_fatura }})</span
+                        >
+                      </option>
+                    </select>
                   </div>
                 </div>
 
