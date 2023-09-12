@@ -22,12 +22,20 @@ class Deposito extends Model
         'valor_depositar',
         'saldo_apos_movimento',
         'forma_pagamento_id',
+        'tipo_folha',
+        'status',
+        'caixa_id',
         'data_movimento',
         'ano_lectivo_id',
         'created_by',
         'updated_by',
         'deleted_by',
     ];
+    
+    public function caixa()
+    {
+        return $this->belongsTo(Caixa::class, 'caixa_id', 'codigo');
+    }
     
     public function user()
     {

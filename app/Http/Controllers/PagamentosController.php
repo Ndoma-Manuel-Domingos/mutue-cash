@@ -87,10 +87,10 @@ class PagamentosController extends Controller
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
-        
-        
+
+
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
-            
+
             $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso', 'operador_novos','operador_antigo','utilizadores')
                 ->when($request->data_inicio, function ($query, $value) {
                     $query->where('created_at', '>=', Carbon::parse($value));
@@ -110,15 +110,15 @@ class PagamentosController extends Controller
                 ->withQueryString();
 
         }
-           
+
         if(auth()->user()->hasRole(['Supervisor'])){
-            
+
             if ($request->data_inicio) {
                 $request->data_inicio = $request->data_inicio;
             } else {
                 $request->data_inicio = date("Y-m-d");
             }
-            
+
             $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
             ->when($request->data_inicio, function ($query, $value) {
                 $query->where('created_at', '>=', Carbon::parse($value));
@@ -137,17 +137,17 @@ class PagamentosController extends Controller
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
-            
+
         }
-        
+
         if(auth()->user()->hasRole(['Operador Caixa'])){
-            
+
             if ($request->data_inicio) {
                 $request->data_inicio = $request->data_inicio;
             } else {
                 $request->data_inicio = date("Y-m-d");
             }
-            
+
             $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
             ->when($request->data_inicio, function ($query, $value) {
                 $query->where('created_at', '>=', Carbon::parse($value));
@@ -162,18 +162,19 @@ class PagamentosController extends Controller
                 $query->where('AnoLectivo', $value);
             })
             ->where('fk_utilizador', $user->codigo_importado)
+            ->where('status_pagamento', 'pendente')
             ->where('forma_pagamento', 6)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
-            
+
         }
-        
-        
+
+
         if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
         }
-        
+
         if(auth()->user()->hasRole(['Operador Caixa'])){
             $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
                 $query->where('codigo_importado', auth()->user()->codigo_importado);
@@ -358,7 +359,8 @@ class PagamentosController extends Controller
                 'tb_pagamentos.valor_depositado',
                 'factura.estado as estado_factura',
                 'factura.codigo_descricao as descricao_factura',
-                'factura.ano_lectivo as ano_lectivo'
+                'factura.ano_lectivo as ano_lectivo',
+                'factura.CodigoMatricula as CodigoMatricula'
             )
             ->where('factura.Codigo', $codigo_fatura)
             ->first();
@@ -436,6 +438,12 @@ class PagamentosController extends Controller
 
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect()->route('mc.bloquear-caixa');
+        }
+
+        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        if (!filled($caixas)) {
+            $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+            return response()->json($result, 201);
         }
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
@@ -771,6 +779,8 @@ class PagamentosController extends Controller
                         $pagamento_saldo['Codigo_PreInscricao'] = $codigo;
                         $pagamento_saldo['DataRegisto'] = date('Y-m-d H:i:s');
                         $pagamento_saldo['codigo_factura'] = $fatura_paga->codigo;
+                        $pagamento_saldo['caixa_id'] = $caixas->codigo;
+                        $pagamento_saldo['status_pagamento'] = 'pendente';
                         $pagamento_saldo['pagamento_saldo'] = $saldo_novo;
                         $pagamento_saldo['estado'] = 1;
                         $pagamento_saldo['corrente'] = 1;
@@ -878,6 +888,9 @@ class PagamentosController extends Controller
                     $data['codigo_factura'] = $fact_aluno->Codigo;
                     $data['estado'] = 1;
                     $data['corrente'] = 1;
+                    $data['caixa_id'] = $caixas->codigo;
+                    $data['status_pagamento'] = 'pendente';
+
                     $data['Observacao'] = "Pagamento efectuado por Cash";
                     $data['fk_utilizador'] = auth()->user()->codigo_importado;
                     $data['Utilizador'] = auth()->user()->codigo_importado;
@@ -1097,6 +1110,8 @@ class PagamentosController extends Controller
                         'codigo_matricula_id' => $codigo_matricula,
                         'Codigo_PreInscricao' => $codigo,
                         'valor_depositar' => $novo_saldo,
+                        'caixa_id' => $caixas->codigo,
+                        'status' => 'pendente',
                         'saldo_apos_movimento' => $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
                         'created_by' => auth()->user()->codigo_importado,
                         'ano_lectivo_id' => $fatura_paga->ano_factura,
@@ -1172,6 +1187,11 @@ class PagamentosController extends Controller
 
     public function salvarPagamentoComSaldo(Request $request, $referencia, $user_id)
     {
+        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        if (!filled($caixas)) {
+            $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+            return response()->json($result, 201);
+        }
 
         $anoCorrente = $this->anoAtualPrincipal->index();
 
@@ -1234,6 +1254,8 @@ class PagamentosController extends Controller
             $pagamento['Totalgeral'] = $fact_aluno->ValorAPagar;
             $pagamento['DataRegisto'] = date('Y-m-d H:i:s');
             $pagamento['codigo_factura'] = $fact_aluno->Codigo;
+            $pagamento['caixa_id'] = $caixas->codigo;
+            $pagamento['status_pagamento'] = 'pendente';
             $pagamento['estado'] = 1;
             $pagamento['Observacao'] =  'Pagamento efectuado com saldo no Mutue Cash!';
             $pagamento['corrente'] = 1;
@@ -2183,6 +2205,8 @@ class PagamentosController extends Controller
                     $pagamento['Observacao'] = 'Pagamento efectuado por Cash';
                     $pagamento['AnoLectivo'] = $fact_aluno->ano_lectivo;
                     $pagamento['Codigo_PreInscricao'] = $preinscricao->Codigo;
+                    $pagamento['caixa_id'] = $caixas->codigo;
+                    $pagamento['status_pagamento'] = 'pendente';
                     $pagamento['valor_depositado'] = $valor_apagar;
                     $pagamento['Totalgeral'] = $valor_apagar;
                     $pagamento['fk_utilizador'] =  auth()->user()->codigo_importado;
@@ -2360,6 +2384,8 @@ class PagamentosController extends Controller
                     $pagamento['AnoLectivo'] = $anoCorrente;
                     $pagamento['Codigo_PreInscricao'] = $preinscricao->Codigo;
                     $pagamento['valor_depositado'] = $preinscricao->saldo;
+                    $pagamento['caixa_id'] = $caixas->codigo;
+                    $pagamento['status_pagamento'] = 'pendente';
                     $pagamento['Totalgeral'] =  $valor_apagar;
                     $pagamento['DataRegisto'] = date('Y-m-d H:i:s');
                     $pagamento['codigo_factura'] = $codigo_fatura;
@@ -2683,7 +2709,7 @@ class PagamentosController extends Controller
                 ->where('factura.Codigo', $id)
                 ->distinct('codigoItem')
                 ->get();
-            
+
             if(blank($data['faturas'])){
                 $data['faturas'] = DB::table('factura_items')
                 ->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
@@ -2752,15 +2778,15 @@ class PagamentosController extends Controller
 
         return $pdf->stream('fatura.pdf');
     }
-    
-    
+
+
     public function FaturaTicket(Request $request, $id)
     {
         // ESTA FUNÇÃO É UTILIZADA PARA IMPRIMIR FACTURAS. FUNÇÃO EM USO
         $id = base64_decode(base64_decode(base64_decode($id)));
-        
+
         $fatura = DB::table('factura')->where('Codigo', $id)->first();
-        
+
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($fatura->CodigoMatricula);
 
         if ($fatura->codigo_descricao == 5) {
@@ -2900,16 +2926,16 @@ class PagamentosController extends Controller
         $data['conta1'] = DB::table('tb_local_pagamento')->where('codigo', 1)->first();
         $data['conta2'] = DB::table('tb_local_pagamento')->where('codigo', 3)->first();
         $data['conta3'] = DB::table('tb_local_pagamento')->where('codigo', 9)->first();
-        
+
 
         $data['total_apagar'] = $data['aluno']->valor_apagar;
         $data['extenso'] = $this->valor_por_extenso($data['total_apagar'], false);
 
         $data['qtdPrestacoes'] = count($this->parametro_uma->totalPrestacoesPagarPorAno($fatura->ano_lectivo, $data['aluno']->codigo_tipo_candidatura));
-            
+
         \QrCode::size(250)
             ->format('png')
-            ->generate("Nº matrícula: $codigo_aluno \n Nome: $nome_aluno \n Curso: $curso_aluno \n Polo: $polo_aluno  
+            ->generate("Nº matrícula: $codigo_aluno \n Nome: $nome_aluno \n Curso: $curso_aluno \n Polo: $polo_aluno
                 Periodo: $turno_aluno \n Servico: 'Diversos'", public_path('images/qrcode.png'));
 
         //Recuperar os pagamentos por referências by Ndongala Nguinamau
@@ -2920,5 +2946,5 @@ class PagamentosController extends Controller
 
         return $pdf->stream('ticket-pagamento.pdf');
     }
-   
+
 }

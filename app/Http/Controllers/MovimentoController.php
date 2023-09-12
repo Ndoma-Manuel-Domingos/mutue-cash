@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Exports\ListagemTodosMovimentoExport;
 use App\Jobs\JobValidacaoCaixaOperadorNotificacao;
 use App\Models\Caixa;
+use App\Models\Deposito;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\MovimentoCaixa;
+use App\Models\Pagamento;
 use App\Models\User;
 use App\Models\Utilizador;
 use App\Notifications\AberturaCaixaNotification;
@@ -280,6 +282,20 @@ class MovimentoController extends Controller
         $caixa->code = NULL;
         $caixa->update();
         
+        $depositos = Deposito::where('status', 'pendente')->where('caixa_id', $movimento->caixa_id)->where('created_by', $user->codigo_importado)->get();
+        $pagamentos = Pagamento::where('status_pagamento', 'pendente')->where('caixa_id', $movimento->caixa_id)->where('fk_utilizador', $user->codigo_importado)->get();
+        
+        foreach($depositos as $deposito){
+            $update = Deposito::findOrFail($deposito->codigo);
+            $update->status = 'concluido';
+            $update->update();
+        }
+        
+        foreach($pagamentos as $pagamento){
+            $update = Pagamento::findOrFail($pagamento->Codigo);
+            $update->status_pagamento = 'concluido';
+            $update->update();
+        }
         
         $user->notify(new FechoCaixaNotification($movimento));
         
@@ -518,8 +534,7 @@ class MovimentoController extends Controller
             return redirect()->route('mc.bloquear-caixa');
         }
         
-        $user = User::where('userName', Auth::user()->userName)
-        ->where('password', md5($password))
+        $user = User::where('userName', Auth::user()->userName)->where('password', md5($password))
         ->first();
         
         if($user) {

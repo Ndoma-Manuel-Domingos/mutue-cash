@@ -125,8 +125,10 @@ class DepositoController extends Controller
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
+            ->where('status', 'pendente')
+            ->where('caixa_id', $caixa->codigo ?? '')
             ->where('created_by', $user->codigo_importado)
-            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
+            ->with(['caixa', 'user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
             ->orderBy('codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
@@ -138,6 +140,7 @@ class DepositoController extends Controller
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
+            ->where('status', 'pendente')
             ->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
             
@@ -172,11 +175,12 @@ class DepositoController extends Controller
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
         
+        
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if(!$caixas){
             return response()->json([
-                'message' => 'Deposito realizado com sucesso!',
+                'message' => 'Sem nenhum caixa aberto para realizar o deposito!',
             ], 401);
         }
         
@@ -197,7 +201,10 @@ class DepositoController extends Controller
             'Codigo_PreInscricao' => $resultado->Codigo,
             'valor_depositar' => $request->valor_a_depositar,
             'saldo_apos_movimento' => $saldo_apos_movimento,
+            'tipo_folha' => $request->factura,
             'forma_pagamento_id' => 6,
+            'caixa_id' => $caixas->codigo,
+            'status' => 'pendente',
             'data_movimento' => date("Y-m-d"),
             'ano_lectivo_id' => $this->anoLectivoActivo(),
             'created_by' => Auth::user()->codigo_importado,

@@ -40,8 +40,9 @@
               <div class="col-lg-6 col-12 col-md-12">
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>{{ formatValor(total_depositado ?? 0) }}</h4>
-                    <p>Total Valor Depositado.</p>
+                  
+                    <h4>{{ formatValor(valor_arrecadado_depositos ?? 0) }}</h4>
+                    <p>Total Depositado.</p>
                   </div>
                   <div class="icon">
                     <i class="ion ion-bag"></i>
@@ -57,7 +58,7 @@
               <div class="col-lg-6 col-12 col-md-12">
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>{{ formatValor(total_pagamento ?? 0) }}</h4>
+                    <h4>{{ formatValor(valor_facturado_pagamento ?? 0) }}</h4>
                     <p>Total de Pagamentos.</p>
                   </div>
                   <div class="icon">
@@ -74,8 +75,8 @@
               <div class="col-lg-12 col-12 col-md-12">
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>{{ formatValor((+total_depositado)+(+total_pagamento)) }}</h4>
-                    <p>Total Valor arrecadado.</p>
+                    <h4>{{ formatValor(valor_arrecadado_total ?? 0) }}</h4>
+                    <p>Total arrecadado.</p>
                   </div>
                   <div class="icon">
                     <i class="ion ion-stats-bars"></i>
@@ -101,7 +102,7 @@
                     </div>
                     <div class="card-body">
                       <div class="row">
-                        <div class="form-group col-12 col-md-12">
+                        <div class="form-group col-12 col-md-6">
                           <label class="form-label form-label-sm" for="ano_lectivo">Anos Lectivos</label>
                           <select v-model="ano_lectivo" id="ano_lectivo" class="form-control ">
                             <option :value="ano.Codigo" v-for="ano in ano_lectivos" :key="ano.Codigo">
@@ -109,6 +110,20 @@
                             </option>
                           </select>
                         </div>
+                        
+                        <div class="form-group col-12 col-md-6">
+                          <label class="form-label form-label-sm" for="operador_id">Utilizador</label>
+                          <select v-model="operador_id" id="operador_id" class="form-control ">
+                            <option
+                              v-for="item in utilizadores"
+                              :key="item"
+                              :value="item.utilizadores.codigo_importado"
+                            >
+                              {{ item.utilizadores.nome ?? "" }}
+                            </option>
+                          </select>
+                        </div>
+                        
                         <div class="form-group col-12 col-md-6">
                           <label for="data_inicio" class="form-label-sm">Data Inicio</label>
                           <input type="date" placeholder="DATA INICIO" id="data_inicio" v-model="data_inicio" class="form-control">
@@ -136,13 +151,14 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["total_depositado", "total_pagamento", "ano_lectivos", "ano_lectivo_activo_id", "caixa"],
+  props: ["valor_arrecadado_depositos", "valor_facturado_pagamento", "valor_arrecadado_total", "ano_lectivos", "ano_lectivo_activo_id", "caixa", "utilizadores"],
   components: {
     Link,
   },
   data() {
     return {
       
+      operador_id: this.operador_id,
       ano_lectivo: this.ano_lectivo_activo_id,
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
@@ -182,6 +198,10 @@ export default {
     },
     data_final: function (val) {
       this.params.data_final = val;
+      this.updateData();
+    },
+    operador_id: function (val) {
+      this.params.operador_id = val;
       this.updateData();
     },
   },
