@@ -42,100 +42,6 @@
           </div>
         </div>
 
-        <!-- <div class="row">
-            <div class="col-lg-3 col-6">
-              <div class="small-box bg-info">
-                <div class="inner">
-                  <h4 class="text-uppercase">operador activo</h4>
-                  <p>{{ movimento.operador.nome }}</p>
-                </div>
-                <div class="icon">
-                  <i class="ion ion-bag"></i>
-                </div>
-                <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                ></Link>
-              </div>
-            </div>
-            
-            
-            <div class="col-lg-3 col-6">
-              <div class="small-box bg-info">
-                <div class="inner">
-                  <h4 class="text-uppercase">{{ movimento.status }}</h4>
-                  <p>Estado do Caixa</p>
-                </div>
-                <div class="icon">
-                  <i class="ion ion-bag"></i>
-                </div>
-                <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                ></Link>
-              </div>
-            </div>
-  
-            <div class="col-lg-3 col-6">
-              <div class="small-box bg-info">
-                <div class="inner">
-                  <h4>{{ formatValor(movimento.valor_abertura) }}</h4>
-                  <p>Valor Abertura</p>
-                </div>
-                <div class="icon">
-                  <i class="ion ion-bag"></i>
-                </div>
-                <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                ></Link>
-              </div>
-            </div>
-  
-            <div class="col-lg-3 col-6">
-              <div class="small-box bg-info">
-                <div class="inner">
-                  <h4>{{ formatValor(movimento.valor_arrecadado_cash) }}</h4>
-                  <p>Total Valor arrecadado Cash</p>
-                </div>
-                <div class="icon">
-                  <i class="ion ion-bag"></i>
-                </div>
-                <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                ></Link>
-              </div>
-            </div>
-  
-            <div class="col-lg-3 col-6">
-              <div class="small-box bg-info">
-                <div class="inner">
-                  <h4>{{ formatValor(movimento.valor_arrecadado_tpa) }}</h4>
-                  <p>Total Valor arrecadado TPA</p>
-                </div>
-                <div class="icon">
-                  <i class="ion ion-bag"></i>
-                </div>
-                <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                ></Link>
-              </div>
-            </div>
-  
-            <div class="col-lg-3 col-6">
-              <div class="small-box bg-info">
-                <div class="inner">
-                  <h4>{{ formatValor(movimento.valor_arrecadado_total) }}</h4>
-                  <p>Total Valor arrecadado</p>
-                </div>
-                <div class="icon">
-                  <i class="ion ion-bag"></i>
-                </div>
-                <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                  >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                ></Link>
-              </div>
-            </div>
-  
-          </div> -->
-
         <div class="row">
           <div class="col-12 col-md-8">
             <form action="" @submit.prevent="submit">
@@ -206,7 +112,7 @@
                     <div class="form-group col-12 col-md-3">
                       <label for="valor_facturado" class="form-label"
                         ><Link :href="route('mc.pagamentos.index')"
-                          >TOTAL DE FACTURADO</Link
+                          >VALOR FACTURADO</Link
                         ></label
                       >
                       <input

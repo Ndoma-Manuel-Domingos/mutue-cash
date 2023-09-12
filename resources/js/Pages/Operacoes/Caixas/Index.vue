@@ -447,9 +447,9 @@ export default {
             this.form
           );
 
-          this.form.reset();
           this.$Progress.finish();
           sweetSuccess(response.data.message);
+          this.form.reset();
           this.updateData();
           $("#modalEditCaixa").modal("hide");
         } catch (error) {
@@ -543,7 +543,10 @@ export default {
         .get(`/operacoes/caixas/delete/${item.codigo}`)
         .then((response) => {
           this.$Progress.finish();
-          sweetSuccess(response.data.message);
+          setTimeout(() => {
+            sweetSuccess(response.data.message);
+            window.location.reload();
+          }, 2500);
           this.updateData();
           $("#modalCaixas").modal("hide");
         })

@@ -77,7 +77,7 @@ class DepositoController extends Controller
         
         }
        
-        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor'])){
+        if(auth()->user()->hasRole(['Supervisor'])){
            
             if($request->data_inicio){
                 $request->data_inicio = $request->data_inicio;
@@ -92,7 +92,7 @@ class DepositoController extends Controller
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
-            ->where('created_by', $user->codigo_importado)
+            //->where('created_by', $user->codigo_importado)
             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
             ->orderBy('codigo', 'desc')
             ->paginate(10)
@@ -105,11 +105,46 @@ class DepositoController extends Controller
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
-            ->where('created_by', $user->codigo_importado)
+            //->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
             
         }
        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
+           
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+           
+            $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
+            ->where('status', 'pendente')
+            ->where('caixa_id', $caixa->codigo ?? '')
+            ->where('created_by', $user->codigo_importado)
+            ->with(['caixa', 'user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
+            ->orderBy('codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+            
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
+            ->where('status', 'pendente')
+            ->where('created_by', $user->codigo_importado)
+            ->sum('valor_depositar');
+            
+        }
        
         if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
@@ -140,13 +175,15 @@ class DepositoController extends Controller
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
         
+        
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if(!$caixas){
             return response()->json([
-                'message' => 'Deposito realizado com sucesso!',
+                'message' => 'Sem nenhum caixa aberto para realizar o deposito!',
             ], 401);
         }
+        
         
         $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
                 
@@ -157,20 +194,23 @@ class DepositoController extends Controller
         ->first();
         
         $saldo_apos_movimento = $resultado->saldo + $request->valor_a_depositar;
-
+        
         // registramos o deposito 
         $create = Deposito::create([
             'codigo_matricula_id' => $request->codigo_matricula,
             'Codigo_PreInscricao' => $resultado->Codigo,
-            'canal_cominucacao_id' => 1,
             'valor_depositar' => $request->valor_a_depositar,
             'saldo_apos_movimento' => $saldo_apos_movimento,
+            'tipo_folha' => $request->factura,
             'forma_pagamento_id' => 6,
+            'caixa_id' => $caixas->codigo,
+            'status' => 'pendente',
             'data_movimento' => date("Y-m-d"),
             'ano_lectivo_id' => $this->anoLectivoActivo(),
             'created_by' => Auth::user()->codigo_importado,
-            'updated_by' => Auth::user()->codigo_importado,
+            'updated_by' => Auth::user()->codigo_importado
         ]);
+
         
         // actualizamos os dados do aluno
         $preinscricao = PreInscricao::findOrFail($resultado->Codigo);
@@ -267,5 +307,27 @@ class DepositoController extends Controller
     }
     
     
+    public function ticket(Request $request)
+    {
+        $request->codigo = 1;
     
+        $data['item'] = Deposito::when($request->data_inicio, function($query, $value){
+            $query->where('created_at', '>=' ,Carbon::parse($value) );
+        })->when($request->data_final, function($query, $value){
+            $query->where('created_at', '<=' ,Carbon::parse($value));
+        })
+        ->when($request->operador, function($query, $value){
+            $query->where('created_by', $value);
+        })
+        ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
+        ->findOrFail($request->codigo);
+        
+        
+        $pdf = \App::make('dompdf.wrapper');
+        $pdf->loadView('Relatorios.ticket-deposito', $data);
+        $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
+        return $pdf->stream();
+        
+    }
+        
 }

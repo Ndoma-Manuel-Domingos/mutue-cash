@@ -49,7 +49,20 @@ class HandleInertiaRequests extends Middleware
                         "type_user" => $request->user()->tipo_grupo->grupo->designacao,
                         "perfils" => $request->user()->roles()->get(),
                         "auth" => $request->user()->load('roles.permissions', 'permissions'),
-                    ] : null
+                    ] : null,
+                    'notifications' => fn () => $request->user()
+                        ? $request->user()->notifications()->get()
+                        : null,
+                    'unreadNotifications' => fn () => $request->user()
+                        ? $request->user()->unreadNotifications()->get()
+                        : null,
+                ];
+            },
+
+            'flash' => function () use ($request) {
+                return [
+                    'success' => $request->session()->get('success'),
+                    'error' => $request->session()->get('error'),
                 ];
             },
             // 'toasts' => Toast::all()

@@ -79,6 +79,20 @@
         </a>
         <ul class="nav nav-treeview">
         
+          <li class="nav-item" title="CAIXAS ABERTOS" v-if="user.auth.can['visualizar caixa abertos']">
+            <Link
+              href="/movimentos/caixas-abertos"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component == 'Operacoes/Movimentos/Abertura',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Caixas Abertos</p>
+            </Link>
+          </li>
+        
           <li class="nav-item" title="ABERTURA DO CAIXA" v-if="user.auth.can['relatorio diario caixa']">
             <Link
               href="/movimentos/diarios-operador"
@@ -210,7 +224,7 @@
         >
           <i class="nav-icon fas fa-users"></i>
           <p>
-            Gestão Utilizadores
+            Gestão de Utilizadores
             <i class="right fas fa-angle-left"></i>
           </p>
         </a>
@@ -302,22 +316,38 @@
     }, 
   
     methods: {
-      logout(){
-        axios
-          .post("/logout")
-          .then((response) => {
-              Swal.fire({
-                icon: response.data? "warning" : "success!",
-                title: response.data ? "Atenção" : "Sucesso!",
-                text: response.data ? response.data.message : "Conta encerrada com sucesso!",
-              });
-              window.location.reload();
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-        
+    
+      logout: function () {
+        this.loading = true;
+        this.axios.post("/logout").then((response) => {
+          if (response.status === 302 || 401) {
+            console.log(error);
+            this.loading = false;
+          } else {
+            window.location.replace('/login');
+            // throw error and go to catch block
+          }
+        }).catch((error) => {
+          this.loading = false;
+          console.log(error);
+        });
       },
+    
+    
+      // logout(){
+      //   axios.post("/logout").then((response) => {
+      //     Swal.fire({
+      //       icon: response.data? "warning" : "success!",
+      //       title: response.data ? "Atenção" : "Sucesso!",
+      //       text: response.data ? response.data.message : "Conta encerrada com sucesso!",
+      //     });
+      //     setTimeout(() => {
+      //       window.location.reload();
+      //     }, 2500);
+      //   }).catch((error) => {
+      //     console.error(error);
+      //   });
+      // },
       
       // getUserRoles() {
       //   alert(JSON.stringify(user))

@@ -29,6 +29,8 @@ class Pagamento extends Model
         'ContaMovimentada',
         'Utilizador',
         'DataRegisto',
+        'caixa_id',
+        'status_pagamento',
         'canal',
         'nome_documento',
         'nome_documento2',

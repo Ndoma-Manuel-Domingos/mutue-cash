@@ -13,6 +13,27 @@
         <div class="ml-auto">
 
           <ul class="navbar-nav">
+          
+          <li class="nav-item dropdown">
+            <a class="nav-link" data-toggle="dropdown" href="#">
+              <i class="far fa-bell"></i>
+              <span class="badge badge-danger navbar-badge">2</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+            <span class="dropdown-header">2 Notifications</span>
+            <div class="dropdown-divider"></div>
+            
+            <template v-for="notification in notifications" :key="notification.id">
+              <a :href="route('notifications.show', notification.id)" class="dropdown-item">
+                <i class="fas fa-envelope mr-2"></i> {{ notification.data.title }}
+                <span class="float-right text-muted text-sm">{{ notification.data.created_at }}</span>
+              </a>
+            </template>
+          
+            <div class="dropdown-divider"></div>
+              <a :href="route('notifications.index')" class="dropdown-item dropdown-footer">Todas notificações</a>
+            </div>
+          </li>
             
             <li class="nav-item">
               <!-- href="/logout"
@@ -85,53 +106,68 @@
 
 </template>
 
-<script setup>
-  import { computed } from "vue";
-  import Menu from "./Partials/Menu.vue";
-  import { usePage } from "@inertiajs/inertia-vue3";
-  import { Link } from "@inertiajs/inertia-vue3";
-
-  const user = computed(() => {
-    return usePage().props.value.auth.user;
-  });
-</script>
-
 <script>
   import { sweetSuccess, sweetError } from "../../components/Alert";
-
+  import Menu from "./Partials/Menu.vue";
+  import { Link } from "@inertiajs/inertia-vue3";
+  
   export default {
+    components: {
+      Link,
+      Menu
+    },
     data() {
       return {
+        result: [],
       };
+    },
+    
+    computed: {
+      user() {
+        return this.$page.props.auth.user;
+      },
+      
+      notifications() {
+        return this.$page.props.auth.notifications;
+      },
     },
 
     methods: {
+    
       logout(){
         axios
           .post("/logout")
           .then((response) => {
-              Swal.fire({
-                icon: "warning",
-                title: "Atenção...",
-                text: response.data.message,
-              });
+          
+              if(response.data.status == 201){
+                Swal.fire({
+                  icon: "warning",
+                  title: "Atenção",
+                  text: response.data.message,
+                });
+              }else {
+                Swal.fire({
+                  icon: "success",
+                  title: "Sucesso!",
+                  text: "Conta encerrada com sucesso!",
+                });
+                
+                // Limpar cookies relacionados à sessão
+                
+                window.location.replace('/login');
+              }
+              
           })
           .catch((error) => {
             console.error(error);
           });
-        
       },
-      
+
       bloaquearCaixa()
       {
         axios
           .get("/movimentos/bloquear-caixa")
           .then((response) => {
-              // Swal.fire({
-              //   icon: "warning",
-              //   title: "Atenção...",
-              //   text: response.data.message,
-              // });
           })
           .catch((error) => {
             console.error(error);

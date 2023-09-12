@@ -10,6 +10,7 @@ use App\Models\Deposito;
 use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\Matricula;
+use App\Models\MovimentoCaixa;
 use App\Models\Pagamento;
 use App\Models\PagamentoItems;
 use App\Models\PreInscricao;
@@ -65,8 +66,10 @@ class RelatorioController extends Controller
             $request->data_inicio = date("Y-m-d");
         }
         
-        
-        if($user->tipo_grupo->grupo->designacao == "Administrador"){
+        $user = auth()->user();
+
+        if(auth()->user()->hasRole(['Gestor de Caixa'])){
+            
             /** */
             $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
                 $query->where('created_at', '>=' ,Carbon::parse($value) );
@@ -90,7 +93,7 @@ class RelatorioController extends Controller
             ->paginate(7)
             ->withQueryString();   
             /** */
-            
+         
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
                 $query->where('data_movimento', '>=' , Carbon::parse($value) );
             })->when($request->data_final, function($query, $value){
@@ -121,12 +124,10 @@ class RelatorioController extends Controller
             ->where('tb_pagamentos.estado', 1)
             // ->where('fk_utilizador', $user->codigo_importado)
             ->sum('tb_pagamentos.valor_depositado');
-            
-            /** */
-    
-            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
-            
-        }else {
+        }
+        
+        if(auth()->user()->hasRole(['Supervisor']))
+        {
             
             $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
                 $query->where('created_at', '>=' ,Carbon::parse($value) );
@@ -152,11 +153,64 @@ class RelatorioController extends Controller
             ->paginate(7)
             ->withQueryString();    
             
-            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function($query){
-                $query->where('codigo_importado', auth()->user()->codigo_importado);
-            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->where('data_movimento', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('data_movimento', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })->when($request->ano_lectivo, function($query, $value){
+                $query->where('ano_lectivo_id', $value);
+            })
+            ->where('created_by', $user->codigo_importado)
+            ->sum('valor_depositar');
             
+            $totalPagamentos = Pagamento::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('fk_utilizador', $value);
+            })->when($request->ano_lectivo, function($query, $value){
+                $query->where('tb_pagamentos.AnoLectivo', $value);
+            })->when($request->servico_id, function($query, $value){
+                $query->where('tb_pagamentosi.Codigo_Servico', $value);
+            })
+            ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
+            ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
+            ->where('tb_pagamentos.forma_pagamento', 6)
+            ->where('tb_pagamentos.estado', 1)
+            ->sum('tb_pagamentos.valor_depositado');
+        
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa']))
+        {
+            $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
+                $query->where('created_at', '>=' ,Carbon::parse($value) );
+            })->when($request->data_final, function($query, $value){
+                $query->where('created_at', '<=' ,Carbon::parse($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('fk_utilizador', $value);
+            })->when($request->ano_lectivo, function($query, $value){
+                $query->where('tb_pagamentos.AnoLectivo', $value);
+            })->when($request->servico_id, function($query, $value){
+                $query->where('tb_pagamentosi.Codigo_Servico', $value);
+            })
+            ->where('forma_pagamento', 6)
+            ->leftjoin('tb_preinscricao', 'tb_pagamentos.Codigo_PreInscricao', '=', 'tb_preinscricao.Codigo')
+            ->leftjoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
+            ->leftjoin('tb_matriculas', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
+            ->leftjoin('tb_cursos', 'tb_matriculas.Codigo_Curso', '=', 'tb_cursos.Codigo')
+            ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
+            ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
+            ->where('fk_utilizador', $user->codigo_importado)
+            ->orderBy('tb_pagamentos.Codigo', 'desc')
+            ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
+            ->paginate(7)
+            ->withQueryString();    
             
+     
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
                 $query->where('data_movimento', '>=' ,Carbon::parse($value) );
             })->when($request->data_final, function($query, $value){
@@ -186,6 +240,18 @@ class RelatorioController extends Controller
             ->where('tb_pagamentos.estado', 1)
             ->where('tb_pagamentos.fk_utilizador', $user->codigo_importado)
             ->sum('tb_pagamentos.valor_depositado');
+        
+        }
+            
+        
+        if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         }
         
         $lista_geral = [];

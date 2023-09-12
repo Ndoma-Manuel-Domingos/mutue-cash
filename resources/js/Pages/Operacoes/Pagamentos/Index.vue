@@ -133,8 +133,9 @@
                       <th>Data da factura</th>
                       <th>Reserva Actual</th>
                       <th>Operador</th>
-                      <th class="text-center">Ver detalhes</th>
-                      <th class="text-center">Ver Factura</th>
+                      <th class="text-center">Detalhes</th>
+                      <th class="text-center">Factura</th>
+                      <th class="text-center">Ticket</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -155,6 +156,9 @@
                       </td>
                       <td class="text-center" v-else>
                         <a class="text-secondary" href=""><i class="fas fa-print"></i></a>
+                      </td>
+                      <td class="text-center" v-if="item.factura">
+                        <a class="text-danger" href="" @click.prevent="imprimirFaturaTicket(item.codigo_factura)"><i class="fas fa-print"></i></a>
                       </td>
                     </tr>
                   </tbody>
@@ -406,12 +410,13 @@ export default {
       }
     },
 
-    
-
     imprimirFatura(codigo_fatura) {
       window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
     },
 
+    imprimirFaturaTicket(codigo_fatura) {
+      window.open("/imprimir-factura-ticket/" + btoa(btoa(btoa(codigo_fatura))));
+    },
 
     imprimirPDF() {
       window.open(

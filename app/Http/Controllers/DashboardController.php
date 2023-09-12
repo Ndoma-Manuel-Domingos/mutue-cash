@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\AnoLectivo;
 use App\Models\Caixa;
 use App\Models\Deposito;
+use App\Models\Grupo;
+use App\Models\GrupoUtilizador;
+use App\Models\MovimentoCaixa;
 use App\Models\Pagamento;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +27,7 @@ class DashboardController extends Controller
     
     public function dashboard(Request $request)
     {
+    
         $user = auth()->user();
         
         $request->ano_lectivo = $this->anoLectivoActivo();
@@ -33,33 +38,58 @@ class DashboardController extends Controller
             return redirect()->route('mc.bloquear-caixa');
         }
 
+        $movimentos = null;
         
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
-            $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
-                $query->where("ano_lectivo_id" ,$value);
-            })
-            ->when($request->data_inicio, function($query, $value){
-                $query->where("data_movimento", ">=",Carbon::parse($value));
-            })->when($request->data_final, function($query, $value){
-                $query->where("data_movimento", "<=",Carbon::parse($value));
-            })
-            ->where('data_movimento', '=', Carbon::parse(date('Y-m-d')))
-            ->sum('valor_depositar');
             
-            $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
-                $query->where("AnoLectivo" ,$value);
-            })
-            ->when($request->data_inicio, function($query, $value){
-                $query->where("DataRegisto", ">=",Carbon::parse($value));
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+            
+            if($request->operador_id){
+                $request->operador_id = $request->operador_id;
+            }else{
+                $request->operador_id = Auth::user()->codigo_importado;
+            }
+            
+            $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
+                $query->where("created_at", ">=", Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
-                $query->where("DataRegisto", "<=",Carbon::parse($value));
-            })
-            ->where('estado', 1)
-            ->where('forma_pagamento', 6)
-            ->sum('valor_depositado');
+                $query->where("created_at", "<=", Carbon::parse($value));
+            })->when($request->operador_id, function($query, $value){
+                $query->where('operador_id', $value);
+            })->get();
+
         }
         
-        if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor']))
+        if(auth()->user()->hasRole(['Supervisor']))
+        {
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+            if($request->operador_id){
+                $request->operador_id = $request->operador_id;
+            }else{
+                $request->operador_id = Auth::user()->codigo_importado;
+            }
+        
+            $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
+                $query->where("created_at", ">=", Carbon::parse($value));
+            })->when($request->data_final, function($query, $value){
+                $query->where("created_at", "<=", Carbon::parse($value));
+            })
+            ->when($request->operador_id, function($query, $value){
+                $query->where('operador_id', $value);
+            })
+            ->get();
+
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa']))
         {
             if($request->data_inicio){
                 $request->data_inicio = $request->data_inicio;
@@ -67,38 +97,52 @@ class DashboardController extends Controller
                 $request->data_inicio = date("Y-m-d");
             }
         
-            $valor_deposito = Deposito::when($request->ano_lectivo, function($query, $value){
-                $query->where("ano_lectivo_id" ,$value);
-            })
-            ->when($request->data_inicio, function($query, $value){
-                $query->where("data_movimento", ">=",Carbon::parse($value));
+            $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
+                $query->where("created_at", ">=", Carbon::parse($value));
             })->when($request->data_final, function($query, $value){
-                $query->where("data_movimento", "<=",Carbon::parse($value));
+                $query->where("created_at", "<=", Carbon::parse($value));
             })
-            ->where('created_by', $user->codigo_importado)
-            ->sum('valor_depositar');
-            
-            $totalPagamentos = Pagamento::when($request->ano_lectivo, function($query, $value){
-                $query->where("AnoLectivo" ,$value);
-            })
-            ->when($request->data_inicio, function($query, $value){
-                $query->where("DataRegisto", ">=",Carbon::parse($value));
-            })->when($request->data_final, function($query, $value){
-                $query->where("DataRegisto", "<=",Carbon::parse($value));
-            })
-            ->where('estado', 1)
-            ->where('forma_pagamento', 6)
-            ->where('fk_utilizador', $user->codigo_importado)
-            ->sum('valor_depositado');  
+            ->where('status_final', 'pendente')
+            ->where('operador_id', $user->codigo_importado)
+            ->get();
+        
         }
             
         
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
+        $valor_arrecadado_depositos = 0;
+        $valor_facturado_pagamento = 0;
+        $valor_arrecadado_total = 0;
+                
+        foreach($movimentos as $movimento) {
+            $valor_arrecadado_depositos = $valor_arrecadado_depositos + $movimento->valor_arrecadado_depositos;
+            $valor_facturado_pagamento = $valor_facturado_pagamento + $movimento->valor_facturado_pagamento;
+            $valor_arrecadado_total = $valor_arrecadado_total + $movimento->valor_arrecadado_total - ($movimento->valor_abertura) ;
+        }
+       
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+       
+        if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        }
+        
         try {
             $header = [
-                "total_depositado" => $valor_deposito,
-                'total_pagamento' => $totalPagamentos,
+                "valor_arrecadado_depositos" => $valor_arrecadado_depositos,
+                "valor_facturado_pagamento" => $valor_facturado_pagamento,
+                "valor_arrecadado_total" => $valor_arrecadado_total,
+                "utilizadores" => $data['utilizadores'],
+                
                 'caixa' => $caixa,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
                 
@@ -110,8 +154,10 @@ class DashboardController extends Controller
             //code...
         } catch (\Throwable $th) {
             $header = [
-                "total_depositado" => $valor_deposito ?? Null,
-                'total_pagamento' => $totalPagamentos ?? Null,
+                "valor_arrecadado_depositos" => $valor_arrecadado_depositos,
+                "valor_facturado_pagamento" => $valor_facturado_pagamento,
+                "valor_arrecadado_total" => $valor_arrecadado_total,
+                "utilizadores" => $data['utilizadores'],
                 'caixa' => $caixa ?? Null,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
                 
