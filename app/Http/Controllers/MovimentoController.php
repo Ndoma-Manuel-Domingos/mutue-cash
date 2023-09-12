@@ -651,6 +651,35 @@ class MovimentoController extends Controller
     }
     
     
+    function registrarSaidas(Request $request)
+    {
+
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+
+        $movimento = null;
+        
+        if($caixa){
+            $movimento = MovimentoCaixa::where('caixa_id', $caixa->codigo)
+            ->where('operador_id', Auth::user()->codigo_importado)
+            ->where('status', 'aberto')
+            ->first();
+        }
+        
+        $header = [
+            "caixa" => $caixa,
+            "movimento" => $movimento,
+            "operador" => Utilizador::where('codigo_importado', Auth::user()->codigo_importado)->first()
+        ];
+    
+        return Inertia::render('Operacoes/Movimentos/RegistrarSaida', $header);
+    }    
+    
+    
     function gerarNumeroUnico() {
         $numero = mt_rand(1000, 9999); // Gera um número aleatório entre 1000 e 9999
         return $numero;

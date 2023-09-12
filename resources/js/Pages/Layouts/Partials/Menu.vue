@@ -53,6 +53,16 @@
               <p>Pagamentos</p>
             </Link>
           </li>
+          
+          <li class="nav-item" title="REGISTRAR SAIDAS">
+            <Link
+              href="/movimentos/registrar-saidas"
+              class="nav-link" :class="{active: $page.component == 'Operacoes/Movimentos/RegistrarSaida',}">
+              <i class="far fa-circle nav-icon"></i>
+              <p>Registrar Saída</p>
+            </Link>
+          </li>
+          
           <li class="nav-item" title="CRIAR CAIXAS" v-if="user.auth.can['listar caixa']">
             <Link
               href="/operacoes/caixas"
