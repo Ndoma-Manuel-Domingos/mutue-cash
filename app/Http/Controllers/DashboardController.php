@@ -118,7 +118,7 @@ class DashboardController extends Controller
         foreach($movimentos as $movimento) {
             $valor_arrecadado_depositos = $valor_arrecadado_depositos + $movimento->valor_arrecadado_depositos;
             $valor_facturado_pagamento = $valor_facturado_pagamento + $movimento->valor_facturado_pagamento;
-            $valor_arrecadado_total = $valor_arrecadado_total + $movimento->valor_arrecadado_total; //- ($movimento->valor_abertura) ;
+            $valor_arrecadado_total = $valor_arrecadado_total + $movimento->valor_arrecadado_total - ($movimento->valor_abertura) ;
         }
        
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
