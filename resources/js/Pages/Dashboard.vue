@@ -102,7 +102,7 @@
                     </div>
                     <div class="card-body">
                       <div class="row">
-                        <div class="form-group col-12 col-md-12">
+                        <div class="form-group col-12 col-md-6">
                           <label class="form-label form-label-sm" for="ano_lectivo">Anos Lectivos</label>
                           <select v-model="ano_lectivo" id="ano_lectivo" class="form-control ">
                             <option :value="ano.Codigo" v-for="ano in ano_lectivos" :key="ano.Codigo">
@@ -110,6 +110,20 @@
                             </option>
                           </select>
                         </div>
+                        
+                        <div class="form-group col-12 col-md-6">
+                          <label class="form-label form-label-sm" for="operador_id">Utilizador</label>
+                          <select v-model="operador_id" id="operador_id" class="form-control ">
+                            <option
+                              v-for="item in utilizadores"
+                              :key="item"
+                              :value="item.utilizadores.codigo_importado"
+                            >
+                              {{ item.utilizadores.nome ?? "" }}
+                            </option>
+                          </select>
+                        </div>
+                        
                         <div class="form-group col-12 col-md-6">
                           <label for="data_inicio" class="form-label-sm">Data Inicio</label>
                           <input type="date" placeholder="DATA INICIO" id="data_inicio" v-model="data_inicio" class="form-control">
@@ -137,13 +151,14 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["valor_arrecadado_depositos", "valor_facturado_pagamento", "valor_arrecadado_total", "ano_lectivos", "ano_lectivo_activo_id", "caixa"],
+  props: ["valor_arrecadado_depositos", "valor_facturado_pagamento", "valor_arrecadado_total", "ano_lectivos", "ano_lectivo_activo_id", "caixa", "utilizadores"],
   components: {
     Link,
   },
   data() {
     return {
       
+      operador_id: this.operador_id,
       ano_lectivo: this.ano_lectivo_activo_id,
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
@@ -183,6 +198,10 @@ export default {
     },
     data_final: function (val) {
       this.params.data_final = val;
+      this.updateData();
+    },
+    operador_id: function (val) {
+      this.params.operador_id = val;
       this.updateData();
     },
   },

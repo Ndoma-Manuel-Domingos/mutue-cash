@@ -262,75 +262,45 @@
     },
     
     cancelarFecho(item) {
-        Swal.fire({
-          title: 'Atenção!',
-          text: "Tem certeza que deseja cancelar este fecho?",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Sim, desejo!'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            
-            Swal.fire({
-              title: 'Informe a sua senha para poder continuar com esta operação!',
-              input: 'password',
-              inputAttributes: {
-                autocapitalize: 'off'
-              },
-              showCancelButton: true,
-              confirmButtonText: 'Confirmar',
-              showLoaderOnConfirm: true,
-              preConfirm: (login) => {
-                return fetch(`/movimentos/confirmar-senhar-admin/${login}`)
-                  .then(response => {
-                    if (!response.ok) {
-                      throw new Error(response.statusText)
-                    }
-                    return response.json()
-                  })
-                  .catch(error => {
-                    Swal.showValidationMessage(
-                      `Por favor, insira uma senha correcta`
-                    )
-                  })
-              },
-              allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-              if (result.isConfirmed) {
+      Swal.fire({
+        title: 'Atenção!',
+        text: "Tem certeza que deseja cancelar este fecho?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sim, desejo!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: 'Informe o motivo da rejeição ou pelo qual desejas cancelar o fecho!',
+            input: 'text',
+            type: 'text',
+            inputAttributes: {
+              autocapitalize: 'off'
+            },
+            preConfirm: (login) => {
+              return fetch(`/movimentos/validar-fecho/${item.codigo}/${login}/cancelar`).then(response => {
                 Swal.fire({
-                  title: 'Informe o motivo da rejeição ou pelo qual desejas cancelar o fecho!',
-                  input: 'text',
-                  type: 'text',
-                  inputAttributes: {
-                    autocapitalize: 'off'
-                  },
-                  preConfirm: (login) => {
-                    return fetch(`/movimentos/validar-fecho/${item.codigo}/${login}/cancelar`).then(response => {
-                      Swal.fire({
-                        title: "Bom Trabalho",
-                        text: "Fecho de Caixa Não Validado!",
-                        icon: "success",
-                        confirmButtonColor: "#3d5476",
-                        confirmButtonText: "Ok",
-                        onClose: () => {},
-                      });
-                      this.$Progress.finish();
-                      this.updateData();
-                    }).catch(error => {
-                      Swal.showValidationMessage(`Request failed: ${error}`)
-                      this.$Progress.fail();
-                    })
-                  },
-                  allowOutsideClick: () => !Swal.isLoading()
-                })
-              }
-            })
-            
-            
-          }
-        })
+                  title: "Bom Trabalho",
+                  text: "Fecho de Caixa Não Validado!",
+                  icon: "success",
+                  confirmButtonColor: "#3d5476",
+                  confirmButtonText: "Ok",
+                  onClose: () => {},
+                });
+                this.$Progress.finish();
+                this.updateData();
+              }).catch(error => {
+                Swal.showValidationMessage(`Request failed: ${error}`)
+                this.$Progress.fail();
+              })
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+          })
+          
+        }
+      })
     },
     
     validarFecho(item) {
@@ -345,60 +315,26 @@
           confirmButtonText: 'Sim, desejo!'
         }).then((result) => {
           if (result.isConfirmed) {
-          
-            Swal.fire({
-              title: 'Informe a sua senha para poder continuar com esta operação!',
-              input: 'password',
-              inputAttributes: {
-                autocapitalize: 'off'
-              },
-              showCancelButton: true,
-              confirmButtonText: 'Confirmar',
-              showLoaderOnConfirm: true,
-              preConfirm: (login) => {
-                return fetch(`/movimentos/confirmar-senhar-admin/${login}`)
-                  .then(response => {
-                    console.log(response)
-                    if (!response.ok) {
-                        this.$Progress.fail();
-                      throw new Error(response.statusText)
-                    }
-                    return response.json()
-                  })
-                  .catch(error => {
-                    Swal.showValidationMessage(
-                      `Request failed: ${error}`
-                    )
-                    this.$Progress.fail();
-                })
-              },
-              allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-              if (result.isConfirmed) {
-                return fetch(`/movimentos/validar-fecho/${item.codigo}/validar`)
-                  .then(response => {
-                        Swal.fire({
-                          title: "Bom Trabalho",
-                          text: "Fecho de Caixa Validado com suceeso!",
-                          icon: "success",
-                          confirmButtonColor: "#3d5476",
-                          confirmButtonText: "Ok",
-                          onClose: () => {},
-                        });
-                        this.$Progress.finish();
-                        this.updateData();
-                  })
-                  .catch(error => {
-                    Swal.showValidationMessage(
-                      `Request failed: ${error}`
-                    )
-                    this.$Progress.fail();
-                })
-                
-              }
+            return fetch(`/movimentos/validar-fecho/${item.codigo}/validar`)
+              .then(response => {
+                    Swal.fire({
+                      title: "Bom Trabalho",
+                      text: "Fecho de Caixa Validado com suceeso!",
+                      icon: "success",
+                      confirmButtonColor: "#3d5476",
+                      confirmButtonText: "Ok",
+                      onClose: () => {},
+                    });
+                    this.$Progress.finish();
+                    this.updateData();
+              }).catch(error => {
+                Swal.showValidationMessage(
+                  `Request failed: ${error}`
+                )
+                this.$Progress.fail();
             })
-            
           }
+          
         })
     },
 
