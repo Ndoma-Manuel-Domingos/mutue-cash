@@ -268,11 +268,27 @@ export default {
 
         // Faça algo com a resposta, se necessário
       } catch (error) {
+        
         // Lide com erros, se houver
         sweetError("Primeiro deves fazer abertura do caixa");
         this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar);
         this.$Progress.fail();
       }
+    },
+    
+    
+    imprimirComprovativo(item) {
+      window.open(
+        `/depositos/imprimir-comprovativo?codigo=${item.codigo}`,
+        "_blank"
+      );
+    },
+
+    imprimirComprovativoTicket(item) {
+      window.open(
+        `/imprimir-comprovativo-ticket?codigo=${item.codigo}`,
+        "_blank"
+      );
     },
 
     formatValor(atual) {

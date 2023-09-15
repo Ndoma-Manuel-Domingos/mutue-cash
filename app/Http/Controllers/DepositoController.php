@@ -244,6 +244,11 @@ class DepositoController extends Controller
     
     public function edit($id)
     {
+                       
+        if(!auth()->user()->can(['alterar deposito'])){
+            return redirect()->back();
+        }
+    
         $deposito = Deposito::findOrFail($id);
      
         $preinscricao = Matricula::where('tb_matriculas.Codigo', $deposito->codigo_matricula_id)
@@ -269,6 +274,9 @@ class DepositoController extends Controller
     
     public function update(Request $request)
     {
+        
+        
+    
         $request->validate([
             'codigo_matricula' => 'required',
             'valor_a_depositar' => 'required|numeric'
@@ -322,7 +330,7 @@ class DepositoController extends Controller
         }
         
         return response()->json([
-            'message' => 'Deposito actualizado com sucesso!',
+            'message' => 'Dados actualizados com sucesso!',
             'data' => $deposito
         ]);
 

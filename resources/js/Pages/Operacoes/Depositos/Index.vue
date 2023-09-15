@@ -168,7 +168,7 @@
                         }}
                       </td>
                       <td>{{ item.created_at }}</td>
-                      <td class="text-center">
+                      <td class="text-center" v-if="user.auth.can['alterar deposito']">
                         <Link :href="`depositos/editar/${item.codigo}`">
                           <i class="fas fa-edit text-success"></i>
                         </Link>
