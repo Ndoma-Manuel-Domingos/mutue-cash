@@ -47,6 +47,11 @@ class DashboardController extends Controller
             }else{
                 $request->data_inicio = date("Y-m-d");
             }
+            if($request->operador_id){
+                $request->operador_id = $request->operador_id;
+            }else{
+                $request->operador_id = Auth::user()->codigo_importado;
+            }
                         
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
@@ -79,8 +84,7 @@ class DashboardController extends Controller
             })
             ->when($request->operador_id, function($query, $value){
                 $query->where('operador_id', $value);
-            })
-            ->get();
+            })->get();
 
         }
         

@@ -508,9 +508,7 @@
                   <thead>
                     <tr>
                       <th colspan="3" class="text-info">
-                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{
-                          extenso
-                        }})
+                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar)}} ({{extenso}})
                       </th>
                     </tr>
 
@@ -936,6 +934,7 @@
 import Swal from "sweetalert2";
 import { sweetSuccess, sweetError } from "../../../components/Alert";
 // import VueChartkick from "vue-chartkick";
+const extensive = require("extenso");
 export default {
   props: ["forma_pagamentos"],
   data() {

@@ -47,11 +47,7 @@
                   <div class="icon">
                     <i class="ion ion-bag"></i>
                   </div>
-                  <Link
-                    :href="route('mc.depositos.index')"
-                    class="small-box-footer"
-                    >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                  ></Link>
+                  <Link :href="`/depositos?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador_id}`" class="small-box-footer">Mais detalhe <i class="fas fa-arrow-circle-right"></i></Link>
                 </div>
               </div>
 
@@ -64,11 +60,7 @@
                   <div class="icon">
                     <i class="ion ion-stats-bars"></i>
                   </div>
-                  <Link
-                    :href="route('mc.pagamentos.index')"
-                    class="small-box-footer"
-                    >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                  ></Link>
+                  <Link :href="`/pagamentos?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador_id}`" class="small-box-footer">Mais detalhe <i class="fas fa-arrow-circle-right"></i></Link>
                 </div>
               </div>
               
@@ -81,11 +73,7 @@
                   <div class="icon">
                     <i class="ion ion-stats-bars"></i>
                   </div>
-                  <Link
-                    :href="route('mc.pagamentos.index')"
-                    class="small-box-footer"
-                    >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-                  ></Link>
+                  <Link :href="`/pagamentos?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador_id}`" class="small-box-footer">Mais detalhe<i class="fas fa-arrow-circle-right"></i></Link>
                 </div>
               </div>
               
@@ -114,11 +102,7 @@
                         <div class="form-group col-12 col-md-12">
                           <label class="form-label form-label-sm" for="operador_id">Utilizador</label>
                           <select v-model="operador_id" id="operador_id" class="form-control ">
-                            <option
-                              v-for="item in utilizadores"
-                              :key="item"
-                              :value="item.utilizadores.codigo_importado"
-                            >
+                            <option v-for="item in utilizadores" :key="item" :value="item.utilizadores.codigo_importado">
                               {{ item.utilizadores.nome ?? "" }}
                             </option>
                           </select>
@@ -158,7 +142,7 @@ export default {
   data() {
     return {
       
-      operador_id: this.operador_id,
+      operador_id: this.$page.props.auth.user.id,
       ano_lectivo: this.ano_lectivo_activo_id,
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
@@ -172,6 +156,21 @@ export default {
     user() {
       return this.$page.props.auth.user;
     },
+
+    utilizadores() {
+      const uniqueMap = new Map();
+      return this.utilizadores.filter((item) => {
+        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
+          uniqueMap.set(item.utilizadores.codigo_importado, true);
+          return true;
+        }
+        return false;
+      });
+    },
+  },
+
+  mounted() {
+    
   },
   
   watch: {

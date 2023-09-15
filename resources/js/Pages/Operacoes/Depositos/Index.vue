@@ -387,6 +387,16 @@ export default {
     user() {
       return this.$page.props.auth.user;
     },
+    utilizadores() {
+      const uniqueMap = new Map();
+      return this.utilizadores.filter((item) => {
+        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
+          uniqueMap.set(item.utilizadores.codigo_importado, true);
+          return true;
+        }
+        return false;
+      });
+    },
   },
 
   data() {
