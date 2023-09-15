@@ -39,12 +39,11 @@ class RelatorioController extends Controller
             return redirect()->route('mc.bloquear-caixa');
         }
     
-    
         $user = auth()->user();
      
         $ano = AnoLectivo::where('status', '1')->first();
         
-                 // utilizadores validadores
+        // utilizadores validadores
         // utilizadores adiministrativos
         // utilizadores área financeira
         // utilizadores tesouraria
@@ -69,12 +68,12 @@ class RelatorioController extends Controller
         $user = auth()->user();
 
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
-            
+        
             /** */
             $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('tb_pagamentos.Data', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('tb_pagamentos.Data', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('fk_utilizador', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -89,15 +88,15 @@ class RelatorioController extends Controller
             ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
             ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->select( 'tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
+            ->select( 'tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_pagamentos.Data', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
             ->paginate(7)
             ->withQueryString();   
             /** */
          
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('data_movimento', '>=' , Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('data_movimento', '<=' , Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -108,9 +107,9 @@ class RelatorioController extends Controller
             /** */
             
             $totalPagamentos = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('tb_pagamentos.Data', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('tb_pagamentos.Data', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('fk_utilizador', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -122,7 +121,6 @@ class RelatorioController extends Controller
             ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
             ->where('tb_pagamentos.forma_pagamento', 6)
             ->where('tb_pagamentos.estado', 1)
-            // ->where('fk_utilizador', $user->codigo_importado)
             ->sum('tb_pagamentos.valor_depositado');
         }
         
@@ -130,9 +128,9 @@ class RelatorioController extends Controller
         {
             
             $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                 $query->whereDate('tb_pagamentos.Data', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                 $query->whereDate('tb_pagamentos.Data', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('fk_utilizador', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -149,14 +147,14 @@ class RelatorioController extends Controller
             ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
             ->where('fk_utilizador', $user->codigo_importado)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
+            ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'tb_pagamentos.Data', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
             ->paginate(7)
             ->withQueryString();    
             
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('data_movimento', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('data_movimento', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -166,9 +164,9 @@ class RelatorioController extends Controller
             ->sum('valor_depositar');
             
             $totalPagamentos = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('tb_pagamentos.Data', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('tb_pagamentos.Data', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('fk_utilizador', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -187,9 +185,9 @@ class RelatorioController extends Controller
         if(auth()->user()->hasRole(['Operador Caixa']))
         {
             $data['items'] = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('tb_pagamentos.Data', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('tb_pagamentos.Data', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('fk_utilizador', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -206,15 +204,15 @@ class RelatorioController extends Controller
             ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
             ->where('fk_utilizador', $user->codigo_importado)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
+            ->select('tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'tb_pagamentos.Data','DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico')
             ->paginate(7)
             ->withQueryString();    
             
      
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('data_movimento', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('data_movimento', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -224,9 +222,9 @@ class RelatorioController extends Controller
             ->sum('valor_depositar');
             
             $totalPagamentos = Pagamento::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('tb_pagamentos.Data', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('tb_pagamentos.Data', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('fk_utilizador', $value);
             })->when($request->ano_lectivo, function($query, $value){
@@ -317,51 +315,98 @@ class RelatorioController extends Controller
         }elseif($candidato){
             $request->codigo_matricula = $candidato->Codigo; 
         }
-                
-        if($request->data_inicio){
-            $request->data_inicio = $request->data_inicio;
-        }else{
-            $request->data_inicio = date("Y-m-d");
-        }
-        
-        if($user->tipo_grupo->grupo->designacao == "Administrador"){
+      
+        if(auth()->user()->hasRole(['Gestor de Caixa'])){
+            
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
             
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
-                 $query->where('created_at', '>=' ,Carbon::parse($value) );
-             })->when($request->data_final, function($query, $value){
-                 $query->where('created_at', '<=' ,Carbon::parse($value));
-             })->when($request->operador, function($query, $value){
-                 $query->where('created_by', $value);
-             })
-             ->when($request->codigo_matricula, function($query, $value){
-                $query->where('Codigo_PreInscricao', $value);
-            })
-             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao', 'candidato'])
-             ->orderBy('codigo', 'desc')
-             ->paginate(10)
-             ->withQueryString();
-             
-            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+               $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
-            // ->when($request->codigo_matricula, function($query, $value){
-            //     $query->where('codigo_matricula_id', $value);
-            // })
+            ->when($request->codigo_matricula, function($query, $value){
+               $query->where('Codigo_PreInscricao', $value);
+           })
+            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao', 'candidato'])
+            ->orderBy('codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+            
+           $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
+           })->when($request->data_final, function($query, $value){
+               $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
+           })->when($request->operador, function($query, $value){
+               $query->where('created_by', $value);
+           })
+           ->when($request->codigo_matricula, function($query, $value) {
+               $query->where('Codigo_PreInscricao', $value);
+           })->sum('valor_depositar');
+        
+        }
+        
+        if(auth()->user()->hasRole(['Supervisor']))
+        {
+        
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+            
+            if($request->operador_id){
+                $request->operador_id = $request->operador_id;
+            }else{
+                $request->operador_id = Auth::user()->codigo_importado;
+            }
+        
+            $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
+               $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
+            })->when($request->data_final, function($query, $value){
+              $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
+            ->when($request->codigo_matricula, function($query, $value){
+                $query->where('Codigo_PreInscricao', $value);
+            })
+            ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao', 'candidato'])
+            ->orderBy('codigo', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+            
+            $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
+                 $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
+            })->when($request->data_final, function($query, $value){
+               $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
+            })->when($request->operador, function($query, $value){
+                $query->where('created_by', $value);
+            })
             ->when($request->codigo_matricula, function($query, $value) {
                 $query->where('Codigo_PreInscricao', $value);
-            })->sum('valor_depositar');
-    
+            })
+            ->sum('valor_depositar');
+        }
         
-        }else {
-                
+        if(auth()->user()->hasRole(['Operador Caixa']))
+        {
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+            
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                 $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
@@ -375,24 +420,38 @@ class RelatorioController extends Controller
             ->withQueryString();
             
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                 $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
-            // ->when($request->codigo_matricula, function($query, $value){
-            //     $query->where('codigo_matricula_id', $value);
-            // })
             ->when($request->codigo_matricula, function($query, $value) {
                 $query->where('Codigo_PreInscricao', $value);
             })
             ->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
-            
+                       
         }
+                 
         
         $data['valor_deposito'] = $valor_deposito;
+        
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+        
+        
+        if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        }
         
 
         return Inertia::render('Relatorios/FechoCaixa/Extrato-Depositos', $data);
@@ -431,12 +490,7 @@ class RelatorioController extends Controller
         $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })
-        /*->when($request->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
-        })*/
-        // ->when($request->codigo_matricula, function($query, $value){
-        //     $query->where('codigo_matricula_id', $value);
-        // })
+
         ->when($request->codigo_matricula, function($query, $value) {
             $query->where('Codigo_PreInscricao', $value);
         })
@@ -568,6 +622,33 @@ class RelatorioController extends Controller
         }
 
         $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
+        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
+        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
+        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
+        
+        
+        if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        }
+        
+        if(auth()->user()->hasRole(['Operador Caixa'])){
+            $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
+                $query->where('codigo_importado', auth()->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+        }
 
         
         return Inertia::render('Relatorios/FechoCaixa/Extrato-Pagamentos', $data);

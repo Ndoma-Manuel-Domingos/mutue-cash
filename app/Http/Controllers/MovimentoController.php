@@ -130,6 +130,12 @@ class MovimentoController extends Controller
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
 
         $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        // $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)
+        // ->whereHas('utilizadores', function($query, $value){
+        //     dd($value);
+        // })
+        // ->with('utilizadores')->get();
+        // dd($utilizadores);
     
         $header = [
             "caixas" => $caixas,
@@ -144,7 +150,6 @@ class MovimentoController extends Controller
     
     public function aberturaStore(Request $request)
     {
-
         $request->validate([
             'caixa_id' => 'required',
             'operador_id' => 'required',
@@ -165,15 +170,14 @@ class MovimentoController extends Controller
         $verificar = Caixa::where('operador_id', $request->operador_id)->where('status', 'aberto')->first();
         
         $caixa = Caixa::findOrFail($request->caixa_id);
-        
+      
         if(filled($verificar)){
             
             $caixa_aberto = $verificar ? Caixa::findOrFail($verificar->caixa_id) : null;
 
             return redirect()->back()->with('error', 'o operador que pretendes associar o '.$caixa->nome.', já está associado ao '.$caixa_aberto->nome.' que não foi ainda encerrado');
         }else {
-        
-        
+            
             $create = MovimentoCaixa::create([
                 'caixa_id' => $caixa->codigo,
                 'operador_id' => $request->operador_id,
@@ -184,6 +188,7 @@ class MovimentoController extends Controller
                 'valor_arrecadado_pagamento' => 0,
                 'status' => 'aberto',
                 'status_admin' => 'pendente',
+                'data_at' => date("Y-m-d"),
                 'created_by' => Auth::user()->codigo_importado,
                 'updated_by' => $request->operador_id,
                 'deleted_by' => $request->operador_id,
@@ -272,6 +277,7 @@ class MovimentoController extends Controller
         $movimento->valor_arrecadado_depositos = $movimento->valor_arrecadado_depositos;
         $movimento->valor_arrecadado_pagamento = $movimento->valor_arrecadado_pagamento;
         $movimento->status = "fechado";
+        $movimento->status_final = "concluido";
         $movimento->observacao = $request->observacao;
         $movimento->update();
         
@@ -339,17 +345,21 @@ class MovimentoController extends Controller
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
         
-        
         $caixas = Caixa::get();
                     
         if(auth()->user()->hasRole(['Gestor de Caixa']))
         {
-                
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date('Y-m-d');
+            }
+            
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
-                $query->where('updated_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })
             ->when($request->data_final, function($query, $value){
-                $query->where('updated_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
             ->when($request->operador, function($query, $value){
                 $query->where('operador_id', $value);
@@ -363,7 +373,6 @@ class MovimentoController extends Controller
             ->withQueryString();        
         }
         
-        
         if(auth()->user()->hasRole(['Operador Caixa', 'Supervisor']))
         {
         
@@ -374,10 +383,10 @@ class MovimentoController extends Controller
             }
                 
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })
             ->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
             ->when($request->operador, function($query, $value){
                 $query->where('operador_id', $value);
@@ -401,7 +410,7 @@ class MovimentoController extends Controller
                 $query->where('codigo_importado', auth()->user()->codigo_importado);
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         }
-           
+            
     
         $header = [
             "items" => $movimentos,
@@ -569,10 +578,10 @@ class MovimentoController extends Controller
         }
         
         $data['items'] = MovimentoCaixa::when($request->data_inicio, function($query, $value){
-            $query->where('created_at', '>=' ,Carbon::parse($value) );
+            $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
         })
         ->when($request->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
+            $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
         })
         ->when($request->operador_id, function($query, $value){
             $query->where('operador_id', $value);

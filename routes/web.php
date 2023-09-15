@@ -66,6 +66,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/depositos/excel', [DepositoController::class, 'excel']);
     Route::get('/depositos/imprimir-comprovativo', [DepositoController::class, 'imprimir']);
     Route::get('/imprimir-comprovativo-ticket', [DepositoController::class, 'ticket']);
+    Route::get('/depositos/editar/{id}', [DepositoController::class, 'edit']);
+    Route::post('/depositos/update', [DepositoController::class, 'update']);
 
     Route::get('/movimentos/diarios-operador', [MovimentoController::class, 'diariosOperador']);
     Route::get('/movimentos/caixas-abertos', [MovimentoController::class, 'caixasAbertos']);

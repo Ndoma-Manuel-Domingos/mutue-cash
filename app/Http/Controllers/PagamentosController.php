@@ -82,7 +82,6 @@ class PagamentosController extends Controller
             return redirect()->route('mc.bloquear-caixa');
         }
 
-
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
@@ -91,12 +90,18 @@ class PagamentosController extends Controller
 
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
 
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
+            
             $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso', 'operador_novos','operador_antigo','utilizadores')
                 ->when($request->data_inicio, function ($query, $value) {
-                    $query->where('created_at', '>=', Carbon::parse($value));
+                    $query->whereDate('Data', '>=', Carbon::createFromDate($value));
                 })
                 ->when($request->data_final, function ($query, $value) {
-                    $query->where('created_at', '<=', Carbon::parse($value));
+                    $query->whereDate('Data', '<=', Carbon::createFromDate($value));
                 })
                 ->when($request->operador, function ($query, $value) {
                     $query->where('fk_utilizador', $value);
@@ -113,6 +118,12 @@ class PagamentosController extends Controller
 
         if(auth()->user()->hasRole(['Supervisor'])){
 
+            if($request->operador){
+                $request->operador = $request->operador;
+            }else{
+                $request->operador = $user->codigo_importado;
+            }
+
             if ($request->data_inicio) {
                 $request->data_inicio = $request->data_inicio;
             } else {
@@ -121,10 +132,10 @@ class PagamentosController extends Controller
 
             $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
             ->when($request->data_inicio, function ($query, $value) {
-                $query->where('created_at', '>=', Carbon::parse($value));
+                $query->whereDate('Data', '>=', Carbon::createFromDate($value));
             })
             ->when($request->data_final, function ($query, $value) {
-                $query->where('created_at', '<=', Carbon::parse($value));
+                $query->whereDate('Data', '<=', Carbon::createFromDate($value));
             })
             ->when($request->operador, function ($query, $value) {
                 $query->where('fk_utilizador', $value);
@@ -132,12 +143,12 @@ class PagamentosController extends Controller
             ->when($request->ano_lectivo, function ($query, $value) {
                 $query->where('AnoLectivo', $value);
             })
-            //->where('fk_utilizador', $user->codigo_importado)
+            // ->where('fk_utilizador', $user->codigo_importado)
             ->where('forma_pagamento', 6)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
-
+        
         }
 
         if(auth()->user()->hasRole(['Operador Caixa'])){
@@ -150,10 +161,10 @@ class PagamentosController extends Controller
 
             $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
             ->when($request->data_inicio, function ($query, $value) {
-                $query->where('created_at', '>=', Carbon::parse($value));
+                $query->whereDate('Data', '>=', Carbon::createFromDate($value));
             })
             ->when($request->data_final, function ($query, $value) {
-                $query->where('created_at', '<=', Carbon::parse($value));
+                $query->whereDate('Data', '<=', Carbon::createFromDate($value));
             })
             ->when($request->operador, function ($query, $value) {
                 $query->where('fk_utilizador', $value);
@@ -432,7 +443,7 @@ class PagamentosController extends Controller
 
     public function salvarPagamentosDiversos(Request $request, $codigo_matricula)
     {
-
+    
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -445,7 +456,7 @@ class PagamentosController extends Controller
             $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
             return response()->json($result, 201);
         }
-
+        
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
         $id = $aluno->admissao->preinscricao->Codigo;
         $codigo = $aluno->admissao->preinscricao->Codigo;
@@ -453,13 +464,14 @@ class PagamentosController extends Controller
         $fonte = json_decode($request->fonte, true);
         $switch_troco = json_decode($request->switch_troco, true);
         $codigoDaFatura = json_decode($request->codigo_fatura, true);
+            
         $saldo_novo = DB::table('tb_preinscricao')
             ->where('tb_preinscricao.Codigo', $codigo)
             ->select('saldo', 'saldo_anterior')->first();
 
         $saldo_anterior = $saldo_novo->saldo_anterior;
         $saldo_novo = $saldo_novo->saldo;
-
+        
         $data['forma_pagamento'] = 6;
 
         if ($fonte == 2) {
@@ -469,7 +481,7 @@ class PagamentosController extends Controller
                 return Response()->json("Ocorreu um erro(cf)", 201);
             }
         }
-
+        
         $tamanho = 0;
 
         if (sizeOf($data) > 0) {
@@ -495,9 +507,9 @@ class PagamentosController extends Controller
             ->where('tb_preinscricao.Codigo', $codigo)
             ->select('tb_matriculas.Codigo as matricula', 'factura.Codigo as codigo', 'tb_pagamentos.valor_depositado', 'factura.ValorAPagar as ValorAPagar', 'factura.codigo_descricao', 'factura.Codigo', 'factura.ValorEntregue as ValorEntregue', 'factura.estado as estado_factura', 'factura.ano_lectivo as ano_factura')
             ->first();
-
+            
+      
         if ($fatura_paga && $saldo_novo >= $fatura_paga->ValorAPagar && $fonte == 1) {  //Saldo maior que 1, Ndongala
-
             $response['mensagem'] = "Pagamento enviado com seu saldo disponível! Por favor verifique a factura gerada pelo sistema";
             try {
                 $this->salvarPagamentoComSaldo($request, $fatura_paga->codigo, $aluno->admissao->preinscricao->user_id);
@@ -506,22 +518,25 @@ class PagamentosController extends Controller
                 return Response()->json($e->getMessage());
             }
         }
-
+        
+ 
         $Somapagamentos = DB::table('factura')->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
             ->join('tb_admissao', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
             ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
             ->join('tb_pagamentos', 'tb_pagamentos.codigo_factura', '=', 'factura.Codigo')
             ->where('factura.Codigo', $codigoDaFatura)->where('tb_preinscricao.Codigo', $codigo)
             ->select('tb_pagamentos.valor_depositado as valor_depositado', 'factura.ValorAPagar as ValorAPagar', 'factura.codigo_descricao', 'factura.Codigo', 'factura.ValorEntregue as ValorEntregue', 'factura.estado as estado_factura', 'factura.ano_lectivo as ano_factura')
-            ->get();
+            ->get();  
+         
 
         $total = $Somapagamentos->sum('valor_depositado');
+        
+        
         if ($fatura_paga && $Somapagamentos && $total >= $fatura_paga->ValorAPagar && $fonte == 1) {
             return response()->json("Ja efectuou o pagamento da fatura referida!", 201);
         } elseif ($fatura_paga && $fatura_paga->ValorEntregue >= $fatura_paga->ValorAPagar && $fonte == 1) {
             return response()->json("Ja efectuou o pagamento da fatura referida!", 201);
         } else {
-
             $servico_mensal = DB::table('factura_items')->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
                 ->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
                 ->join('tb_admissao', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
@@ -543,18 +558,6 @@ class PagamentosController extends Controller
                 ->where('tb_preinscricao.Codigo', $codigo)
                 ->first();
 
-            $mesOutubro = DB::table('factura_items')
-                ->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
-                ->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
-                ->join('tb_admissao', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
-                ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-                ->select('factura_items.mes_temp_id as id_mes', 'factura_items.Total as valor_apagar')
-                ->where('factura.Codigo', $codigoDaFatura)->where('factura_items.mes_temp_id', 5)
-                ->where('tb_preinscricao.Codigo', $codigo)->first();
-            //dd(number_format(($servico_mensal->ValorAPagar / 2), 2, '.', ''));
-            $saldo = DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->select('saldo')->first();
-
-
             $candidatura1 = DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->select()->first();
 
 
@@ -567,18 +570,18 @@ class PagamentosController extends Controller
             }
             //dd($valorFatura->ValorAPagar,$data['valor_depositado'],$saldo->saldo);
 
-            if ($valorFatura->ValorEntregue <= 0 && number_format($data['valor_depositado'], 2, '.', '') < $valorFatura->ValorAPagar && ($valorFatura->tipo_factura == 3 || $valorFatura->tipo_factura == 6 || $valorFatura->tipo_factura == 7 || $valorFatura->tipo_factura == 8)) {
+            if ($valorFatura->ValorEntregue <= 0 && number_format(($data['valor_depositado'] + $saldo_novo), 2, '.', '') < $valorFatura->ValorAPagar && ($valorFatura->tipo_factura == 3 || $valorFatura->tipo_factura == 6 || $valorFatura->tipo_factura == 7 || $valorFatura->tipo_factura == 8)) {
                 return response()->json("O valor introduzido não é permitido para realizar a operação! Seleccionou uma factura de serviço diferente de propina", 201);
             }
 
-            if (($valorFatura->ValorEntregue > 0 && number_format(($data['valor_depositado'] + $valorFatura->ValorEntregue), 2, '.', '') < $valorFatura->ValorAPagar) && ($valorFatura->tipo_factura == 3 || $valorFatura->tipo_factura == 6 || $valorFatura->tipo_factura == 7 || $valorFatura->tipo_factura == 8)) {
+            if (($valorFatura->ValorEntregue > 0 && number_format((($data['valor_depositado'] + $saldo_novo) + $valorFatura->ValorEntregue), 2, '.', '') < $valorFatura->ValorAPagar) && ($valorFatura->tipo_factura == 3 || $valorFatura->tipo_factura == 6 || $valorFatura->tipo_factura == 7 || $valorFatura->tipo_factura == 8)) {
                 return response()->json("O valor introduzido não é permitido para realizar a operação! Seleccionou uma factura de serviço diferente de propina", 201);
             }
-
+    
             if ($data['valor_depositado'] > 2000000 && $candidatura1->codigo_tipo_candidatura == 1) {
                 return response()->json("O valor introduzido não é permitido para realizar a operação!", 201);
             } else {
-
+            
                 $factura_items1 = DB::table('factura_items')->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
                     ->select('factura_items.*')
                     ->where('factura.Codigo', $valorFatura->codigo_fatura)
@@ -588,7 +591,7 @@ class PagamentosController extends Controller
                 $array_fatura1 = json_decode($factura_items1, true);
 
                 DB::beginTransaction();
-
+                
                 if ($valorFatura /*&& $valorFatura->ano_factura == $anoCorrente */ && $valorFatura->tipo_factura != 5 && $servico_mensal && $valorFatura->estado_factura != 2) {
                     foreach ($array_fatura1 as $key => $value) {
 
@@ -767,30 +770,31 @@ class PagamentosController extends Controller
                         }
                     }
                 }
-
+            
+            
                 if ($fatura_paga && $saldo_novo > 0 && $fonte == 1) { // SE NAO TEM SALDO SUFICIENTE
-
                     try {
                         $result['message'] = 'Pagamento efectuado com sucesso! Por favor, verifique a factura gerada pelo sistema.';
-
+                        
                         $pagamento_saldo['Data'] = date('Y-m-d');
                         $pagamento_saldo['AnoLectivo'] = $fatura_paga->ano_factura;
                         $pagamento_saldo['Totalgeral'] = $fatura_paga->ValorAPagar;
                         $pagamento_saldo['Codigo_PreInscricao'] = $codigo;
+                        $pagamento_saldo['valor_depositado'] = $data['valor_depositado'];
                         $pagamento_saldo['DataRegisto'] = date('Y-m-d H:i:s');
                         $pagamento_saldo['codigo_factura'] = $fatura_paga->codigo;
                         $pagamento_saldo['caixa_id'] = $caixas->codigo;
                         $pagamento_saldo['status_pagamento'] = 'pendente';
-                        $pagamento_saldo['pagamento_saldo'] = $saldo_novo;
                         $pagamento_saldo['estado'] = 1;
                         $pagamento_saldo['corrente'] = 1;
                         $pagamento_saldo['Observacao'] = "Pagamento efectuado por Cash";
                         $pagamento_saldo['fk_utilizador'] = auth()->user()->codigo_importado;
                         $pagamento_saldo['Utilizador'] = auth()->user()->codigo_importado;
+                        
                         $id_pag = DB::table('tb_pagamentos')->insertGetId($pagamento_saldo);
-
+                       
                         DB::table('tb_preinscricao')
-                            ->where('tb_preinscricao.Codigo', $preinscricao->Codigo)
+                            ->where('tb_preinscricao.Codigo', $codigo)
                             ->update(['saldo' => 0, 'saldo_anterior' => $saldo_novo + $saldo_anterior]);
                     } catch (\Illuminate\Database\QueryException $e) {
 
@@ -798,18 +802,23 @@ class PagamentosController extends Controller
                         return Response()->json($e->getMessage());
                     }
 
+
                     $factura_items = DB::table('factura_items')
                         ->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
-                        ->select('factura_items.*')
+                        ->select('factura_items.*', 'factura.ano_lectivo')
                         ->where('factura.Codigo', $fatura_paga->codigo)
                         ->get();
-
+                    
                     $array_fatura = json_decode($factura_items, true);
                     foreach ($array_fatura as $key => $fac) {
                         $id_mes = null;
                         $mes = null;
+                        
+                     
+                        $anoLectivo = DB::table('tb_ano_lectivo')->where('Codigo', $fac['ano_lectivo'])->first()->Designacao;
+                        
                         $desconto_mes = $fac['descontoProduto'];
-                        if ($servico_mensal && (int)$anoLectivo->Designacao <= 2019) {
+                        if ($servico_mensal && (int)$anoLectivo <= 2019) {
                             $mes = $fac['Mes'];
 
                             if ($fac['Mes'] == 'MAR') {
@@ -842,14 +851,14 @@ class PagamentosController extends Controller
                             'Valor_Total' => $fac['Total'],
                             'Multa' => $fac['Multa'],
                             'Deconnto' => $desconto_mes,
-                            'Ano' => $anoLectivo->Designacao,
+                            'Ano' => $anoLectivo,
                             'mes_id' => $id_mes,
                             'Mes' => $mes,
                             'mes_temp_id' => $fac['mes_temp_id']
                         ]);
                     }
                 }
-
+           
                 // pagamento
                 try {
                     $ano = DB::table('tb_ano_lectivo')
@@ -878,7 +887,8 @@ class PagamentosController extends Controller
                             ->select('factura.Codigo', 'factura.ValorAPagar', 'factura.ano_lectivo', 'factura.codigo_descricao as codigo_descricao', 'negociacao_dividas.mesesQuitar as qtdMeses')
                             ->first();
                     }
-
+                
+                    // inserir pagamento de negociacao
 
                     $data['Data'] = date('Y-m-d');
                     $data['AnoLectivo'] = $fact_aluno->ano_lectivo;
@@ -906,9 +916,8 @@ class PagamentosController extends Controller
                     DB::rollback();
                     return Response()->json($e->getMessage());
                 }
-
+                              
                 try {
-
                     $histo = [
                         'referencia' => $id_pag,
                         'data_movimento' => date('Y-m-d'), 'credito' => 0, 'debito' => 0, 'estado' => 0, 'matricula' => $aluno->Codigo, 'saldo_operacao' => 0, 'saldo_geral' => 0, 'codigoTipoMovimento' => 2, 'codigoMotivo' => null,
@@ -920,7 +929,7 @@ class PagamentosController extends Controller
                     DB::rollback();
                     return Response()->json('ocorreu um erro(mc)');
                 }
-
+       
                 try {
 
                     $controle['pagamento'] = $id_pag;
@@ -1090,34 +1099,86 @@ class PagamentosController extends Controller
                 } elseif ($servico_mensal && $fatura_paga  &&  $fatura_paga->codigo_descricao != 5 && $fatura_paga->estado_factura == 2 && $fatura_paga->ano_factura == $anoCorrente && $fatura_paga->ValorAPagar > $total) {
                     $this->MultaValorDivida($codigo, $codigoDaFatura, $data['DataBanco'], $total);
                 }
-
+                
+                $verificar_negociacao_factura = DB::table('negociacao_dividas')->where('codigo_fatura', $fatura_paga->codigo)->first();
+                               
                 if ($switch_troco) {
-
+                   
+                    if($fatura_paga->ValorAPagar > $fatura_paga->ValorEntregue){
+                    
+                        $novo_saldo_aluno = ($data['valor_depositado'] + $saldo_novo) - ($fatura_paga->ValorAPagar - $fatura_paga->ValorEntregue);
+                        $saldo_a_pagar = $fatura_paga->ValorAPagar - $fatura_paga->ValorEntregue;
+                        
+                    }
+                    
+                    if($fatura_paga->ValorAPagar == $fatura_paga->ValorEntregue){
+                        $novo_saldo_aluno = ($data['valor_depositado'] + $saldo_novo)  - $fatura_paga->ValorAPagar;
+                        $saldo_a_pagar = ($data['valor_depositado'] + $saldo_novo) - $novo_saldo_aluno;
+                    }
+                    
+                    if($fatura_paga->ValorAPagar < $fatura_paga->ValorEntregue){
+                        
+                        $novo_saldo_aluno = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
+                        $saldo_a_pagar = $fatura_paga->ValorAPagar;
+                    
+                    }
+                    
+                    if($saldo_novo > 0){
+                        
+                        $novo_saldo_aluno = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
+                        $saldo_a_pagar = $fatura_paga->ValorAPagar;
+                    
+                    }
+                    
+                    // dd( "sssaldo:" . $novo_saldo_aluno, "pagar:" .$saldo_a_pagar, "com saldo");       
+            
+                    if($verificar_negociacao_factura && $verificar_negociacao_factura->primeiroValorApagar >= 0 ){
+                        
+                        if($fatura_paga->ValorAPagar >= $fatura_paga->ValorEntregue){
+                            $saldo_a_pagar = $verificar_negociacao_factura->primeiroValorApagar;
+                        }else{
+                            $saldo_a_pagar = $verificar_negociacao_factura->primeiroValorApagar;
+                        }
+                        
+                        if($saldo_a_pagar >= ($data['valor_depositado'] + $saldo_novo) )  {
+                            $novo_saldo_aluno = $saldo_a_pagar - ($data['valor_depositado'] + $saldo_novo) ;
+                        }  else{
+                            $novo_saldo_aluno = ($data['valor_depositado'] + $saldo_novo)  - $saldo_a_pagar;
+                        }
+                        
+                        if($novo_saldo_aluno < 0){
+                            $novo_saldo_aluno = 0;
+                        }
+                    }
+                    
+       
+                    
                     try {
-                        $novo_saldo = ($data['valor_depositado'] + $saldo_novo) - $fatura_paga->ValorAPagar;
-
-                        // DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco'=>$novo_saldo]);
-                        DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->update(['saldo' => $novo_saldo]);
+                        DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->update(['saldo' => $novo_saldo_aluno]);
                     } catch (\Illuminate\Database\QueryException $e) {
                         DB::rollback();
                         return Response()->json($e->getMessage());
                     }
+                    
                     $deposito = DB::table('tb_valor_alunos')
                         ->where('codigo_matricula_id', $codigo_matricula)
                         ->orderBy('codigo', 'DESC')->first();
-
+               
                     $dados_deposito = [
                         'codigo_matricula_id' => $codigo_matricula,
                         'Codigo_PreInscricao' => $codigo,
-                        'valor_depositar' => $novo_saldo,
+                        'valor_depositar' => $novo_saldo_aluno,
                         'caixa_id' => $caixas->codigo,
                         'status' => 'pendente',
-                        'saldo_apos_movimento' => $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo) : $novo_saldo,
+                        'saldo_apos_movimento' => $deposito ? ($deposito->saldo_apos_movimento + $novo_saldo_aluno) : $novo_saldo_aluno,
                         'created_by' => auth()->user()->codigo_importado,
                         'ano_lectivo_id' => $fatura_paga->ano_factura,
                         'data_movimento' => date("Y-m-d"),
                     ];
+                    
                     $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
+                    
+                    DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco' => $novo_saldo_aluno]);
 
                     try {
                         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
@@ -1126,7 +1187,9 @@ class PagamentosController extends Controller
                             $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
                             $update = MovimentoCaixa::findOrFail($movimento->codigo);
-                            $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $novo_saldo;
+                            $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $novo_saldo_aluno;
+                            $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $saldo_a_pagar;
+                            $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $saldo_a_pagar;
                             $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
                             $update->update();
                         } else {
@@ -1137,46 +1200,107 @@ class PagamentosController extends Controller
                         DB::rollback();
                         return Response()->json($e->getMessage(), 201);
                     }
-                } else {
-
-
-                    if (number_format($data['valor_depositado'], 2, '.', '') > number_format($fatura_paga->ValorAPagar, 2, '.', '')) {
-                        try {
-                            $novo_saldo = ($data['valor_depositado']) - $fatura_paga->ValorAPagar;
-                            DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco' => $novo_saldo]);
-                        } catch (\Illuminate\Database\QueryException $e) {
-                            DB::rollback();
-                            return Response()->json($e->getMessage());
+                } else {     
+                   
+                    // pagamento de facturas com um parte já paga
+                    if($fatura_paga->ValorAPagar > $fatura_paga->ValorEntregue){
+                    
+                        $troco_do_aluno = ($data['valor_depositado'] + $saldo_novo)  - ($fatura_paga->ValorAPagar - $fatura_paga->ValorEntregue);
+                        $saldo_a_pagar = $fatura_paga->ValorAPagar - $fatura_paga->ValorEntregue;
+                        
+                    }
+                    
+                    // pagamento normal
+                    if($fatura_paga->ValorAPagar == $fatura_paga->ValorEntregue){
+                        $troco_do_aluno = ($data['valor_depositado'] + $saldo_novo)  - $fatura_paga->ValorAPagar;
+                        $saldo_a_pagar = $fatura_paga->ValorAPagar;
+                    }
+                    
+                    if($saldo_novo > 0){
+                        $troco_do_aluno = ($data['valor_depositado'] + $saldo_novo)  - $fatura_paga->ValorAPagar;
+                        $saldo_a_pagar = $fatura_paga->ValorAPagar;
+                    }
+                
+                    //
+                    if($fatura_paga->ValorAPagar < $fatura_paga->ValorEntregue){
+                        
+                        $troco_do_aluno = ($data['valor_depositado'] + $saldo_novo)  - $fatura_paga->ValorAPagar;
+                        $saldo_a_pagar = $fatura_paga->ValorAPagar;
+                    
+                    }
+                    
+                    if($verificar_negociacao_factura && $verificar_negociacao_factura->primeiroValorApagar >= 0 ){
+                      
+                        if($fatura_paga->ValorAPagar >= $fatura_paga->ValorEntregue){
+                            $saldo_a_pagar = $verificar_negociacao_factura->primeiroValorApagar;
+                        }else{
+                            $saldo_a_pagar = $verificar_negociacao_factura->primeiroValorApagar;
+                        }
+                        
+                        if($saldo_a_pagar >= ($data['valor_depositado'] + $saldo_novo) )  {
+                            $troco_do_aluno = $saldo_a_pagar - ($data['valor_depositado'] + $saldo_novo) ;
+                        }  else{
+                            $troco_do_aluno = ($data['valor_depositado'] + $saldo_novo)  - $saldo_a_pagar;
+                        }
+                        
+                        if($troco_do_aluno < 0){
+                            $troco_do_aluno = 0;
                         }
                     }
+                    
+                    // dd( "saldo:" . $troco_do_aluno, "pagar:" .$saldo_a_pagar, "sem saldo");
+                    
+                    try {
+                        DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco' => $troco_do_aluno]);
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        DB::rollback();
+                        return Response()->json($e->getMessage());
+                    }
+                    
+                    try {
+                        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+                        if (filled($caixas)) {
+                            $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+                            $update = MovimentoCaixa::findOrFail($movimento->codigo);
+                            $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $saldo_a_pagar;
+                            $update->valor_arrecadado_total = $update->valor_arrecadado_total + $saldo_a_pagar;
+                            $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $saldo_a_pagar;
+                            $update->update();
+                        } else {
+                            $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+                            return response()->json($result, 201);
+                        }
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        DB::rollback();
+                        return Response()->json($e->getMessage(), 201);
+                    }
+                      
+                      
+                      
                 }
+                
                 try {
-                    $total_pagamento = DB::table('tb_pagamentos')->where('codigo_factura', $fatura_paga->codigo)->sum('valor_depositado');
-                    DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['ValorEntregue' => $total_pagamento, 'estado' => 1]);
+                    
+                    if($verificar_negociacao_factura){
+                        if($verificar_negociacao_factura->primeiroValorApagar + $fatura_paga->ValorEntregue >= $verificar_negociacao_factura->valor_divida){
+                            $estado = 1;
+                            $total_pagamento = $verificar_negociacao_factura->valor_divida;
+                        }else{
+                            $estado = 2;
+                            $total_pagamento = $verificar_negociacao_factura->primeiroValorApagar;
+                        }
+                    }else{
+                        $estado = 1;
+                        $total_pagamento = $fatura_paga->ValorAPagar;
+                    }
+                                       
+                    DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['ValorEntregue' => $total_pagamento, 'estado' => $estado]);
                 } catch (\Illuminate\Database\QueryException $e) {
                     DB::rollback();
                     return Response()->json($e->getMessage());
                 }
-
-                try {
-                    $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-
-                    if (filled($caixas)) {
-                        $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-
-                        $update = MovimentoCaixa::findOrFail($movimento->codigo);
-                        $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
-                        $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $fatura_paga->ValorAPagar;
-                        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $update->valor_facturado_pagamento;
-                        $update->update();
-                    } else {
-                        $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
-                        return response()->json($result, 201);
-                    }
-                } catch (\Illuminate\Database\QueryException $e) {
-                    DB::rollback();
-                    return Response()->json($e->getMessage(), 201);
-                }
+                
             }
         }
 
@@ -1187,6 +1311,8 @@ class PagamentosController extends Controller
 
     public function salvarPagamentoComSaldo(Request $request, $referencia, $user_id)
     {
+        
+    
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         if (!filled($caixas)) {
             $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
@@ -1696,7 +1822,8 @@ class PagamentosController extends Controller
 
     public function faturaDiversos(Request $request, $codigo_matricula)
     {
-
+    
+        // dd("factura");
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -1776,11 +1903,13 @@ class PagamentosController extends Controller
             $temDivida = $this->cobrarFaturaNegociacao($matricula->codigo_matricula);
 
             if ($temDivida != 0 && $anoDesignacao->Codigo == $anoCorrente) {
-                return response()->json('Caro estudante, tem uma factura de negociação de dívida que não foi liquidada totalmente. Número da factura: ' . $temDivida, 201);
+                $result['message'] = 'Caro estudante, tem uma factura de negociação de dívida que não foi liquidada totalmente. Número da factura: ' . $temDivida;
+                return response()->json($result, 201);
             }
 
             if ($this->pagamentoRejeitado($anoDesignacao->Codigo, $anoDesignacao->Designacao, $preinscricao->Codigo)) {
-                return response()->json('Caro estudante, não lhe é permitido efectuar a operação. Tem um pagamento rejeitado!', 201);
+                $result['message'] = 'Caro estudante, não lhe é permitido efectuar a operação. Tem um pagamento rejeitado!';
+                return response()->json($result, 201);
             }
 
             foreach ($data as $key => $value) {
@@ -1973,7 +2102,6 @@ class PagamentosController extends Controller
 
 
                     if ($liquidacao_fatura) {
-
                         $result['message'] = '2. Caro estudante, tem uma factura que não foi liquidada totalmente com o número ' . $liquidacao_fatura->CodigoFactura;
                         return response()->json($result, 201);
                     }
@@ -1982,30 +2110,30 @@ class PagamentosController extends Controller
                 $diplomado = DB::table('tb_matriculas')->where('estado_matricula', 'diplomado')->where('Codigo', $matricula->codigo_matricula)->select('*')->first();
 
                 if ($diplomado && $value['TipoServico'] == 'Mensal') {
-
                     $result['message'] = 'Caro estudante, não lhe é permitido efectuar o pagamento de propina visto estar diplomado!';
-
                     return response()->json($result, 201);
                 }
 
                 if (($anoDesignacao->Codigo >= $anoCorrente) || ($anoDesignacao->Codigo == 1)) {
                     try {
                         $mes_existe = DB::table('factura_items')
-                            ->join('factura', 'factura.Codigo', 'factura_items.CodigoFactura')
-                            ->join('mes_temp', 'mes_temp.id', 'factura_items.mes_temp_id')
-                            ->where('factura.ano_lectivo', $ano)
-                            ->where('factura.CodigoMatricula', $codigo_matricula)
-                            ->where('factura_items.mes_temp_id', $value['mes_temp_id'])
-                            ->select('*', 'mes_temp.designacao as mes')
-                            ->where('factura.corrente', 1)
-                            ->where('factura.estado', '!=', 3)
-                            ->first();
+                        ->join('factura', 'factura.Codigo', 'factura_items.CodigoFactura')
+                        ->join('mes_temp', 'mes_temp.id', 'factura_items.mes_temp_id')
+                        ->where('factura.ano_lectivo', $ano)
+                        ->where('factura.CodigoMatricula', $codigo_matricula)
+                        ->where('factura_items.mes_temp_id', $value['mes_temp_id'])
+                        ->select('*', 'mes_temp.designacao as mes')
+                        ->where('factura.corrente', 1)
+                        ->where('factura.estado', '!=', 3)
+                        ->first();
                         //code...
                     } catch (\Throwable $th) {
                         $mes_existe = null;
                     }
                     if ($mes_existe) {
-                        return response()->json('Já existe uma fatura do mês ' . $mes_existe->mes . '. Clique em registar pagamento, e efectue o pagamento dessa fatura.', 201);
+                        $result['message'] = 'Já existe uma fatura do mês ' . $mes_existe->mes . '. Clique em registar pagamento, e efectue o pagamento dessa fatura.';
+                        return response()->json($result, 201);
+                    
                     }
                 } else {
 
@@ -2017,7 +2145,8 @@ class PagamentosController extends Controller
                     }
 
                     if ($mes_existeAntigo) {
-                        return response()->json('Já existe uma fatura do mês ' . $mes_existeAntigo->mes . '. Clique em registar pagamento, e efectue o pagamento dessa fatura', 201);
+                        $result['message'] = 'Já existe uma fatura do mês ' . $mes_existeAntigo->mes . '. Clique em registar pagamento, e efectue o pagamento dessa fatura';
+                        return response()->json($result, 201);
                     }
                 }
 
@@ -2045,6 +2174,8 @@ class PagamentosController extends Controller
                 }
             }
 
+            
+
             $fatura['DataFactura'] = Carbon::now();
             $fatura['TotalPreco'] = $amount;
             $fatura['CodigoMatricula'] = $matricula->codigo_matricula;
@@ -2060,6 +2191,7 @@ class PagamentosController extends Controller
             $fatura['estado'] = 1;
             $result['codigo_fatura'] = DB::table('factura')
                 ->insertGetId($fatura);
+       
             $codigo_fatura = $result['codigo_fatura'];
         } catch (\Exception $e) {
             DB::rollback();
@@ -2408,12 +2540,12 @@ class PagamentosController extends Controller
                 return Response()->json($e->getMessage());
             }
         }
-
+        
 
         if (!$pagmnt_total_com_saldo) {
-
+        
             $this->codigo_factura_em_curso = $codigo_fatura;
-
+            
             try {
                 $data1['forma_pagamento'] = 6;
                 // colocou-se aqui esta funcao por causa da transaccao
@@ -2423,7 +2555,7 @@ class PagamentosController extends Controller
                 throw $e;
             }
         }
-
+            
         // aqui vai a funcao de salvar pagamento
 
         // If we reach here, then
@@ -2638,8 +2770,6 @@ class PagamentosController extends Controller
         $turno_aluno = $data['aluno']->turno;
         $nome_aluno = $data['aluno']->Nome_Completo;
         $codigo_aluno = $data['aluno']->codigo_matricula;
-
-        // dd($data);
 
         if ($data['aluno'] && (int)$data['aluno']->anoLectivo <= 2019) {
 

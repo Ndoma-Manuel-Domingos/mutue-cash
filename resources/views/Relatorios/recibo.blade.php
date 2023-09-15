@@ -233,7 +233,7 @@
         <br><br><br>
         <p style="text-align:center;">Assinatura<br><br>
             __________________________ <br><br>
-            {{$item->user->nome}}
+            {{ Auth::user()->nome ?? '' }}
         </p>
     </div>
 

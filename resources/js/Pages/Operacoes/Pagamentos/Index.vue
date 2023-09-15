@@ -126,12 +126,15 @@
                   <thead>
                     <tr>
                       <th>Item</th>
+                      <th>Matricula</th>
                       <th>Estudante</th>
                       <th>Nº Factura</th>
+                      <th>Valor Orginal da Factura</th>
                       <th>Valor a pagar</th>
                       <th>Valor pago</th>
                       <th>Data da factura</th>
-                      <th>Reserva Actual</th>
+                      <th>Data Registro</th>
+                      <th>Troco</th>
                       <th>Operador</th>
                       <th class="text-center">Detalhes</th>
                       <th class="text-center">Factura</th>
@@ -141,12 +144,18 @@
                   <tbody>
                     <tr v-for="(item, index) in items.data" :key="item.Codigo">
                       <td>{{ index + 1 }}</td>
+                      <td>{{ item.factura.matriculas ? item.factura.matriculas.Codigo : item.preinscricao ? item.preinscricao.Codigo:NULL }}</td>
                       <td>{{ item.factura.matriculas ? item.factura.matriculas.admissao.preinscricao.Nome_Completo : item.preinscricao ? item.preinscricao.Nome_Completo:NULL }}</td>
                       <td>{{ item.codigo_factura }}</td>
                       <td>{{ formatValor(item.factura.ValorAPagar) }}</td>
+                      
+                      <td>{{ formatValor(item.valor_depositado - item.factura.Troco) }}</td>
+                      <!-- <td>{{ formatValor(item.factura.ValorAPagar) }}</td> -->
+                      
                       <td>{{ formatValor(item.valor_depositado)  }}</td>
                       <td>{{ item.factura ? item.factura.DataFactura : '' }}</td>
-                      <td>{{ item.factura ? formatValor(item.factura.Troco): formatValor(0) }}</td>
+                      <td>{{ item.factura ? item.DataRegisto : '' }}</td>
+                      <td>{{ formatValor(item.factura.Troco) }}</td>
                       <td>{{ item.operador_novos ? item.operador_novos.nome : item.operador_antigo ? item.operador_antigo.nome : NULL }}</td>
                       <td class="text-center">
                         <a @click="detalhes(item.Codigo)" class="text-primary"><i class="fas fa-eye"></i></a>

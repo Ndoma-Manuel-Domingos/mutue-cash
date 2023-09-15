@@ -135,9 +135,9 @@
                       <th>Reserva após Depósito</th>
                       <!-- <th>Forma Pagamento</th> -->
                       <th>Operador</th>
-                      <th>Caixa</th>
                       <th>Ano Lectivo</th>
                       <th>Data</th>
+                      <th>Acções</th>
                       <th>A4</th>
                       <th>Ticket</th>
                     </tr>
@@ -162,13 +162,17 @@
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
                       <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
                       <td>{{ item.user ? item.user.nome : "" }}</td>
-                      <td>{{ item.caixa ? item.caixa.nome : "" }}</td>
                       <td>
                         {{
                           item.ano_lectivo ? item.ano_lectivo.Designacao : ""
                         }}
                       </td>
                       <td>{{ item.created_at }}</td>
+                      <td class="text-center">
+                        <Link :href="`depositos/editar/${item.codigo}`">
+                          <i class="fas fa-edit text-success"></i>
+                        </Link>
+                      </td>
                       <td class="text-center">
                         <Link @click="imprimirComprovativo(item)">
                           <i class="fas fa-print text-danger"></i>
@@ -361,6 +365,7 @@
         </div>
       </div>
     </div>
+
   </MainLayouts>
 </template>
   
@@ -617,20 +622,6 @@ export default {
       } else {
         return "00-00-0000";
       }
-    },
-
-    editarItem(item) {
-      this.form.clearErrors();
-
-      // this.form.clearErrors();
-      // this.form.codigo_matricula = item.codigo_matricula_id,
-      // this.form.valor_a_depositar = item.valor_depositar,
-      // this.form.nome_estudante = item.matricula.admissao.preinscricao.Nome_Completo,
-      // this.form.bilheite_estudante = item.matricula.admissao.preinscricao.Bilhete_Identidade,
-      // this.form.curso_estudante = item.matricula.admissao.preinscricao.Bilhete_Identidade,
-
-      // this.isUpdate = true;
-      // this.itemId = item.codigo;
     },
 
     disableTo() {

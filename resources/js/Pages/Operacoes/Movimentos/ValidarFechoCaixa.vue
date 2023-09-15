@@ -140,9 +140,9 @@
                       <td>{{ item.codigo ?? ''}}</td>
                       <td>{{ item.operador ? item.operador.nome :  '' }}</td>
                       <td>{{ item.caixa.nome ?? '' }} </td>
-                      <td class="text-uppercase">{{ item.status ?? '' }}</td>
-                      <td class="text-uppercase">{{ item.status_admin ?? '' }}</td>
-                      <td class="text-uppercase text-center text-danger">{{ item.motivo_rejeicao ?? 'Nenhum motivo' }}</td>
+                      <td class="text-capitalize">{{ item.status ?? '' }}</td>
+                      <td class="text-capitalize">{{ item.status_admin ?? '' }}</td>
+                      <td class="text text-center text-danger">{{ item.motivo_rejeicao ?? 'Nenhum motivo' }}</td>
                       <td>{{ formatValor(item.valor_abertura ?? 0)}}</td>
                       <td>{{ formatValor(item.valor_facturado_pagamento ?? 0)}}</td>
                       <td>{{ formatValor(item.valor_arrecadado_depositos ?? 0)}}</td>

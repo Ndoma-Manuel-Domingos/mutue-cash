@@ -4,7 +4,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h3 class="m-0" >Caixas Abertos referente a data: {{ data_inicio }}</h3>
+            <h3 class="m-0" >Caixas abertos referente a data: {{ data_inicio }}</h3>
           </div>
           <div class="col-sm-6">
             <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
@@ -46,7 +46,7 @@
                     <div class="alert alert-warning alert-dismissible">
                       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                         <h4><i class="icon fas fa-info"></i>Atenção!</h4> 
-                        <h5 class="mt-3">Sem Caixas abertos no momentos</h5>
+                        <h5 class="mt-3">Sem caixas abertos no momentos</h5>
                       </div>
                   </div>
                 </div>

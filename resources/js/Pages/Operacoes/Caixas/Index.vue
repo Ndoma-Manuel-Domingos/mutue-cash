@@ -4,7 +4,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-8">
-            <h1 class="m-0">Listas de Caixas</h1>
+            <h1 class="m-0">Listas de caixas</h1>
           </div>
           <div class="col-sm-4">
             <button
@@ -42,7 +42,7 @@
                   v-if="user.auth.can['criar caixa']"
                 >
                   <i class="fas fa-plus"></i>
-                  Novos Caixas
+                  Novos caixas
                 </button>
 
                 <button class="btn btn-success float-right mr-1" type="button">
@@ -222,7 +222,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title">EDITAR CAIXA</h4>
+            <h4 class="modal-title">Editar Caixa</h4>
             <button
               type="button"
               class="close"

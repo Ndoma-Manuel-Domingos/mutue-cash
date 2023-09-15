@@ -4,8 +4,8 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h3 class="m-0" v-if="movimento">Movimentos do Caixa referente a {{formatarData( data_inicio) }}</h3>
-            <h3 class="m-0" v-else>Abertura do Caixa referente a {{formatarData( data_inicio) }}</h3>
+            <h3 class="m-0" v-if="movimento">Movimentos do caixa referente a {{formatarData( data_inicio) }}</h3>
+            <h3 class="m-0" v-else>Abertura do caixa referente a {{formatarData( data_inicio) }}</h3>
           </div>
           <div class="col-sm-3">
             <button class="float-right btn-sm btn-primary" v-if="movimento" @click="imprimirComprovativo(movimento)"><i class="fas fa-print"></i> IMPRIMR RELATÓRIO DO CAIXA</button>

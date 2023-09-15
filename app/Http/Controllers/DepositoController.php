@@ -55,10 +55,11 @@ class DepositoController extends Controller
         
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
         
+            
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
-                 $query->where('created_at', '>=' ,Carbon::parse($value) );
-             })->when($request->data_final, function($query, $value){
-                 $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
+            })->when($request->data_final, function($query, $value){
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
              })->when($request->operador, function($query, $value){
                  $query->where('created_by', $value);
              })
@@ -68,9 +69,9 @@ class DepositoController extends Controller
              ->withQueryString();
              
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })->sum('valor_depositar');
@@ -84,28 +85,32 @@ class DepositoController extends Controller
             }else{
                 $request->data_inicio = date("Y-m-d");
             }
+            
+            if($request->operador_id){
+                $request->operador_id = $request->operador_id;
+            }else{
+                $request->operador_id = Auth::user()->codigo_importado;
+            }
            
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
-            //->where('created_by', $user->codigo_importado)
             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
             ->orderBy('codigo', 'desc')
             ->paginate(10)
             ->withQueryString();
             
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
-            //->where('created_by', $user->codigo_importado)
             ->sum('valor_depositar');
             
         }
@@ -119,9 +124,9 @@ class DepositoController extends Controller
             }
            
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
@@ -134,9 +139,9 @@ class DepositoController extends Controller
             ->withQueryString();
             
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
-                $query->where('created_at', '>=' ,Carbon::parse($value) );
+                $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
-                $query->where('created_at', '<=' ,Carbon::parse($value));
+                $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
             })->when($request->operador, function($query, $value){
                 $query->where('created_by', $value);
             })
@@ -236,6 +241,92 @@ class DepositoController extends Controller
 
     }
     
+    
+    public function edit($id)
+    {
+        $deposito = Deposito::findOrFail($id);
+     
+        $preinscricao = Matricula::where('tb_matriculas.Codigo', $deposito->codigo_matricula_id)
+        ->join('tb_cursos', 'tb_matriculas.Codigo_Curso', '=', 'tb_cursos.Codigo')
+        ->join('tb_admissao', 'tb_matriculas.Codigo_Aluno', '=', 'tb_admissao.Codigo')
+        ->join('tb_preinscricao', 'tb_admissao.pre_incricao', '=', 'tb_preinscricao.Codigo')
+        ->select(
+            'tb_matriculas.Codigo',
+            'tb_preinscricao.Codigo AS codigo_preinscricao',
+            'tb_preinscricao.Nome_Completo',
+            'tb_preinscricao.Bilhete_Identidade',
+            'tb_preinscricao.user_id',
+            'tb_preinscricao.saldo',
+            'tb_preinscricao.codigo_tipo_candidatura',
+            'tb_cursos.Designacao'
+        )->first();
+        
+        $data['deposito'] = $deposito;
+        $data['preinscricao'] = $preinscricao;
+        
+        return Inertia::render('Operacoes/Depositos/Edit', $data);
+    }
+    
+    public function update(Request $request)
+    {
+        $request->validate([
+            'codigo_matricula' => 'required',
+            'valor_a_depositar' => 'required|numeric'
+
+        ], [
+            'codigo_matricula.required' => "Codigo de matricula Invalido!",
+            'valor_a_depositar.required' => "Valor a depositar Invalido!",
+            'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
+        ]);
+        
+      
+        
+        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        if(!$caixas){
+            return response()->json([
+                'message' => 'Sem nenhum caixa aberto para realizar o deposito!',
+            ], 401);
+        }
+        
+        $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+                
+        $deposito = Deposito::findOrFail($request->codigo);
+        
+        if($request->valor_a_depositar != $deposito->valor_depositar){
+                     
+            $preinscricao = PreInscricao::findOrFail($deposito->Codigo_PreInscricao);
+            $preinscricao->saldo = $request->valor_a_depositar;
+            $preinscricao->saldo_anterior = ($preinscricao->saldo_anterior - $deposito->valor_depositar) + $request->valor_a_depositar;
+               
+            $preinscricao->update();
+        }
+        
+        if($request->valor_a_depositar != $deposito->valor_depositar){
+            
+            $update = MovimentoCaixa::findOrFail($movimento->codigo);
+            
+            $update->valor_arrecadado_depositos = ($update->valor_arrecadado_depositos - $deposito->valor_depositar) + $request->valor_a_depositar;
+            $update->valor_arrecadado_total = ($update->valor_arrecadado_total - $deposito->valor_depositar) + $request->valor_a_depositar;
+    
+            $update->update();
+        }
+        
+        if($request->valor_a_depositar != $deposito->valor_depositar){
+         
+            $deposito->valor_depositar = $request->valor_a_depositar;
+            $deposito->saldo_apos_movimento = ($deposito->saldo_apos_movimento - $deposito->valor_depositar) + $request->valor_a_depositar;
+            $deposito->tipo_folha = $request->factura;
+            
+            $deposito->update();
+        }
+        
+        return response()->json([
+            'message' => 'Deposito actualizado com sucesso!',
+            'data' => $deposito
+        ]);
+
+    }  
     public function pdf(Request $request)
     {
             

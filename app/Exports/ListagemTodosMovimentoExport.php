@@ -85,10 +85,10 @@ class ListagemTodosMovimentoExport extends DefaultValueBinder implements FromCol
     public function collection()
     {
         $data['items'] = MovimentoCaixa::when($this->data_inicio, function($query, $value){
-            $query->where('created_at', '>=' ,Carbon::parse($value) );
+            $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
         })
         ->when($this->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
+            $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
         })
         ->when($this->operador_id, function($query, $value){
             $query->where('operador_id', $value);

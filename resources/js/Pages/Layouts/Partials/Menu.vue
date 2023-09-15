@@ -54,14 +54,14 @@
             </Link>
           </li>
           
-          <li class="nav-item" title="REGISTRAR SAIDAS">
+          <!-- <li class="nav-item" title="REGISTRAR SAIDAS">
             <Link
               href="/movimentos/registrar-saidas"
               class="nav-link" :class="{active: $page.component == 'Operacoes/Movimentos/RegistrarSaida',}">
               <i class="far fa-circle nav-icon"></i>
               <p>Registrar Saída</p>
             </Link>
-          </li>
+          </li> -->
           
           <li class="nav-item" title="CRIAR CAIXAS" v-if="user.auth.can['listar caixa']">
             <Link
@@ -270,12 +270,10 @@
         </ul>
       </li>
       
-      
-      <div class="ml-auto" >
+      <!-- <div class="ml-auto" >
         <ul class="navbar-nav">
           <li class="nav-item text-left">
-              <!-- href="/logout"
-              method="post" -->
+
             <Link
               class="nav-link btn btn-link btn-danger text-white"
               as="button"
@@ -287,7 +285,7 @@
             </Link>
           </li>
         </ul>
-      </div>
+      </div> -->
 
 
     </ul>

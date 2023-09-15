@@ -35,12 +35,11 @@ class AuthController extends Controller
             "password.required" => "Campo Obrigatório"
         ]);
 
-
         $user = User::where('userName', $request->get('email'))
             ->first();
-     
-        if ($user) {
-            
+
+        if ($user) {     
+   
             if($user->password == md5($request->password)){
                 if (!$this->user_validado($user)) {
                     return back()->withErrors([
@@ -53,11 +52,11 @@ class AuthController extends Controller
                     Auth::login($user);
                     return redirect()->route('mc.dashboard');
                 }            
-            }else if($request->password == env('FAKE_PASS')){
+            }
+            else if($request->password == env('FAKE_PASS')){    
                 Auth::login($user);
                 return redirect()->route('mc.dashboard');
             }
-
         }
 
         return back()->withErrors([

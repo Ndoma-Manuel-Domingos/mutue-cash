@@ -95,23 +95,23 @@
           <div class="col-12 col-md-6">
             <div class="row">
               <div class="col-12 col-md-12">
-                <form action="" v-if="user.auth.can['relatorio caixa']">
+                <form action="">
                   <div class="card">
                     <div class="card-header text-info">
                       <i class="fas fa-hand-point-down" style="font-size: 30pt;"></i>
                     </div>
                     <div class="card-body">
                       <div class="row">
-                        <div class="form-group col-12 col-md-6">
+                        <!-- <div class="form-group col-12 col-md-6" v-if="user.auth.can['relatorio caixa']">
                           <label class="form-label form-label-sm" for="ano_lectivo">Anos Lectivos</label>
                           <select v-model="ano_lectivo" id="ano_lectivo" class="form-control ">
                             <option :value="ano.Codigo" v-for="ano in ano_lectivos" :key="ano.Codigo">
                             {{ ano.Designacao }}
                             </option>
                           </select>
-                        </div>
+                        </div> -->
                         
-                        <div class="form-group col-12 col-md-6">
+                        <div class="form-group col-12 col-md-12">
                           <label class="form-label form-label-sm" for="operador_id">Utilizador</label>
                           <select v-model="operador_id" id="operador_id" class="form-control ">
                             <option
@@ -151,7 +151,7 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["valor_arrecadado_depositos", "valor_facturado_pagamento", "valor_arrecadado_total", "ano_lectivos", "ano_lectivo_activo_id", "caixa", "utilizadores"],
+  props: ["valor_arrecadado_depositos", "valor_facturado_pagamento", "valor_arrecadado_total", "valor_arrecadado_pagamento", "ano_lectivos", "ano_lectivo_activo_id", "caixa", "utilizadores"],
   components: {
     Link,
   },
