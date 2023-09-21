@@ -73,7 +73,7 @@
                   <div class="icon">
                     <i class="ion ion-stats-bars"></i>
                   </div>
-                  <Link :href="`/pagamentos?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador_id}`" class="small-box-footer">Mais detalhe<i class="fas fa-arrow-circle-right"></i></Link>
+                  <Link :href="`/relatorios/fecho-caixa/operador?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador_id}`" class="small-box-footer">Mais detalhe<i class="fas fa-arrow-circle-right"></i></Link>
                 </div>
               </div>
               

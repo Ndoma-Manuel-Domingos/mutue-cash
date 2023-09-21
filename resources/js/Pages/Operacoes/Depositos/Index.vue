@@ -419,7 +419,7 @@ export default {
         disabled: false,
         disabled2: false,
         // falta ser paramentrizado 5000
-        valor_a_depositar: this.valor_a_depositar_padrao.Valor ?? 0,
+        valor_a_depositar: this.valor_a_depositar_padrao.Valor ?? 5000,
         nome_estudante: null,
         bilheite_estudante: null,
         curso_estudante: null,
@@ -430,10 +430,10 @@ export default {
   },
 
   mounted() {
-    this.params.data_inicio = this.data_inicio;
+    // this.params.data_inicio = this.data_inicio;
     this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar);
     // this.params.data_final = this.data_final;
-    this.updateData();
+    // this.updateData();
   },
 
   watch: {
@@ -510,7 +510,7 @@ export default {
     async submit() {
       this.$Progress.start();
 
-      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < 5000) {
+      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < this.valor_a_depositar_padrao.Valor) {
         Swal.fire({
           title: "Atenção",
           text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",
@@ -649,9 +649,13 @@ export default {
 
     imprimirPDF() {
       window.open(
-        `/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
-        "_blank"
-      );
+          `/depositos/pdf?operador=${this.operador}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+          "_blank"
+        );
+      // window.open(
+      //   `/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+      //   "_blank"
+      // );
     },
 
     imprimirEXCEL() {

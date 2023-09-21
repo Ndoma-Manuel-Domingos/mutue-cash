@@ -234,7 +234,7 @@ export default {
     async submit() {
       this.$Progress.start();
 
-      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < 5000) {
+      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < 10) {
         Swal.fire({
           title: "Atenção",
           text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",

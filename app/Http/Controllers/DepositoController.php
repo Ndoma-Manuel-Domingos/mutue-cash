@@ -54,7 +54,12 @@ class DepositoController extends Controller
        
         
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
-        
+            
+            if($request->data_inicio){
+                $request->data_inicio = $request->data_inicio;
+            }else{
+                $request->data_inicio = date("Y-m-d");
+            }
             
             $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
                 $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
@@ -65,7 +70,7 @@ class DepositoController extends Controller
              })
              ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
              ->orderBy('codigo', 'desc')
-             ->paginate(10)
+             ->paginate(15)
              ->withQueryString();
              
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
@@ -101,7 +106,7 @@ class DepositoController extends Controller
             })
             ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
             ->orderBy('codigo', 'desc')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
             
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
@@ -135,7 +140,7 @@ class DepositoController extends Controller
             ->where('created_by', $user->codigo_importado)
             ->with(['caixa', 'user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
             ->orderBy('codigo', 'desc')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
             
             $valor_deposito = Deposito::when($request->data_inicio, function($query, $value){
@@ -345,6 +350,18 @@ class DepositoController extends Controller
             return redirect()->route('mc.bloquear-caixa');
         }
 
+        if($request->data_inicio){
+            $request->data_inicio = $request->data_inicio;
+        }else{
+            $request->data_inicio = date("Y-m-d");
+        }
+
+        // if($request->operador){
+        //     $request->operador = $request->operador;
+        // }else{
+        //     $request->operador = auth()->user()->codigo_importado;
+        // }
+
         $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })/*->when($request->data_final, function($query, $value){
@@ -408,8 +425,7 @@ class DepositoController extends Controller
     
     public function ticket(Request $request)
     {
-        $request->codigo = 1;
-    
+        
         $data['item'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })->when($request->data_final, function($query, $value){

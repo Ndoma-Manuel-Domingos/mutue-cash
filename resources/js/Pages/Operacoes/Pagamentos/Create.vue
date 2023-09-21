@@ -11,13 +11,18 @@
               class="btn btn-info float-right"
               type="button"
               data-toggle="modal"
-              data-target="#modalPagamentoTaxaInscricao">
+              data-target="#modalPagamentoTaxaInscricao"
+            >
               <i class="fas fa-plus"></i>
               Pagamento de taxa de inscrição
             </button>
           </div>
           <div class="col-sm-3">
-            <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
+            <button
+              class="btn btn-dark float-right mr-1"
+              type="button"
+              @click="voltarPaginaAnterior"
+            >
               <i class="fas fa-arrow-left"></i> VOLTAR A PÁGINA ANTERIOR
             </button>
           </div>
@@ -149,7 +154,7 @@
                       >
                     </template>
                   </div>
-                  
+
                   <div
                     class="col s12 m6"
                     v-else-if="cadeiras >= 0 && cadeiras <= 3"
@@ -162,7 +167,7 @@
                       - 50%)</b
                     >
                   </div>
-                  
+
                   <div
                     class="col s12 m6"
                     v-else-if="desconto_especial_nov21_jul22 > 0"
@@ -175,7 +180,7 @@
                       - {{ desconto_incentivo }}%)</b
                     >
                   </div>
-                  
+
                   <div class="col s12 m6" v-else style="float: right">
                     <b
                       >{{ estudante_tipo1.designacao }} ({{
@@ -199,7 +204,9 @@
               </div>
               <div class="card-body">
                 <div class="row">
-                  <label for="" class="form-label">Selecione Facturas a Pagar</label>
+                  <label for="" class="form-label"
+                    >Selecione Facturas a Pagar</label
+                  >
                   <div class="col-12 col-md-12 mt-2 mb-2">
                     <select
                       class="form-control"
@@ -213,8 +220,7 @@
                         :key="item.codigo_fatura"
                         :value="item.codigo_fatura"
                       >
-                        <span
-                          v-if="item.mes_temp > 0 && item.tipo_fatura != 5"
+                        <span v-if="item.mes_temp > 0 && item.tipo_fatura != 5"
                           >Propinas ({{ item.codigo_fatura }})</span
                         >
                         <span v-else-if="item.tipo_fatura == 5"
@@ -508,7 +514,7 @@
                   <thead>
                     <tr>
                       <th colspan="3" class="text-info">
-                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar)}} ({{extenso}})
+                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{extensivo(fatura.ValorAPagar)+' '+numeroPorExtenso(formatPrice(fatura.ValorAPagar))}})
                       </th>
                     </tr>
 
@@ -627,9 +633,7 @@
 
                     <tr v-if="fatura.ValorAPagar > 0">
                       <td colspan="3">
-                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{
-                          extenso
-                        }})
+                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{extensivo(fatura.ValorAPagar)+' '+numeroPorExtenso(formatPrice(fatura.ValorAPagar))}})
                       </td>
                     </tr>
                   </tfoot>
@@ -699,7 +703,9 @@
                       />
                     </div> -->
                     <div class="col-12 col-md-6 mb-3">
-                      <label for="valor_depositado_tese" class="form-label">Valor entregue</label>
+                      <label for="valor_depositado_tese" class="form-label"
+                        >Valor entregue</label
+                      >
                       <input
                         type="text"
                         class="form-control"
@@ -710,13 +716,18 @@
                       />
                     </div>
 
-                    
-                    <div class="row" v-if="condicao_troco == true" >
-                      <div class="col-12 col-md-6" style="margin-top: 24;">
-                        <label class="text-red">Salvar troco como Reserva?</label>
+                    <div class="row" v-if="condicao_troco == true">
+                      <div class="col-12 col-md-6" style="margin-top: 24">
+                        <label class="text-red"
+                          >Salvar troco como Reserva?</label
+                        >
                       </div>
-                      <div class="col-12 col-md-6" style="margin-top: 30;">
-                        <input class="form-control" type="checkbox" v-model="switch1"/>
+                      <div class="col-12 col-md-6" style="margin-top: 30">
+                        <input
+                          class="form-control"
+                          type="checkbox"
+                          v-model="switch1"
+                        />
                       </div>
                     </div>
 
@@ -813,15 +824,17 @@
                 <div class="col-12 col-md-12 mb-3">
                   <div class="col-12 col-md-12">
                     <div class="alert alert-info" role="alert">
-                        Obs.: Preencha cuidadosamente o formulário de pagamento.
+                      Obs.: Preencha cuidadosamente o formulário de pagamento.
 
-                        <h3 v-if="servico">
-                            {{ servico.Descricao }}:
-                            {{ formatPrice(servico.Preco) }} kz
-                        </h3>
+                      <h3 v-if="servico">
+                        {{ servico.Descricao }}:
+                        {{ formatPrice(servico.Preco) }} kz
+                      </h3>
                     </div>
                     <div class="form-group">
-                      <label for="" class="form-label">Número de inscrição/BI</label>
+                      <label for="" class="form-label"
+                        >Número de inscrição/BI</label
+                      >
                       <div class="input-group">
                         <input
                           class="form-control"
@@ -921,7 +934,9 @@
               >
                 Fechar
               </button>
-              <button type="submit" class="btn btn-primary">Salvar Pagamento</button>
+              <button type="submit" class="btn btn-primary">
+                Salvar Pagamento
+              </button>
             </div>
           </form>
         </div>
@@ -935,6 +950,16 @@ import Swal from "sweetalert2";
 import { sweetSuccess, sweetError } from "../../../components/Alert";
 // import VueChartkick from "vue-chartkick";
 const extensive = require("extenso");
+
+const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+const teens = ['dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+const dezenas = ['', 'dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+const milhares = ['', 'mil', 'dois mil', 'três mil', 'quatro mil', 'cinco mil', 'seis mil', 'sete mil', 'oito mil', 'nove mil'];
+const milhoes = ['','um milhão','dois milhões','três milhões','quatro milhões','cinco milhões','seis milhões','sete milhões','oito milhões','nove milhões'];
+const bilhoes = ['','um bilhão','dois bilhões','três bilhões','quatro bilhões','cinco bilhões','seis bilhões','sete bilhões','oito bilhões','nove bilhões'];
+const trilhoes = ['','um trilhão','dois trilhões','três trilhões','quatro trilhões','cinco trilhões','seis trilhões','sete trilhões','oito trilhões','nove trilhões'];
+
 export default {
   props: ["forma_pagamentos"],
   data() {
@@ -1747,7 +1772,7 @@ export default {
     },
 
     imprimirFatura: function (codigo_fatura) {
-      window.open("/fatura/diversos/" + btoa(btoa(btoa(codigo_fatura))));
+      window.open(`/fatura/diversos/${btoa(btoa(btoa(codigo_fatura)))}?extensivo=${this.extensivo(this.fatura.ValorAPagar)+' '+this.numeroPorExtenso(this.formatPrice(this.fatura.ValorAPagar))}`);
     },
     imprimirFaturaInscricao: function (codigo_fatura) {
       window.open("/fatura-recibo/inscricao/" + btoa(btoa(btoa(codigo_fatura))));
@@ -2476,7 +2501,63 @@ export default {
       window.history.back();
     },
 
+    extensivo(numero){
+      return extensive(Math.floor(numero), {number: { decimal: "informal" }})+' kwanzas'
+    },
+    
+
+    numeroPorExtenso(valor) {
+      const [parteInteira, parteDecimal] = valor.split(',');
+
+      const parteInteiraPorExtenso = parteInteira === '0' ? '' : this.numeroInteiroPorExtenso(parteInteira);
+      const parteDecimalPorExtenso = (parteDecimal && parteDecimal>0) ? `e ${this.numeroInteiroPorExtenso(parteDecimal)} cêntimos ` : '';
+
+      // return `${parteInteiraPorExtenso} kwanzas ${parteDecimalPorExtenso}`;
+      return `${parteDecimalPorExtenso}`;
+    },
+    
+    numeroInteiroPorExtenso(numero) {
+      const num = parseInt(numero, 10);
+      if (num < 10) {
+        return unidades[num];
+      } else if (num < 20) {
+        return teens[num - 10];
+      } else if (num < 100) {
+        const dezena = dezenas[Math.floor(num / 10)];
+        const unidade = num % 10 !== 0 ? `e ${unidades[num % 10]}` : '';
+        return `${dezena} ${unidade}`;
+      } else if (num < 1000) {
+        const centena = centenas[Math.floor(num / 100)];
+        const resto = num % 100;
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${centena} ${separador}${numeroInteiroPorExtenso(resto)}`;
+      } else if (num < 1000000) { // Para números em mil (até 999.999)
+        const milhares = numeroInteiroPorExtenso(Math.floor(num / 1000));
+        const resto = num % 1000;
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${milhares} mil ${separador}${numeroInteiroPorExtenso(resto)}`;
+      } else if (num < 1000000000) { // Para números em milhões (até 999.999.999)
+        const milhoes = numeroInteiroPorExtenso(Math.floor(num / 1000000));
+        const resto = num % 1000000;
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${milhoes} milhões ${separador}${numeroInteiroPorExtenso(resto)}`;
+      } else if (num < 1000000000000) { // Para números em bilhões (até 999.999.999.999)
+        const bilhoes = numeroInteiroPorExtenso(Math.floor(num / 1000000000));
+        const resto = num % 1000000000;
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${bilhoes} bilhões ${separador}${numeroInteiroPorExtenso(resto)}`;
+      } else if (num < 1000000000000000) { // Para números em trilhões (até 999.999.999.999.999)
+        const trilhoes = numeroInteiroPorExtenso(Math.floor(num / 1000000000000));
+        const resto = num % 1000000000000;
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${trilhoes} trilhões ${separador}${numeroInteiroPorExtenso(resto)}`;
+      } else {
+        return 'Número muito grande para esta função.';
+      }
+    }
+
   },
+
 };
 </script>
 

@@ -4,7 +4,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h3 class="m-0">Fecho de Caixa do Oparador de {{ data_inicio+' a '+ data_final }} </h3>
+            <h3 class="m-0">Extracto de Caixa por Oparador de {{ data_inicio+' a '+ data_final }} </h3>
           </div>
           <div class="col-sm-6">
             <button class="btn btn-dark float-right mr-1" type="button" @click="voltarPaginaAnterior">
@@ -114,9 +114,7 @@
               <div class="icon">
                 <i class="ion ion-bag"></i>
               </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
+              <Link :href="route('mc.depositos.index')" class="small-box-footer">Mais detalhe <i class="fas fa-arrow-circle-right"></i></Link>
             </div>
           </div>
 
@@ -129,9 +127,7 @@
               <div class="icon">
                 <i class="ion ion-bag"></i>
               </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
+              <Link :href="`/depositos?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador}`" class="small-box-footer">Mais detalhe <i class="fas fa-arrow-circle-right"></i></Link>
             </div>
           </div>
 
@@ -144,24 +140,20 @@
               <div class="icon">
                 <i class="ion ion-bag"></i>
               </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
+              <Link :href="`/pagamentos?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador}`" class="small-box-footer">Mais detalhe <i class="fas fa-arrow-circle-right"></i></Link>
             </div>
           </div>
 
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h4>{{ formatValor((+totalPagamentos) + (+valor_deposito)) }}</h4>
-                <p>Reserva Final</p>
+                <h4>{{ formatValor(total_arrecadado) }}</h4>
+                <p>Total Arrecadado</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
               </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer"
-                >Mais detalhe <i class="fas fa-arrow-circle-right"></i
-              ></Link>
+              <Link :href="`/relatorios/fecho-caixa/operador?data_inicio=${data_inicio}&data_final=${data_final}&operador=${operador}`" class="small-box-footer">Mais detalhe<i class="fas fa-arrow-circle-right"></i></Link>
             </div>
           </div>
         </div>
@@ -203,11 +195,11 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in items.data" :key="item.Codigo">
+                    <tr v-for="item in items" :key="item.Codigo">
                       <td>{{ item.Codigo }}</td>
-                      <td>{{ item.matricula }}</td>
-                      <td>{{ item.servico }}</td>
-                      <td>{{ item.Nome_Completo }}</td>
+                      <td><Link :href="`/relatorios/extrato-pagamentos?codigo_matricula=${item.matricula}&data_inicio=${data_inicio}&operador=${operador}`" class="small-box-footer">{{ item.matricula }}</Link></td>
+                      <td>{{ item.servico!=''?item.servico:item.descricao}}</td>
+                      <td><Link :href="`/relatorios/extrato-pagamentos?codigo_matricula=${item.matricula}&data_inicio=${data_inicio}&operador=${operador}`" class="small-box-footer">{{ item.Nome_Completo }}</Link></td>
                       <td>{{ item.curso }}</td>
                       <td>{{ item.DataRegisto }}</td>
                       <td class="text-right">
@@ -220,12 +212,12 @@
 
               <div class="card-footer">
                 <Link href="" class="text-secondary">
-                  TOTAL REGISTROS: {{ items.total }}
+                  TOTAL REGISTROS: {{ extratos.total }}
                 </Link>
                 <Paginacao
-                  :links="items.links"
-                  :prev="items.prev_page_url"
-                  :next="items.next_page_url"
+                  :links="extratos.links"
+                  :prev="extratos.prev_page_url"
+                  :next="extratos.next_page_url"
                 />
               </div>
             </div>
@@ -249,19 +241,55 @@ export default {
     "servicos",
     "valor_deposito",
     "totalPagamentos",
+    "total_arrecadado"
   ],
   components: { Link, Paginacao },
   data() {
     return {
       data_inicio: new Date().toISOString().substr(0, 10),
       data_final: new Date().toISOString().substr(0, 10),
-      operador: "",
+      operador: this.$page.props.auth.user.id,
       ano_lectivo: "",
       servico_id: "",
-
       params: {},
+      extratos: [],
     };
   },
+
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+
+    utilizadores() {
+      const uniqueMap = new Map();
+      return this.utilizadores.filter((item) => {
+        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
+          uniqueMap.set(item.utilizadores.codigo_importado, true);
+          return true;
+        }
+        return false;
+      });
+    },
+
+    items() {
+      this.extratos=this.items;
+      const uniqueMap = new Map();
+      if (this.items && this.items.data) {
+        return this.items.data.filter((item) => {
+          console.log(item.Codigo);
+          if (!uniqueMap.has(item.Codigo)) {
+            uniqueMap.set(item.Codigo, true);
+            return true;
+          }
+          return false;
+        });
+      } else {
+        return [];
+      }
+    },
+  },
+
   watch: {
     options: function (val) {
       this.params.page = val.page;

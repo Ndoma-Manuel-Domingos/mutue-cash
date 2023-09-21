@@ -104,7 +104,6 @@ class DashboardController extends Controller
             ->where('status_final', 'pendente')
             ->where('operador_id', $user->codigo_importado)
             ->get();
-        
         }
             
         
@@ -121,7 +120,7 @@ class DashboardController extends Controller
             $valor_arrecadado_pagamento += $movimento->valor_arrecadado_pagamento;
         }
         
-        $valor_arrecadado_total = $valor_arrecadado_depositos + $valor_arrecadado_pagamento;
+        $valor_arrecadado_total = $valor_arrecadado_depositos + $valor_facturado_pagamento;
         
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();

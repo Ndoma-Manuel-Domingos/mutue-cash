@@ -96,28 +96,28 @@
             <thead>
 
                 <tr style="background-color: #3F51B5;color: #ffffff;padding: 2px 7px">
-                    <th colspan="9" style="padding: 5px;">EXTRATOS DE DEPÓSITOS</th>
+                    <th colspan="8" style="padding: 5px;">EXTRATOS DE DEPÓSITOS</th>
                 </tr>
 
                 <tr style="background-color: #a1a4b9;color: #ffffff;">
                     <th colspan="3" style="padding: 5px;">Estudantes:</th>
-                    <th colspan="6" style="padding: 5px;">{{ $matricula ? $matricula->admissao->preinscricao->Nome_Completo : 'TODOS'  }}</th>
+                    <th colspan="5" style="padding: 5px;">{{ $matricula ? $matricula->admissao->preinscricao->Nome_Completo : 'TODOS'  }}</th>
                 </tr>
                 @if($requests && $requests['data_final'])
 
                 <tr style="background-color: #a1a4b9;color: #ffffff;">
                     <th colspan="3" style="padding: 5px;">Data Inicio:</th>
-                    <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
+                    <th colspan="5" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
                 </tr>
 
                 <tr style="background-color: #a1a4b9;color: #ffffff;">
                     <th colspan="3" style="padding: 5px;">Data Final:</th>
-                    <th colspan="6" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
+                    <th colspan="5" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
                 </tr>
 
 
                 <tr style="background-color: #3F51B5;color: #ffffff;padding: 7px">
-                    <th colspan="9">Total: <strong>{{ count($items) }}</strong></th>
+                    <th colspan="8">Total: <strong>{{ count($items) }}</strong></th>
                 </tr>
                 @endif
 
@@ -127,7 +127,6 @@
                     <th style="text-align: center;padding: 4px 2px">Estudante</th>
                     <th style="text-align: center;padding: 4px 2px">Valor depositado</th>
                     <th style="text-align: center;padding: 4px 2px">Reserva após Depósito</th>
-                    <th style="text-align: center;padding: 4px 2px">Forma Pagamento</th>
                     <th style="text-align: center;padding: 4px 2px">Operador</th>
                     <th style="text-align: center;padding: 4px 2px">Ano Lectivo</th>
                     <th style="text-align: center;padding: 4px 2px">Data</th>
@@ -140,16 +139,14 @@
 
                     <td style="text-align: center;">{{ $item->codigo ?? '' }}</td>
                     <td style="text-align: center;">{{$item->codigo_matricula_id ?? $item->candidato->Codigo ?? '' }}</td>
-                    <td style="text-align: center;">
+                    <td style="text-align: left;">
                         {{ $item->matricula->admissao->preinscricao->Nome_Completo ?? $item->candidato->Nome_Completo ?? '' }}
                     </td>
                     <td style="text-align: center;">{{ number_format($item->valor_depositar ?? 0, 2, ',', '.') }} kz</td>
                     <td style="text-align: center;">{{ number_format($item->saldo_apos_movimento ?? 0, 2, ',', '.') }} kz</td>
-                    <td style="text-align: center;">{{ $item->forma_pagamento->descricao ?? '' }}</td>
-                    <td style="text-align: center;">{{ $item->user->nome ?? '' }}</td>
+                    <td style="text-align: left;">{{ $item->user->nome ?? '' }}</td>
                     <td style="text-align: center;">{{ $item->ano_lectivo->Designacao ?? '' }}</td>
-                    <td style="text-align: center;">{{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}</td>
-
+                    <td style="text-align: left;">{{ date("Y-m-d", strtotime($item->created_at ?? ''))  }}</td>
                 </tr>
                 @endforeach
             </tbody>

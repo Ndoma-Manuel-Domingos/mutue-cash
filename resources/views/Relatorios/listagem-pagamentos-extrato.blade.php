@@ -86,42 +86,45 @@
         <thead>
             
             <tr style="background-color: #3F51B5;color: #ffffff;padding: 2px 7px">
-                <th colspan="7" style="padding: 5px;text-align: center;font-size: 14px">EXTRADO DE PAGAMENTOS</th>
+                <th colspan="10" style="padding: 5px;text-align: center;font-size: 14px">EXTRADO DE PAGAMENTOS</th>
             </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Ano Lectivo:</th>
-                <th colspan="5" style="padding: 5px;">{{ $ano_lectivo ? $ano_lectivo->Designacao : 'Todos' }}</th>
+                <th colspan="8" style="padding: 5px;">{{ $ano_lectivo ? $ano_lectivo->Designacao : 'Todos' }}</th>
             </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Operador:</th>
-                <th colspan="5" style="padding: 5px;">{{ $operador ? $operador->nome : 'Todos' }}</th>
+                <th colspan="8" style="padding: 5px;">{{ $operador ? $operador->nome : 'Todos' }}</th>
             </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Data Inicio:</th>
-                <th colspan="5" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
+                <th colspan="8" style="padding: 5px;">{{ $requests ? $requests['data_inicio'] : 'Todos' }}</th>
             </tr>
 
             <tr style="background-color: #a1a4b9;color: #ffffff;">
                 <th colspan="2" style="padding: 5px;">Data Final:</th>
-                <th colspan="5" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
+                <th colspan="8" style="padding: 5px;">{{ $requests ? $requests['data_final'] : 'Todos' }}</th>
             </tr>
 
 
             <tr style="background-color: #3F51B5;color: #ffffff;padding: 7px">
-                <th colspan="7" style="padding: 5px;">Total: <strong>{{ count($items) }}</strong></th>
+                <th colspan="10" style="padding: 5px;">Total: <strong>{{ count($items) }}</strong></th>
             </tr>
 
             <tr style="background-color: #3F51B5;color: #ffffff">
                 <th style="text-align: center;padding: 4px 2px" >Item</th>
                 <th style="text-align: left;padding: 4px 2px" >Estudante</th>
+                <th style="text-align: left;padding: 4px 2px" >Nº Estudante</th>
                 <th style="text-align: center;padding: 4px 2px" >Nº Factura</th>
                 <th style="text-align: center;padding: 4px 2px" >Valor a pagar</th>
                 <th style="text-align: center;padding: 4px 2px" >Valor pago</th>
+                <th style="text-align: center;padding: 4px 2px" >Troco</th>
                 <th style="text-align: center;padding: 4px 2px" >Data da factura</th>
-                <th style="text-align: center;padding: 4px 2px" >Reserva Restante</th>
+                <th style="text-align: center;padding: 4px 2px" >Data Pagamento</th>
+                <th style="text-align: center;padding: 4px 2px" >Operador</th>
             </tr>
 
         </thead>
@@ -130,11 +133,14 @@
                 <tr>
                     <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td style="text-align: left;">{{ $item->Nome_Completo ?? '' }}</td>
+                    <td style="text-align: left;">{{ $item->CodigoMatricula ?? $item->Codigo_PreInscricao }}</td>
                     <td style="text-align: center;">{{ $item->codigo_factura ?? '' }}</td>
                     <td style="text-align: center;">{{ number_format($item->ValorAPagar ?? 0, 2, ',', '.') }} kz</td>
                     <td style="text-align: center;">{{ number_format($item->valor_depositado ?? 0, 2, ',', '.') }} kz</td>
+                    <td style="text-align: center;">{{ number_format($item->Troco, 2, ',', '.') }} kz</td>
+                    <td style="text-align: center;">{{ date("Y-m-d", strtotime($item->DataFactura ?? ''))  }}</td>
                     <td style="text-align: center;">{{ date("Y-m-d", strtotime($item->DataRegisto ?? ''))  }}</td>
-                    <td style="text-align: center;">{{ number_format(0, 2, ',', '.') }} kz</td>
+                    <td style="">{{ $item->operador_novos->nome ?? '' }}</td>
                 </tr>
             @endforeach
         </tbody>

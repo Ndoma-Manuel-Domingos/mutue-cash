@@ -26,6 +26,23 @@
               <form action="">
                 <div class="card-body">
                   <div class="row">
+                    
+                    <div class="col-12 col-md-3"  v-if="user.auth.can['relatorio operador']">
+                      <div class="form-group">
+                        <label for="">Operadores</label>
+                        <select v-model="operador" class="form-control">
+                          <option value="">TODOS</option>
+                          <option
+                            v-for="item in utilizadores"
+                            :key="item"
+                            :value="item.utilizadores.codigo_importado"
+                          >
+                            {{ item.utilizadores.nome }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                    
                     <div class="col-12 col-md-2" >
                       <div class="form-group">
                         <label for="">Nº do Estudante</label>
@@ -116,7 +133,7 @@
                       <th>Valor a pagar</th>
                       <th>Valor pago</th>
                       <th>Data da factura</th>
-                      <th>Reserva Actual</th>
+                      <th>Troco</th>
                       <th>Operador</th>
                       <th class="text-center">Ver detalhes</th>
                       <th class="text-center">Impressões</th>
@@ -304,6 +321,23 @@ export default {
 
     };
   },
+
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+    utilizadores() {
+      const uniqueMap = new Map();
+      return this.utilizadores.filter((item) => {
+        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
+          uniqueMap.set(item.utilizadores.codigo_importado, true);
+          return true;
+        }
+        return false;
+      });
+    },
+  },
+
   watch: {
     options: function (val) {
       this.params.page = val.page;
@@ -427,7 +461,7 @@ export default {
 
 
     imprimirPDF() {
-      window.open(`/relatorios/fecho-caixa/operador/pdf?${this.codigo_matricula ? 'codigo_matricula='+this.codigo_matricula:(this.candidato_id ? 'candidato_id='+this.candidato_id:'')}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(`/relatorios/fecho-caixa/operador/pdf?${this.codigo_matricula ? 'codigo_matricula='+this.codigo_matricula:(this.candidato_id ? 'candidato_id='+this.candidato_id:'')}&data_inicio=${this.data_inicio}&data_final=${this.data_final}&operador=${this.operador}`, "_blank");
     },
 
     imprimirEXCEL() {

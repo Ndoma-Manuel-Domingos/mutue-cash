@@ -188,7 +188,7 @@
               }"
             >
               <i class="far fa-circle nav-icon"></i>
-              <p>Fecho Caixa Operador</p>
+              <p>Extrato por Operador</p>
             </Link>
           </li>
           

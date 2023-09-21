@@ -111,7 +111,7 @@ class PagamentosController extends Controller
                 })
                 ->where('forma_pagamento', 6)
                 ->orderBy('tb_pagamentos.Codigo', 'desc')
-                ->paginate(10)
+                ->paginate(15)
                 ->withQueryString();
 
         }
@@ -146,7 +146,7 @@ class PagamentosController extends Controller
             // ->where('fk_utilizador', $user->codigo_importado)
             ->where('forma_pagamento', 6)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
         
         }
@@ -176,7 +176,7 @@ class PagamentosController extends Controller
             ->where('status_pagamento', 'pendente')
             ->where('forma_pagamento', 6)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         }
@@ -2656,7 +2656,6 @@ class PagamentosController extends Controller
         $id = base64_decode(base64_decode(base64_decode($id)));
 
         $fatura = DB::table('factura')->where('Codigo', $id)->first();
-
         try {
             $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($fatura->CodigoMatricula);
             $id_aluno = $aluno->admissao->preinscricao->user_id;
@@ -2664,7 +2663,7 @@ class PagamentosController extends Controller
             $aluno = DB::table('tb_preinscricao')->where('Codigo', $fatura->codigo_preinscricao)->first();
             $id_aluno = $aluno->user_id;
         }
-
+        
         $data['aluno'] = DB::table('tb_preinscricao')
             ->leftJoin('tb_admissao', 'tb_admissao.pre_incricao', 'tb_preinscricao.Codigo')
             ->leftJoin('tb_matriculas', 'tb_matriculas.Codigo_Aluno', 'tb_admissao.codigo')
@@ -2699,6 +2698,7 @@ class PagamentosController extends Controller
                 'factura.ValorEntregue as valor_depositado',
                 'factura.obs',
                 'factura.estado',
+                'factura.ValorAPagarExtenso',
                 'tb_mes_final.designacao as mes_final',
                 'tb_mes_inicial.designacao as mes_inicial',
                 'negociacao_dividas.id as negociacao',
@@ -2749,6 +2749,7 @@ class PagamentosController extends Controller
                     'factura.ValorEntregue as valor_depositado',
                     'factura.obs',
                     'factura.estado',
+                    'factura.ValorAPagarExtenso',
                     'tb_mes_final.designacao as mes_final',
                     'tb_mes_inicial.designacao as mes_inicial',
                     'negociacao_dividas.id as negociacao',
@@ -2881,11 +2882,16 @@ class PagamentosController extends Controller
         $data['conta2'] = DB::table('tb_local_pagamento')->where('codigo', 3)->first();
         $data['conta3'] = DB::table('tb_local_pagamento')->where('codigo', 9)->first();
 
-
         $data['total_apagar'] = $data['aluno']->valor_apagar;
-        $data['extenso'] = $this->valor_por_extenso($data['total_apagar'], false);
-
         $data['qtdPrestacoes'] = count($this->parametro_uma->totalPrestacoesPagarPorAno($fatura->ano_lectivo, $data['aluno']->codigo_tipo_candidatura));
+        if($request->has('extensivo')){
+            DB::table('factura')->where('Codigo', $id)->update(['ValorAPagarExtenso' => $request->get('extensivo')]);  
+        }else{
+            // dd(22);
+            DB::table('factura')->where('Codigo', $id)->update(['ValorAPagarExtenso' => $this->valor_por_extenso($data['total_apagar'], false)]);
+        }
+
+        $data['extenso'] = $data['aluno']->ValorAPagarExtenso ? $data['aluno']->ValorAPagarExtenso : $this->valor_por_extenso($data['total_apagar'], false);
 
         \QrCode::size(250)
             ->format('png')
@@ -2961,6 +2967,7 @@ class PagamentosController extends Controller
                 'tb_turmas.Codigo_Classe as classe',
                 'factura.obs',
                 'factura.estado',
+                'factura.ValorAPagarExtenso',
                 'tb_mes_final.designacao as mes_final',
                 'tb_mes_inicial.designacao as mes_inicial',
                 'negociacao_dividas.id as negociacao',
@@ -3059,9 +3066,17 @@ class PagamentosController extends Controller
 
 
         $data['total_apagar'] = $data['aluno']->valor_apagar;
-        $data['extenso'] = $this->valor_por_extenso($data['total_apagar'], false);
-
         $data['qtdPrestacoes'] = count($this->parametro_uma->totalPrestacoesPagarPorAno($fatura->ano_lectivo, $data['aluno']->codigo_tipo_candidatura));
+        
+        if($request->has('extensivo')){
+            DB::table('factura')->where('Codigo', $id)->update(['ValorAPagarExtenso' => $request->get('extensivo')]);  
+        }else{
+            // dd(22);
+            DB::table('factura')->where('Codigo', $id)->update(['ValorAPagarExtenso' => $this->valor_por_extenso($data['total_apagar'], false)]);
+        }
+        
+        $data['extenso'] = $request->has('extensivo') ? $request->get('extensivo') : $this->valor_por_extenso($data['total_apagar'], false);
+
 
         \QrCode::size(250)
             ->format('png')
