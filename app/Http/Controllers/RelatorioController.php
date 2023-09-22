@@ -58,6 +58,7 @@ class RelatorioController extends Controller
         
         $valor_deposito = 0;
         $totalPagamentos = 0;
+        $condicoes = [];
         
         if($request->data_inicio){
             $request->data_inicio = $request->data_inicio;
@@ -65,9 +66,9 @@ class RelatorioController extends Controller
             $request->data_inicio = date("Y-m-d");
         }
         if($request->operador){
-            $request->operador = $request->operador;
+            $request->operador = array_push($condicoes ,['operador_id',$request->operador]);
         }else{
-            $request->operador = Auth::user()->codigo_importado;
+            $request->operador = array_push($condicoes ,['operador_id','>',0]);
         }
         
         $user = auth()->user();
@@ -94,9 +95,9 @@ class RelatorioController extends Controller
             ->leftjoin('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
             ->leftjoin('tb_tipo_servicos', 'tb_pagamentosi.Codigo_Servico', '=', 'tb_tipo_servicos.Codigo')
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->select( 'tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_pagamentos.Data', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico','factura_descricao.descricao')
-            ->distinct(['tb_pagamentos.Codigo'])
-            ->paginate(15)
+            ->select( 'tb_pagamentos.Codigo', 'Nome_Completo', 'Totalgeral', 'DataRegisto', 'tb_pagamentos.Data', 'tb_pagamentos.codigo_factura', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso', 'tb_tipo_servicos.Descricao AS servico','factura_descricao.descricao')
+            ->distinct('tb_pagamentos.Codigo')
+            ->paginate(50)
             ->withQueryString();   
             /** */
          
@@ -205,8 +206,8 @@ class RelatorioController extends Controller
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
-            ->when($request->operador, function($query, $value){
-                $query->where('operador_id', $value);
+            ->when($request->operador, function($query, $value) use ($condicoes){
+                $query->where($condicoes);
             })->get();
         
         }
@@ -278,8 +279,10 @@ class RelatorioController extends Controller
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
-            ->where('status_final', 'pendente')
-            ->where('operador_id', $user->codigo_importado)
+            ->when($request->operador, function($query, $value) use ($condicoes){
+                $query->where($condicoes);
+            })->where('status_final', 'pendente')
+            // ->where('operador_id', $user->codigo_importado)
             ->get();
         
         }

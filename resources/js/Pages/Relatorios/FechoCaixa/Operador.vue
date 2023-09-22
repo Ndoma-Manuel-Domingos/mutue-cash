@@ -185,21 +185,25 @@
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
-                      <th>Nº</th>
+                      <th>Nº Ordem</th>
                       <th>Matricula</th>
-                      <th>Serviço Pago</th>
                       <th>Nome</th>
+                      <th>Nº Factura</th>
+                      <th>Nº Pagamento</th>
+                      <th>Serviço Pago</th>
                       <th>Curso</th>
                       <th>Data</th>
                       <th class="text-right">Total Pago</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in items" :key="item.Codigo">
-                      <td>{{ item.Codigo }}</td>
+                    <tr v-for="(item, index) in items" :key="item.Codigo">
+                      <td>{{ ++index}}</td>
                       <td><Link :href="`/relatorios/extrato-pagamentos?codigo_matricula=${item.matricula}&data_inicio=${data_inicio}&operador=${operador}`" class="small-box-footer">{{ item.matricula }}</Link></td>
-                      <td>{{ item.servico!=''?item.servico:item.descricao}}</td>
                       <td><Link :href="`/relatorios/extrato-pagamentos?codigo_matricula=${item.matricula}&data_inicio=${data_inicio}&operador=${operador}`" class="small-box-footer">{{ item.Nome_Completo }}</Link></td>
+                      <td>{{ item.codigo_factura }}</td>
+                      <td>{{ item.Codigo }}</td>
+                      <td>{{ item.servico!=''?item.servico:item.descricao}}</td>
                       <td>{{ item.curso }}</td>
                       <td>{{ item.DataRegisto }}</td>
                       <td class="text-right">

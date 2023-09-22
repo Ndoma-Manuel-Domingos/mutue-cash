@@ -2,17 +2,16 @@
 
 namespace App\Services;
 
-use App\Factura;
+use App\Models\Factura;
 use App\FacturaItens;
-use App\Fatura;
-use DB;
+use Illuminate\Support\Facades\DB;
 //use App\Pagamento\HistoricoSaldo;
 use App\Repositories\AlunoRepository;
 // nunca usar prezoExpiracaoService nesta classe vai, dar um ciclo infinito porque ela ja chama o pagamentoService
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
-use App\Pagamento;
+use App\Models\Pagamento;
 use App\PagamentoItem;
-use App\Preinscricao;
+use App\Models\Preinscricao;
 use App\Servico;
 use App\Services\ServicosService;
 use \Carbon\Carbon;
@@ -21,9 +20,7 @@ use Keygen\Keygen;
 use App\Services\FaturaService;
 use App\Services\GerarRefereciaDePagamento;
 use App\PagamentoPorReferencia;
-
-
-
+use Illuminate\Support\Facades\Http;
 
 class PagamentoService
 {
@@ -105,12 +102,10 @@ class PagamentoService
 
   public function erroAoGerarReferenciaDeletePagmento($factura)
   {
-    try{
+    try {
       DB::table('factura')->where('factura.Codigo', $factura)->update(['ValorEntregue' => 0]);
       DB::table('tb_pagamentos')->where('tb_pagamentos.codigo_factura', $factura)->delete();
-    }
-    catch(\Exception $e)
-    {
+    } catch (\Exception $e) {
       DB::rollback();
       $erro['msg'] = 'Ocorreu um erro!';
       return $erro;
@@ -312,7 +307,7 @@ class PagamentoService
     $id_servico = DB::table('tb_tipo_servicos as servicos')
       ->where('servicos.sigla', $sigla)
       ->where('servicos.codigo_ano_lectivo', $this->anoCorrente->index())
-      ->first()->Codigo??null;
+      ->first()->Codigo ?? null;
 
     return $id_servico;
   }
@@ -381,12 +376,12 @@ class PagamentoService
 
 
     $inscricao = DB::table('tb_grade_curricular_aluno')
-    ->join('tb_grade_curricular', 'tb_grade_curricular.Codigo', 'tb_grade_curricular_aluno.codigo_grade_curricular')
-    ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
-    ->where('tb_grade_curricular_aluno.codigo_ano_lectivo', $anoCorrente)
-    ->where('tb_grade_curricular.Codigo_Semestre', 1)
-    ->whereIn('Codigo_Status_Grade_Curricular',[2,3,1])
-    ->first();
+      ->join('tb_grade_curricular', 'tb_grade_curricular.Codigo', 'tb_grade_curricular_aluno.codigo_grade_curricular')
+      ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
+      ->where('tb_grade_curricular_aluno.codigo_ano_lectivo', $anoCorrente)
+      ->where('tb_grade_curricular.Codigo_Semestre', 1)
+      ->whereIn('Codigo_Status_Grade_Curricular', [2, 3, 1])
+      ->first();
 
 
     if ($pagamento || $inscricao) {
@@ -661,7 +656,7 @@ class PagamentoService
 
     try {
 
-      if($this->getFormaPagamentoReferencia()->status==1){
+      if ($this->getFormaPagamentoReferencia()->status == 1) {
         //Guardar pagamento
         $data['Data'] = date('Y-m-d');
         $data['AnoLectivo'] = $fatura->ano_lectivo;
@@ -708,27 +703,27 @@ class PagamentoService
     try {
       //Guardar pagamentoi
 
-    if($this->getFormaPagamentoReferencia()->status==1){
-      foreach ($array_items as $key => $fac) {
+      if ($this->getFormaPagamentoReferencia()->status == 1) {
+        foreach ($array_items as $key => $fac) {
 
-        DB::table('tb_pagamentosi')->insert(
-          [
-            'Codigo_Pagamento' => $pagamento->Codigo,
-            'Codigo_Servico' => $fac['CodigoProduto'],
-            'Valor_Pago' => $fac['Total'],
-            'Quantidade' => 1,
-            'Valor_Total' => $fac['Total'],
-            'Ano' => $anoLectivo->Designacao,
-          ]
-        );
+          DB::table('tb_pagamentosi')->insert(
+            [
+              'Codigo_Pagamento' => $pagamento->Codigo,
+              'Codigo_Servico' => $fac['CodigoProduto'],
+              'Valor_Pago' => $fac['Total'],
+              'Quantidade' => 1,
+              'Valor_Total' => $fac['Total'],
+              'Ano' => $anoLectivo->Designacao,
+            ]
+          );
+        }
       }
-    }
     } catch (\Illuminate\Database\QueryException $e) {
 
       return 'Ocorreu um erro ao efectuar o pagamento(0pi5)!';
       //return Response()->json($e->getMessage(),201);
     }
-        /*   try {
+    /*   try {
           $candidato = Preinscricao::whereCodigo($codigo_inscricao)->first();
           $candidato->update(['saldo' => ($candidato->saldo - $taxa_servico->Preco)]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -744,7 +739,7 @@ class PagamentoService
 
   public function getFormaPagamentoReferencia()
   {
-    $forma_pagamneto = DB::table('tb_forma_pagamento')->where('Codigo',5)->first();
+    $forma_pagamneto = DB::table('tb_forma_pagamento')->where('Codigo', 5)->first();
 
     return $forma_pagamneto;
   }
@@ -752,7 +747,7 @@ class PagamentoService
   public function validarPagamentoDocumentoUCPorReferencia($codigo_factura)
   {
 
-    $anoCorrente=$this->anoCorrente->index();
+    $anoCorrente = $this->anoCorrente->index();
 
     $factura_items = FacturaItens::where('CodigoFactura', $codigo_factura)->get();
     $pagamento = Pagamento::where('codigo_factura', $codigo_factura)->first();
@@ -800,7 +795,7 @@ class PagamentoService
       break;
     }
     try {
-      $validacao_documento=DB::table('tb_pagamentos')->where('Codigo', $pagamento->Codigo)->update(['info_adicional' => $id_documento_validacao]);
+      $validacao_documento = DB::table('tb_pagamentos')->where('Codigo', $pagamento->Codigo)->update(['info_adicional' => $id_documento_validacao]);
     } catch (\Exception $e) {
       DB::rollback();
       throw $e;
@@ -815,4 +810,20 @@ class PagamentoService
 
     return $codigo_documento;
   }
+
+
+  //Api para validação de pagamento via ADMIN JSF
+  public function validarPagamentoAdmin($pagamento_id, $operador_id){
+    $user = auth()->user();
+
+    // $pagamento = Pagamento::findOrFail($pagamento_id);   
+    
+    $response = Http::get("http://mutue.co.ao/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
+    
+    $data = $response->json();
+
+    return $data;
+  }
+
+
 }

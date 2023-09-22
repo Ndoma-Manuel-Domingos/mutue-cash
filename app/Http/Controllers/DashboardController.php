@@ -39,6 +39,7 @@ class DashboardController extends Controller
         }
 
         $movimentos = [];
+        $condicoes = [];
         
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
             
@@ -48,17 +49,17 @@ class DashboardController extends Controller
                 $request->data_inicio = date("Y-m-d");
             }
             if($request->operador_id){
-                $request->operador_id = $request->operador_id;
+                $request->operador_id = array_push($condicoes ,['operador_id',$request->operador_id]);
             }else{
-                $request->operador_id = Auth::user()->codigo_importado;
+                $request->operador_id = array_push($condicoes ,['operador_id','>',0]); 
             }
                         
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
-            })->when($request->operador_id, function($query, $value){
-                $query->where('operador_id', $value);
+            })->when($request->operador_id, function($query, $value) use($condicoes){
+                $query->where($condicoes);
             })->get();
        
 
@@ -66,15 +67,16 @@ class DashboardController extends Controller
         
         if(auth()->user()->hasRole(['Supervisor']))
         {
+
             if($request->data_inicio){
                 $request->data_inicio = $request->data_inicio;
             }else{
                 $request->data_inicio = date("Y-m-d");
             }
             if($request->operador_id){
-                $request->operador_id = $request->operador_id;
+                $request->operador_id = array_push($condicoes ,['operador_id',$request->operador_id]);
             }else{
-                $request->operador_id = Auth::user()->codigo_importado;
+                $request->operador_id = array_push($condicoes ,['operador_id','>',0]); 
             }
             
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
@@ -82,8 +84,8 @@ class DashboardController extends Controller
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
-            ->when($request->operador_id, function($query, $value){
-                $query->where('operador_id', $value);
+            ->when($request->operador_id, function($query, $value) use($condicoes){
+                $query->where($condicoes);
             })->get();
 
         }

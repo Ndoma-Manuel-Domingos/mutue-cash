@@ -81,19 +81,19 @@ class SearhController extends Controller
                 'tb_cursos.Designacao'
             )->first();
 
-            if ($resultado->codigo_tipo_candidatura == 1) {
-                $ano_lectivo = $this->anoAtualPrincipal->index();
+        if ($resultado->codigo_tipo_candidatura == 1) {
+            $ano_lectivo = $this->anoAtualPrincipal->index();
+        } else {
+            if ($resultado->codigo_tipo_candidatura == 2) {
+                $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
             } else {
-                if ($resultado->codigo_tipo_candidatura == 2) {
-                    $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
-                } else {
-                    $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
-                }
+                $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
             }
+        }
 
-        return response()->json(["dados" => $resultado, "ano_lectivo_id"=>$ano_lectivo], 200);
+        return response()->json(["dados" => $resultado, "ano_lectivo_id" => $ano_lectivo], 200);
     }
-    
+
     public function search_preinscricao(Request $request)
     {
         $user = auth()->user();
@@ -111,26 +111,26 @@ class SearhController extends Controller
                 'tb_cursos.Designacao'
             )->first();
 
-            if ($resultado) {
+        if ($resultado) {
 
-                $pagamento = Pagamento::whereHas('factura',function($query){
-                    $query->where('codigo_descricao', 9)->where('ano_lectivo', $this->anoAtualPrincipal->index());
-                })->where('Codigo_PreInscricao', $resultado->codigo_preinscricao)->where('AnoLectivo', $this->anoAtualPrincipal->index())->first();
-                
-                if(filled($pagamento)){
-                    return response()->json(["dados" => 'Este candidato já efectuou o pagamento da taxa de inscrição'], 201);
-                }
-                
-                if($resultado->codigo_tipo_candidatura == 1) {
-                    $ano_lectivo = $this->anoAtualPrincipal->index();
-                }elseif ($resultado->codigo_tipo_candidatura == 2) {
-                    $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
-                } else {
-                    $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
-                }
+            $pagamento = Pagamento::whereHas('factura', function ($query) {
+                $query->where('codigo_descricao', 9)->where('ano_lectivo', $this->anoAtualPrincipal->index());
+            })->where('Codigo_PreInscricao', $resultado->codigo_preinscricao)->where('AnoLectivo', $this->anoAtualPrincipal->index())->first();
+
+            if (filled($pagamento)) {
+                return response()->json(["dados" => 'Este candidato já efectuou o pagamento da taxa de inscrição'], 201);
             }
 
-        return response()->json(["dados" => $resultado, "ano_lectivo_id"=>$ano_lectivo], 200);
+            if ($resultado->codigo_tipo_candidatura == 1) {
+                $ano_lectivo = $this->anoAtualPrincipal->index();
+            } elseif ($resultado->codigo_tipo_candidatura == 2) {
+                $ano_lectivo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
+            } else {
+                $ano_lectivo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
+            }
+        }
+
+        return response()->json(["dados" => $resultado, "ano_lectivo_id" => $ano_lectivo], 200);
     }
 
     public function dadosPagamentos(Request $request)
@@ -277,7 +277,7 @@ class SearhController extends Controller
         if ((int)$anoLectivo->Designacao <= 2019 && ($anoLectivo->Designacao != $this->anoAtualPrincipal->cicloMestrado()->Designacao) && ($anoLectivo->Designacao != $this->anoAtualPrincipal->cicloDoutoramento()->Designacao)) {
 
             $CodultimoMes = DB::table('tb_pagamentos')
-            ->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
+                ->join('tb_pagamentosi', 'tb_pagamentosi.Codigo_Pagamento', '=', 'tb_pagamentos.Codigo')
                 ->join('tb_tipo_servicos', 'tb_tipo_servicos.Codigo', '=', 'tb_pagamentosi.Codigo_Servico')
                 ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_pagamentos.Codigo_PreInscricao')
                 ->where('tb_preinscricao.Codigo', $candidato->Codigo)
@@ -322,7 +322,8 @@ class SearhController extends Controller
                 //->where('tb_tipo_servicos.Codigo',$data['propina']->Codigo)
                 ->where('tb_pagamentos.corrente', 1)
                 ->whereIn('tb_pagamentos.estado', [0, 1])
-                ->select(DB::raw('max(tb_pagamentosi.mes_temp_id) as ultimo'),
+                ->select(
+                    DB::raw('max(tb_pagamentosi.mes_temp_id) as ultimo'),
                     DB::raw('max(tb_pagamentos.Codigo) as codigo')
                 )
                 ->first();
@@ -702,8 +703,198 @@ class SearhController extends Controller
         return response()->json($data);
     }
 
+    public function finalista(Request $request, $codigo_matricula)
+    {
+        $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
 
-    public function finalista(Request $request,  $codigo_matricula)
+        $ano_lectivo = $request->ano_lectivo;
+
+        $ultimo_ano_lecivo = $this->anoLectivoService->getUltimoAnoLectivoInscrito($codigo_matricula)->Codigo;
+
+        if (!$ano_lectivo) {
+            $ano_lectivo = $this->anoAtualPrincipal->index();
+        }
+
+        $id = $aluno->admissao->preinscricao->user_id;
+
+        $collection = collect([]);
+
+
+        $cadeirasRestantes = 0;
+        $aluno = DB::table('tb_matriculas')
+            ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
+            ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')->where('tb_preinscricao.user_id', $id)->select('tb_matriculas.Codigo as matricula', 'tb_matriculas.Codigo_Curso as curso_matricula', 'tb_preinscricao.Curso_Candidatura as curso_preinscricao')->first();
+
+
+        $planoCurricular = DB::table('tb_grade_curricular')
+            ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+            ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+            ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+            ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+            ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+            ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)
+            ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_duracao.codigo as codigo_duracao')->whereIn('tb_grade_curricular.status', [1, 2])
+            ->distinct('disciplina')->get()->count();
+
+        $collection = collect([]);
+
+
+
+        //dd($planoCurricular);
+        $planoCurricular1 = DB::table('tb_grade_curricular')
+            ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+            ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+            ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+            ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+            ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+            ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)
+            ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_duracao.codigo as codigo_duracao')
+            ->whereIn('tb_grade_curricular.status', [1, 2])
+            ->distinct('disciplina')->get()->count();
+
+
+
+
+        $cadeirasEliminadas1 = DB::table('tb_grade_curricular')
+            ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+            ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+            ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+            ->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')
+            ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+            ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+            ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
+            ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)
+            ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
+            ->whereIn('tb_grade_curricular.status', [1, 2])
+            ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
+            ->distinct('disciplina')->get()->count();
+
+        $cadeirasEliminadas = DB::table('tb_grade_curricular')
+            ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+            ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+            ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+            ->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')
+            ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+            ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+            ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
+            ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)
+            ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
+            ->whereIn('tb_grade_curricular.status', [1, 2])
+            ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
+            ->distinct('disciplina')->get()->count();
+
+        // dd($cadeirasEliminadas1, $cadeirasEliminadas);
+
+        if ($ano_lectivo != $this->anoAtualPrincipal->index() || !$ano_lectivo) {
+            $cadeirasEliminadas = DB::table('tb_grade_curricular')
+                ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+                ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+                ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+                ->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')
+                ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+                ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+                ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
+                ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)
+                ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
+                ->whereIn('tb_grade_curricular.status', [1, 2])
+                ->where('tb_grade_curricular_aluno.codigo_ano_lectivo', '!=', $ultimo_ano_lecivo)
+                ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
+                ->distinct('disciplina')->get()->count();
+        }
+
+
+        $planoCurricular1 = DB::table('tb_grade_curricular')
+            ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+            ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+            ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+            ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+            ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+            ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)
+            ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_duracao.codigo as codigo_duracao')
+            ->whereIn('tb_grade_curricular.status', [1, 2])
+            ->distinct('disciplina')->get()->count();
+
+        $cadeirasEliminadaAnoCorrente = DB::table('tb_grade_curricular')
+            ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+            ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+            ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+            ->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')
+            ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+            ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+            ->join('tb_ano_lectivo', 'tb_ano_lectivo.codigo', 'tb_grade_curricular_aluno.codigo_ano_lectivo')
+            ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
+            ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)
+            ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
+            ->whereIn('tb_grade_curricular.status', [1, 2])
+            ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
+            ->where('tb_ano_lectivo.estado', 'Activo')
+            ->distinct('disciplina')->get()->count();
+
+
+        $cadeirasEliminadaAnoCorrente1 = DB::table('tb_grade_curricular')
+            ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+            ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+            ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+            ->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')
+            ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+            ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+            ->join('tb_ano_lectivo', 'tb_ano_lectivo.codigo', 'tb_grade_curricular_aluno.codigo_ano_lectivo')
+            ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
+            ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)
+            ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
+            ->whereIn('tb_grade_curricular.status', [1, 2])
+            ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
+            ->where('tb_ano_lectivo.estado', 'Activo')
+            ->distinct('disciplina')->get()->count();
+
+        $naoFinalista = 100;
+
+
+
+        if ($aluno) {
+            if (($aluno->curso_preinscricao == 1 || $aluno->curso_preinscricao == 5 || $aluno->curso_preinscricao == 9 || $aluno->curso_matricula == 28 || $aluno->curso_matricula == 29 || $aluno->curso_matricula == 30 || $aluno->curso_matricula == 31 || $aluno->curso_matricula == 32 || $aluno->curso_matricula == 33 || $aluno->curso_matricula == 34 || $aluno->curso_matricula == 35)) { //SE O ALUNO ESTA INSCRITO EM UM CURSO DE ESPECIALIDADE
+
+                if (($aluno->curso_preinscricao == 1 || $aluno->curso_preinscricao == 5 || $aluno->curso_preinscricao == 9) && ($aluno->curso_preinscricao == $aluno->curso_matricula)) {
+
+                    $cadeirasRestantes = $planoCurricular - $cadeirasEliminadas;
+                    //Cadeiras Elminadas no Ano Corrente
+                    $cadeirasRestantes = $cadeirasRestantes + $cadeirasEliminadaAnoCorrente;
+
+                    //dd($cadeirasEliminadas);
+
+                } elseif ($aluno->curso_matricula == 28 || $aluno->curso_matricula == 29 || $aluno->curso_matricula == 30 || $aluno->curso_matricula == 31 || $aluno->curso_matricula == 32 || $aluno->curso_matricula == 33 || $aluno->curso_matricula == 34 || $aluno->curso_matricula == 35) {
+
+                    if ($aluno->curso_preinscricao != $aluno->curso_matricula) {
+
+                        $cadeirasRestantes = ($planoCurricular1 + $planoCurricular) - ($cadeirasEliminadas + $cadeirasEliminadas1);
+
+                        //Cadeiras Elminadas no Ano Corrente
+                        $cadeirasRestantes = $cadeirasRestantes + $cadeirasEliminadaAnoCorrente + $cadeirasEliminadaAnoCorrente1;
+                    }
+                } else {
+
+                    //ESTUDANTE EMIGRADO
+                    $cadeirasRestantes = $planoCurricular - $cadeirasEliminadas;
+                    //Cadeiras eliminadas no ANo Corrente
+                    $cadeirasRestantes = $cadeirasRestantes + $cadeirasEliminadaAnoCorrente;
+                }
+            } else { // SE O ALUNO NAO ESTA INSCRITO EM UM CURSO DE ESPECIALIDADE
+
+
+
+                $cadeirasRestantes = $planoCurricular - $cadeirasEliminadas;
+                //Cadeiras Elminadas no Ano Corrente
+
+                $cadeirasRestantes = $cadeirasRestantes + $cadeirasEliminadaAnoCorrente;
+            }
+        }
+
+
+
+        return Response()->json($cadeirasRestantes);
+    }
+
+    /*public function finalista2(Request $request,  $codigo_matricula)
     {
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
@@ -713,7 +904,6 @@ class SearhController extends Controller
 
         $ano_lectivo = $request->ano_lectivo;
         $ultimo_ano_lecivo = $this->anoLectivoService->getUltimoAnoLectivoInscrito($codigo_matricula)->Codigo;
-
         if (!$ano_lectivo) {
             $ano_lectivo = $this->anoAtualPrincipal->index();
         }
@@ -889,7 +1079,7 @@ class SearhController extends Controller
         }
 
         return Response()->json($cadeirasRestantes);
-    }
+    }*/
 
 
     public function getTodasReferencias(Request $request, $codigo_matricula)
@@ -1254,12 +1444,12 @@ class SearhController extends Controller
     public function ciclos()
     {
         $data['ciclo_mestrado'] = DB::table('tb_ano_lectivo')
-        ->where('Designacao', 'Ciclo Mestrado')->select('Codigo', 'Designacao')
-        ->get();
+            ->where('Designacao', 'Ciclo Mestrado')->select('Codigo', 'Designacao')
+            ->get();
 
         $data['ciclo_doutoramento'] = DB::table('tb_ano_lectivo')
-        ->where('Designacao', 'Ciclo Doutoramento')->select('Codigo', 'Designacao')
-        ->get();
+            ->where('Designacao', 'Ciclo Doutoramento')->select('Codigo', 'Designacao')
+            ->get();
 
         return Response()->json($data);
     }
@@ -1270,23 +1460,19 @@ class SearhController extends Controller
 
         return Response()->json($data);
     }
-    
+
     public function verificarCaixaAberto()
     {
         $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-        
+
         $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";
         $messag2 = "Gostariamos de lembrar ao caro utilizador que não fez o fecho do caixa que abriu.";
         $message3 = "Conta encerrada com sucesso.";
 
         if ($verificar_caixa_aberto) {
             return response()->json(['message' => $message, 'status' => 201]);
-        }else{
+        } else {
             return response()->json(['message' => $message3, 'status' => 200]);
         }
     }
-    
-    
-
-
 }

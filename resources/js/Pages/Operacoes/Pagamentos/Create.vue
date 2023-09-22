@@ -212,8 +212,7 @@
                       class="form-control"
                       :disabled="isFormDisabled"
                       @change="faturaByReference"
-                      v-model="numero_fatura_nao_paga"
-                    >
+                      v-model="numero_fatura_nao_paga">
                       <option disabled>Selecione Facturas a Pagar</option>
                       <option
                         v-for="item in referencias_nao_pagas"
@@ -243,14 +242,10 @@
                             item.codigo_fatura
                           }})</span
                         >
-                        <span v-else-if="item.tipo_fatura == 3"
-                          >Inscrição de Cadeiras ({{
-                            item.codigo_fatura
-                          }})</span
-                        >
-                        <span v-else
-                          >Outros Serviços ({{ item.codigo_fatura }})</span
-                        >
+                        <span v-else-if="item.tipo_fatura == 3">Inscrição de Cadeiras ({{item.codigo_fatura}})</span>
+                        <span v-else-if="item.tipo_fatura == 1">Factura de Matrícula ({{item.codigo_fatura}})</span>
+                        <span v-else-if="item.tipo_fatura == 9">Inscrição de Exame de Acesso ({{item.codigo_fatura}})</span>
+                        <span v-else>Outros Serviços ({{ item.codigo_fatura }})</span>
                       </option>
                     </select>
                   </div>
@@ -1150,7 +1145,7 @@ export default {
   },
 
   mounted(){
-    // this.getDadosPagamentos();
+    this.pegaFinalista();
   },
 
   watch: {
@@ -1464,15 +1459,10 @@ export default {
     },
     // recuperar totas as factura do aluno não pagas
     getTodasRefer: function () {
-      axios
-        .get(
-          `/pagamentos-estudantes/todas-referencias-nao-pagas/${this.codigo_matricula}`
-        )
-        .then((response) => {
-          this.referencias_nao_pagas = response.data;
-          this.numero_fatura_nao_paga = response.data.codigo_fatura;
-        })
-        .catch((error) => {});
+      axios.get(`/pagamentos-estudantes/todas-referencias-nao-pagas/${this.codigo_matricula}`).then((response) => {
+        this.referencias_nao_pagas = response.data;
+        this.numero_fatura_nao_paga = response.data.codigo_fatura;
+      }).catch((error) => {});
     },
 
     // recuperar todas as facturas
@@ -1695,10 +1685,10 @@ export default {
           this.desconto_excepcao_todos = this.propina.Preco - this.propina.valor_anterior;
 
           //this.loading=false;
+          this.pegaFinalista();
           this.pegaUltimoMes();
           this.pegaServicos();
           this.pegaBolseiro();
-          this.pegaFinalista();
 
           this.cadeiras;
           this.multa = this.propina.Preco * 0.1;

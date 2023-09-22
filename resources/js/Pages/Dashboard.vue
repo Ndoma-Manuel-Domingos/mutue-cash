@@ -102,6 +102,7 @@
                         <div class="form-group col-12 col-md-12">
                           <label class="form-label form-label-sm" for="operador_id">Utilizador</label>
                           <select v-model="operador_id" id="operador_id" class="form-control ">
+                            <option value="">TODOS</option>
                             <option v-for="item in utilizadores" :key="item" :value="item.utilizadores.codigo_importado">
                               {{ item.utilizadores.nome ?? "" }}
                             </option>

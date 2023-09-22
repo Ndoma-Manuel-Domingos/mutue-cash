@@ -127,12 +127,14 @@
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
+                      <th>Nº Ordem</th>
                       <th>Nº Deposito</th>
                       <th>Nº Matricula</th>
                       <th>Nº Candidatura</th>
                       <th>Estudante</th>
                       <th>Valor depositado</th>
                       <th>Reserva após Depósito</th>
+                      <th>Reserva restante após o uso</th>
                       <!-- <th>Forma Pagamento</th> -->
                       <th>Operador</th>
                       <th>Ano Lectivo</th>
@@ -143,7 +145,8 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in items.data" :key="item.codigo">
+                    <tr v-for="(item, index) in items.data" :key="item.codigo">
+                      <td>{{ ++index }}</td>
                       <td>{{ item.codigo }}</td>
                       <td>{{ item.codigo_matricula_id ?? "Candidato" }}</td>
                       <td>
@@ -160,7 +163,7 @@
                       </td>
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
-                      <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
+                      <td>{{ formatValor(item.candidato.saldo)}}</td>
                       <td>{{ item.user ? item.user.nome : "" }}</td>
                       <td>
                         {{

@@ -111,7 +111,7 @@ class PagamentosController extends Controller
                 })
                 ->where('forma_pagamento', 6)
                 ->orderBy('tb_pagamentos.Codigo', 'desc')
-                ->paginate(15)
+                ->paginate(20)
                 ->withQueryString();
 
         }
@@ -876,6 +876,7 @@ class PagamentosController extends Controller
                         ->select('factura.Codigo', 'factura.ValorAPagar', 'factura.ano_lectivo', 'factura.codigo_descricao as codigo_descricao', 'factura.TotalPreco', 'factura.estado as estado_factura')
                         ->first();
 
+                    // inserir pagamento de negociacao
                     if ($fact_aluno && $fact_aluno->codigo_descricao == 5) {
                         $dados_negociacao = DB::table('factura')->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
                             ->join('tb_admissao', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
@@ -888,7 +889,6 @@ class PagamentosController extends Controller
                             ->first();
                     }
                 
-                    // inserir pagamento de negociacao
 
                     $data['Data'] = date('Y-m-d');
                     $data['AnoLectivo'] = $fact_aluno->ano_lectivo;
@@ -896,7 +896,7 @@ class PagamentosController extends Controller
                     $data['Codigo_PreInscricao'] = $codigo;
                     $data['DataRegisto'] = date('Y-m-d H:i:s');
                     $data['codigo_factura'] = $fact_aluno->Codigo;
-                    $data['estado'] = 1;
+                    $data['estado'] = ($fact_aluno->codigo_descricao == 1) ? 0 : 1;
                     $data['corrente'] = 1;
                     $data['caixa_id'] = $caixas->codigo;
                     $data['status_pagamento'] = 'pendente';
@@ -905,6 +905,8 @@ class PagamentosController extends Controller
                     $data['fk_utilizador'] = auth()->user()->codigo_importado;
                     $data['Utilizador'] = auth()->user()->codigo_importado;
 
+                    // dd($fact_aluno);
+
                     try {
                         $id_pag = DB::table('tb_pagamentos')->insertGetId($data);
                     } catch (\Illuminate\Database\QueryException $e) {
@@ -912,6 +914,7 @@ class PagamentosController extends Controller
                         return Response()->json($e->getMessage());
                     }
                     $ultimo_pag = DB::table('tb_pagamentos')->where('Codigo', $id_pag)->first();
+
                 } catch (\Illuminate\Database\QueryException $e) {
                     DB::rollback();
                     return Response()->json($e->getMessage());
@@ -1190,7 +1193,7 @@ class PagamentosController extends Controller
                             $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $novo_saldo_aluno;
                             $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $saldo_a_pagar;
                             $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $saldo_a_pagar;
-                            $update->valor_arrecadado_total = $update->valor_arrecadado_total + $data['valor_depositado'];
+                            $update->valor_arrecadado_total = ($update->valor_arrecadado_depositos + $update->valor_facturado_pagamento);
                             $update->update();
                         } else {
                             $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
@@ -1306,8 +1309,19 @@ class PagamentosController extends Controller
 
         DB::commit();
 
+        try {
+            if(($fact_aluno->codigo_descricao == 1) || ($fact_aluno->codigo_descricao == 9) || ($fact_aluno->codigo_descricao == 11)){
+                $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollback();
+            $result['message'] = $e->getMessage();
+            return Response()->json($result['message']);
+        }
+
         return Response()->json($response);
     }
+
 
     public function salvarPagamentoComSaldo(Request $request, $referencia, $user_id)
     {
@@ -1615,7 +1629,9 @@ class PagamentosController extends Controller
             DB::rollback();
             throw $e;
         }
+
         DB::commit();
+
         return Response()->json('Pagamento enviado com sucesso!');
     }
 
@@ -1735,11 +1751,11 @@ class PagamentosController extends Controller
                     'polo_id' => 1,
                     'Referencia' => $keygen,
                     'ValorAPagar' => $taxa_servico->Preco,
-                    'ValorEntregue' => $data['valor_depositado'],
+                    'ValorEntregue' => 0,
                     'Descricao' => $taxa_servico->Descricao,
                     'codigo_descricao' => $taxa_servico->sigla == 'TdIdP' ? 11 : 9, //Exame de acesso
                     'canal' => 3, //Portal 1
-                    'estado' => 1,
+                    'estado' => 0,
                     'ano_lectivo' => $anoLectivo->Codigo,
                     'obs' => 'Pagamento feito a cash'
                 ]);
@@ -1774,7 +1790,7 @@ class PagamentosController extends Controller
                 $data['Codigo_PreInscricao'] = $codigo_inscricao;
                 $data['DataRegisto'] = Carbon::now();
                 $data['canal'] = 3;
-                $data['estado'] = 1;
+                $data['estado'] = 0;
                 $data['codigo_factura'] = $factura->Codigo;
                 $data['Observacao'] = "Pagamento efectuado por Cash";
                 $data['fk_utilizador'] = auth()->user()->codigo_importado;
@@ -1802,19 +1818,40 @@ class PagamentosController extends Controller
                 return Response()->json('Ocorreu um erro ao efectuar o pagamento(0pi4)!', 201);
                 //return Response()->json($e->getMessage(),201);
             }
-            // try {
-            //     $candidato = Preinscricao::whereCodigo($codigo_inscricao)->first();
-            //     $candidato->update(['saldo' => ($candidato->saldo - $taxa_servico->Preco)]);
-            // } catch (\Illuminate\Database\QueryException $e) {
+            try {
+                $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
-            //     DB::rollback();
-            //     return Response()->json('Ocorreu um erro ao efectuar o pagamento(0s5)!', 201);
-            //     //return Response()->json($e->getMessage(), 201);
-            // }
+                if (filled($caixas)) {
+                    $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+                    $update = MovimentoCaixa::findOrFail($movimento->codigo);
+                    // $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $data['valor_depositado'];
+                    $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $data['valor_depositado'];
+                    $update->valor_facturado_pagamento = $update->valor_facturado_pagamento +  $taxa_servico->Preco;
+                    $update->valor_arrecadado_total = ($update->valor_facturado_pagamento);
+                    $update->update();
+                } else {
+                    $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
+                    return response()->json($result, 201);
+                }
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollback();
+                return Response()->json($e->getMessage(), 201);
+            }
 
             $resultado['msg'] = 'Pagamento efectuado com sucesso!';
             $resultado['codigo_factura'] = $factura->Codigo;
+
             DB::commit();
+
+            try {
+                $this->pagamentoService->validarPagamentoAdmin($pagamento->Codigo, Auth::user()->pk_utilizador);
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollback();
+                $resultado['msg'] = $e->getMessage();
+                return Response()->json($resultado);
+            }
+
             return response()->json($resultado);
         }
     }
@@ -1823,7 +1860,6 @@ class PagamentosController extends Controller
     public function faturaDiversos(Request $request, $codigo_matricula)
     {
     
-        // dd("factura");
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -1842,7 +1878,6 @@ class PagamentosController extends Controller
         $data = $request->fatura_item;
         $data = json_decode($data, true);
         $anoCorrente = $this->anoAtualPrincipal->index();
-
         $ano = json_decode($request->anoLectivo, true);
         $pagRejeitado = '';
 
@@ -2173,8 +2208,6 @@ class PagamentosController extends Controller
                     $fatura['obs'] = "Desconto de incentivo";
                 }
             }
-
-            
 
             $fatura['DataFactura'] = Carbon::now();
             $fatura['TotalPreco'] = $amount;
