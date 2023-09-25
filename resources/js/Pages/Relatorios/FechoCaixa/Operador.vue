@@ -25,7 +25,7 @@
             <div class="card">
               <form action="">
                 <div class="card-body">
-                  <div class="row">
+                  <div class="row" v-if="user.auth.can['relatorio operador']">
                     <div class="col-12 col-md-2">
                       <div class="form-group">
                         <label for="">Operadores</label>
@@ -74,29 +74,31 @@
                       </div>
                     </div>
 
-                    <div class="col-12 col-md-2">
-                      <div class="form-group">
-                        <label for="">Data Inicio</label>
-                        <input
-                          type="date"
-                          placeholder="informe do Inicio"
-                          class="form-control"
-                          v-model="data_inicio"
-                        />
+                    <template v-if="user.auth.can['relatorio caixa']">
+                      <div class="col-12 col-md-2">
+                        <div class="form-group">
+                          <label for="">Data Inicio</label>
+                          <input
+                            type="date"
+                            placeholder="informe do Inicio"
+                            class="form-control"
+                            v-model="data_inicio"
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    <div class="col-12 col-md-2">
-                      <div class="form-group">
-                        <label for="">Data Final</label>
-                        <input
-                          type="date"
-                          placeholder="informe do final"
-                          class="form-control"
-                          v-model="data_final"
-                        />
+                      <div class="col-12 col-md-2">
+                        <div class="form-group">
+                          <label for="">Data Final</label>
+                          <input
+                            type="date"
+                            placeholder="informe do final"
+                            class="form-control"
+                            v-model="data_final"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    </template>
                   </div>
                 </div>
               </form>

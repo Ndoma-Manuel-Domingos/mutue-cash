@@ -52,26 +52,24 @@ class RelatorioController extends Controller
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
         
-        if(!$request->ano_lectivo){
-            $request->ano_lectivo = $ano->Codigo;
-        }
-        
         $valor_deposito = 0;
         $totalPagamentos = 0;
         $condicoes = [];
-        
+        $user = auth()->user();
+
+        if(!$request->ano_lectivo){
+            $request->ano_lectivo = $ano->Codigo;
+        }
         if($request->data_inicio){
             $request->data_inicio = $request->data_inicio;
         }else{
             $request->data_inicio = date("Y-m-d");
         }
         if($request->operador){
-            $request->operador = array_push($condicoes ,['operador_id',$request->operador]);
+            $request->operador = $request->operador;
         }else{
-            $request->operador = array_push($condicoes ,['operador_id','>',0]);
+            $request->operador = $request->operador > 0;
         }
-        
-        $user = auth()->user();
 
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
             /** */
@@ -206,8 +204,8 @@ class RelatorioController extends Controller
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
-            ->when($request->operador, function($query, $value) use ($condicoes){
-                $query->where($condicoes);
+            ->when($request->operador, function($query, $value){
+                $query->where('operador_id', $value);
             })->get();
         
         }
@@ -279,8 +277,8 @@ class RelatorioController extends Controller
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
-            ->when($request->operador, function($query, $value) use ($condicoes){
-                $query->where($condicoes);
+            ->when($request->operador, function($query, $value){
+                $query->where('operador_id', $value);
             })->where('status_final', 'pendente')
             // ->where('operador_id', $user->codigo_importado)
             ->get();

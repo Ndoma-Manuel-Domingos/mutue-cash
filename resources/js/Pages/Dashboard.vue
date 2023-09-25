@@ -89,7 +89,7 @@
                       <i class="fas fa-hand-point-down" style="font-size: 30pt;"></i>
                     </div>
                     <div class="card-body">
-                      <div class="row">
+                      <div class="row" v-if="user.auth.can['relatorio operador']">
                         <!-- <div class="form-group col-12 col-md-6" v-if="user.auth.can['relatorio caixa']">
                           <label class="form-label form-label-sm" for="ano_lectivo">Anos Lectivos</label>
                           <select v-model="ano_lectivo" id="ano_lectivo" class="form-control ">
@@ -109,14 +109,16 @@
                           </select>
                         </div>
                         
-                        <div class="form-group col-12 col-md-6">
-                          <label for="data_inicio" class="form-label-sm">Data Inicio</label>
-                          <input type="date" placeholder="DATA INICIO" id="data_inicio" v-model="data_inicio" class="form-control">
-                        </div>
-                        <div class="form-group col-12 col-md-6">
-                          <label for="data_final" class="form-label">Data Final</label>
-                          <input type="date" placeholder="DATA FINAL" id="data_final" v-model="data_final" class="form-control">
-                        </div>
+                        <template v-if="user.auth.can['relatorio caixa']">
+                          <div class="form-group col-12 col-md-6">
+                            <label for="data_inicio" class="form-label-sm">Data Inicio</label>
+                            <input type="date" placeholder="DATA INICIO" id="data_inicio" v-model="data_inicio" class="form-control">
+                          </div>
+                          <div class="form-group col-12 col-md-6">
+                            <label for="data_final" class="form-label">Data Final</label>
+                            <input type="date" placeholder="DATA FINAL" id="data_final" v-model="data_final" class="form-control">
+                          </div>
+                        </template>
                       </div>
                     </div>
                 
