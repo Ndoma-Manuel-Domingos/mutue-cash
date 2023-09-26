@@ -1306,7 +1306,7 @@ class PagamentosController extends Controller
                 
             }
         }
-
+        
         DB::commit();
 
         try {
@@ -1318,6 +1318,23 @@ class PagamentosController extends Controller
             DB::rollback();
             $result['message'] = $e->getMessage();
             return Response()->json($result['message']);
+        }
+
+        try {
+            if(($fatura_paga->codigo_descricao == 1) || ($fatura_paga->codigo_descricao == 9) || ($fatura_paga->codigo_descricao == 11)){
+                
+                if(($data['valor_depositado'] <= $fatura_paga->ValorAPagar)){
+                    $troc = Factura::find($codigoDaFatura);
+                    $troc->update(['Troco' =>0.0]);
+                }else{
+                    $troc = Factura::find($codigoDaFatura);
+                    $troco_do_aluno = ($data['valor_depositado'] - $fatura_paga->ValorAPagar);
+                    $troc->update(['Troco' =>$troco_do_aluno]);
+                }
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollback();
+            return Response()->json($e->getMessage());
         }
 
         return Response()->json($response);

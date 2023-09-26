@@ -1247,15 +1247,22 @@ export default {
 
       if (this.valor_por_depositar == this.pagamento.valor_depositado) {
         this.troco = 0;
-      } else {
+      } else if(this.total_adicionado > 0) {
         this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
-        if((this.pagamento.valor_depositado - this.total_adicionado > 0) || (this.valor_depositado_tese - this.total_adicionado > 0)) {
+        if(((this.pagamento.valor_depositado - this.total_adicionado) > 0) || ((this.valor_depositado_tese - this.total_adicionado) > 0)) {
+          this.condicao_troco = true;
+        }else{
+          this.condicao_troco = false;
+        }
+      }else if(this.fatura.ValorAPagar > 0){
+        this.troco = this.formatPrice(this.pagamento.valor_depositado - this.fatura.ValorAPagar);
+        if(((this.pagamento.valor_depositado - this.fatura.ValorAPagar) > 0) || ((this.valor_depositado_tese - this.fatura.ValorAPagar) > 0)) {
           this.condicao_troco = true;
         }else{
           this.condicao_troco = false;
         }
       }
-      // console.log(this.pagamento.valor_depositado, this.valor_por_depositar)
+      // console.log(this.pagamento.valor_depositado, this.valor_por_depositar) this.pagamento.valor_depositado - this.fatura.ValorAPagar
     },
 
     containsLetters(number) {
@@ -2380,6 +2387,7 @@ export default {
                 // },
                 onClose: this.imprimirFatura(fatura_ref),
               });
+              this.imprimirFatura(fatura_ref);
               this.tabela = [];
               this.codigo_matricula = null;
               (this.nome_estudante = null),
@@ -2498,9 +2506,9 @@ export default {
 
     numeroPorExtenso(valor) {
       const [parteInteira, parteDecimal] = valor.split(',');
-
-      const parteInteiraPorExtenso = parteInteira === '0' ? '' : this.numeroInteiroPorExtenso(parteInteira);
-      const parteDecimalPorExtenso = (parteDecimal && parteDecimal>0) ? `e ${this.numeroInteiroPorExtenso(parteDecimal)} cêntimos ` : '';
+     
+      // const parteInteiraPorExtenso = parteInteira === 0 ? '' : this.numeroInteiroPorExtenso(parteInteira);
+      const parteDecimalPorExtenso = (parteDecimal && parteDecimal > 0) ? `e ${this.numeroInteiroPorExtenso(parteDecimal)} cêntimos ` : '';
 
       // return `${parteInteiraPorExtenso} kwanzas ${parteDecimalPorExtenso}`;
       return `${parteDecimalPorExtenso}`;

@@ -102,10 +102,7 @@ class DashboardController extends Controller
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
-            })
-            ->where('status_final', 'pendente')
-            ->where('operador_id', $user->codigo_importado)
-            ->get();
+            })->where('status_final', 'pendente')->where('operador_id', Auth::user()->codigo_importado)->get();
         }
             
         
@@ -145,7 +142,7 @@ class DashboardController extends Controller
                 "valor_facturado_pagamento" => $valor_facturado_pagamento,
                 "valor_arrecadado_pagamento" => $valor_arrecadado_pagamento,
                 "valor_arrecadado_total" => $valor_arrecadado_total,
-                "utilizadores" => $data['utilizadores'],
+                "utilizadores" => $data['utilizadores'] ?? null,
                 
                 'caixa' => $caixa,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
@@ -162,7 +159,7 @@ class DashboardController extends Controller
                 "valor_facturado_pagamento" => $valor_facturado_pagamento,
                 "valor_arrecadado_pagamento" => $valor_arrecadado_pagamento,
                 "valor_arrecadado_total" => $valor_arrecadado_total,
-                "utilizadores" => $data['utilizadores'],
+                "utilizadores" => $data['utilizadores'] ?? null,
                 'caixa' => $caixa ?? Null,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
                 
