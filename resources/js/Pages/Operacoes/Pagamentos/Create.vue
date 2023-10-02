@@ -1294,6 +1294,16 @@ export default {
           //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
           return false;
         }
+      }else if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (this.fatura.ValorAPagar-this.fatura.ValorEntregue))) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+        document.getElementById("btn").disabled = false;
+        return false;
       }
       // this.pagamento.Codigo_PreInscricao = this.candidato.codigo_inscricao;
       const config = {
@@ -2305,12 +2315,7 @@ export default {
         });
 
         document.getElementById("btn").disabled = false;
-      } else if (
-        this.valor_por_depositar >= 0 &&
-        this.estudante.saldo > 0 &&
-        Math.ceil(this.valor_por_depositar + this.estudante.saldo) <
-          this.total_adicionado
-      ) {
+      } else if (this.valor_por_depositar >= 0 && this.estudante.saldo > 0 && Math.ceil(this.valor_por_depositar + this.estudante.saldo) <this.total_adicionado) {
         Swal.fire({
           title: "Dados Incorrectos",
           text:
@@ -2322,11 +2327,7 @@ export default {
         });
 
         document.getElementById("btn").disabled = false;
-      } else if (
-        this.valor_por_depositar != null &&
-        (this.opcoes == 1 || this.opcoes == 2) &&
-        this.pagamento.valor_depositado < this.valor_por_depositar
-      ) {
+      } else if (this.valor_por_depositar != null && (this.opcoes == 1 || this.opcoes == 2) && (this.pagamento.valor_depositado < this.valor_por_depositar)) {
         Swal.fire({
           title: "Dados Incorrectos",
           text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),

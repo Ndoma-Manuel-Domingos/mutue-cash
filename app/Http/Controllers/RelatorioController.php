@@ -271,7 +271,6 @@ class RelatorioController extends Controller
             ->where('tb_pagamentos.fk_utilizador', $user->codigo_importado)
             ->sum('tb_pagamentos.valor_depositado');
 
-
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
@@ -771,7 +770,8 @@ class RelatorioController extends Controller
             ->where('tb_pagamentos.estado', 1)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->select('factura.Codigo as fact_codigo', 'factura.ValorAPagar', 'factura.DataFactura', 'tb_pagamentos.AnoLectivo', 'tb_pagamentos.codigo_factura', 'tb_pagamentos.Codigo', 'tb_pagamentos.valor_depositado', 'tb_pagamentos.DataRegisto', 'tb_pagamentos.estado', 'tb_pagamentos.nome_documento', 'tb_pagamentos.updated_at', 'Nome_Completo', 'tb_pagamentos.Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso')
-            ->findOrFail($id);
+            ->where('tb_pagamentos.Codigo',$id)
+            ->first();
 
         if ($pagamento->AnoLectivo >= 2 and $pagamento->AnoLectivo <= 15) {
             $pagamento_itens = PagamentoItems::with('mes', 'servico')
