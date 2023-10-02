@@ -266,7 +266,7 @@ class PagamentosController extends Controller
             ->leftjoin('tb_ano_lectivo', 'tb_ano_lectivo.Codigo', '=', 'tb_pagamentos.AnoLectivo')
             ->where('tb_pagamentos.estado', 1)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
-            ->select('factura.Codigo as fact_codigo', 'factura.ValorAPagar', 'factura.DataFactura', 'tb_pagamentos.AnoLectivo', 'tb_pagamentos.codigo_factura', 'tb_pagamentos.Codigo', 'tb_pagamentos.valor_depositado', 'tb_pagamentos.DataRegisto', 'tb_pagamentos.estado', 'tb_pagamentos.nome_documento', 'tb_pagamentos.updated_at', 'Nome_Completo', 'tb_pagamentos.Totalgeral', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso')
+            ->select('factura.Codigo as fact_codigo', 'factura.ValorAPagar', 'factura.DataFactura', 'tb_pagamentos.AnoLectivo', 'tb_pagamentos.codigo_factura', 'tb_pagamentos.Codigo', 'tb_pagamentos.valor_depositado', 'tb_pagamentos.DataRegisto', 'tb_pagamentos.estado', 'tb_pagamentos.nome_documento', 'tb_pagamentos.updated_at', 'Nome_Completo', 'tb_pagamentos.Totalgeral', 'tb_pagamentos.feito_com_reserva', 'DataRegisto', 'tb_matriculas.Codigo AS matricula', 'tb_cursos.Designacao AS curso')
             ->findOrFail($id);
 
         if ($pagamento->AnoLectivo >= 2 and $pagamento->AnoLectivo <= 15) {
@@ -773,6 +773,7 @@ class PagamentosController extends Controller
             
             
                 if ($fatura_paga && $saldo_novo > 0 && $fonte == 1) { // SE NAO TEM SALDO SUFICIENTE
+             
                     try {
                         $result['message'] = 'Pagamento efectuado com sucesso! Por favor, verifique a factura gerada pelo sistema.';
                         
@@ -914,7 +915,14 @@ class PagamentosController extends Controller
                         DB::rollback();
                         return Response()->json($e->getMessage());
                     }
-                    $ultimo_pag = DB::table('tb_pagamentos')->where('Codigo', $id_pag)->first();
+
+                    try {
+                        $pagamentos_factura = DB::table('tb_pagamentos')->where('codigo_factura', $codigoDaFatura)->where('forma_pagamento', 6)->where('feito_com_reserva', 'Y')->first();
+                        $valor_pago_com_saldo = filled($pagamentos_factura) ? $pagamentos_factura->valor_depositado : 0;
+                    } catch (\Throwable $th) {
+                        DB::rollback();
+                        return Response()->json($th->getMessage());
+                    }
 
                 } catch (\Illuminate\Database\QueryException $e) {
                     DB::rollback();
@@ -929,13 +937,11 @@ class PagamentosController extends Controller
                     ];
                     $variavel = DB::table('historico_movimento_conta_estudante')->insert($histo);
                 } catch (\Illuminate\Database\QueryException $e) {
-
                     DB::rollback();
                     return Response()->json('ocorreu um erro(mc)');
                 }
        
                 try {
-
                     $controle['pagamento'] = $id_pag;
                     $controle['estado_utilizacao'] = 1;
                     $controle['created_at'] = Carbon::now();
@@ -1154,7 +1160,6 @@ class PagamentosController extends Controller
                             $novo_saldo_aluno = 0;
                         }
                     }
-                    
        
                     
                     try {
@@ -1181,7 +1186,12 @@ class PagamentosController extends Controller
                     ];
                     
                     $deposito = DB::table('tb_valor_alunos')->insertGetId($dados_deposito);
-                    
+
+                    $novo_saldo_aluno =  ($novo_saldo_aluno - $saldo_novo);
+                    if($novo_saldo_aluno < 0){
+                        $novo_saldo_aluno = 0;
+                    }
+               
                     DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco' => $novo_saldo_aluno]);
 
                     try {
@@ -1191,9 +1201,9 @@ class PagamentosController extends Controller
                             $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
                             $update = MovimentoCaixa::findOrFail($movimento->codigo);
-                            $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $novo_saldo_aluno;
-                            $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $saldo_a_pagar;
-                            $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $saldo_a_pagar;
+                            $update->valor_arrecadado_depositos = ($update->valor_arrecadado_depositos + $novo_saldo_aluno);
+                            $update->valor_arrecadado_pagamento = ($update->valor_arrecadado_pagamento + $saldo_a_pagar)-$valor_pago_com_saldo;
+                            $update->valor_facturado_pagamento = ($update->valor_facturado_pagamento + $saldo_a_pagar)-$valor_pago_com_saldo;
                             $update->valor_arrecadado_total = ($update->valor_arrecadado_depositos + $update->valor_facturado_pagamento);
                             $update->update();
                         } else {
@@ -1204,7 +1214,7 @@ class PagamentosController extends Controller
                         DB::rollback();
                         return Response()->json($e->getMessage(), 201);
                     }
-                } else {     
+                } else {   
                    
                     // pagamento de facturas com um parte já paga
                     if($fatura_paga->ValorAPagar > $fatura_paga->ValorEntregue){
@@ -1246,13 +1256,13 @@ class PagamentosController extends Controller
                         }  else{
                             $troco_do_aluno = ($data['valor_depositado'] + $saldo_novo)  - $saldo_a_pagar;
                         }
-                        
-                        if($troco_do_aluno < 0){
-                            $troco_do_aluno = 0;
-                        }
                     }
-                    
-                    // dd( "saldo:" . $troco_do_aluno, "pagar:" .$saldo_a_pagar, "sem saldo");
+
+                    $troco_do_aluno =  ($troco_do_aluno - $saldo_novo);
+
+                    if($troco_do_aluno < 0){
+                        $troco_do_aluno = 0;
+                    }
                     
                     try {
                         DB::table('factura')->where('Codigo', $fatura_paga->codigo)->update(['Troco' => $troco_do_aluno]);
@@ -1267,9 +1277,10 @@ class PagamentosController extends Controller
                         if (filled($caixas)) {
                             $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
                             $update = MovimentoCaixa::findOrFail($movimento->codigo);
-                            $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento + $saldo_a_pagar;
-                            $update->valor_arrecadado_total = $update->valor_arrecadado_total + $saldo_a_pagar;
-                            $update->valor_facturado_pagamento = $update->valor_facturado_pagamento + $saldo_a_pagar;
+
+                            $update->valor_arrecadado_pagamento = ($update->valor_arrecadado_pagamento + $saldo_a_pagar)-$valor_pago_com_saldo;
+                            $update->valor_facturado_pagamento = ($update->valor_facturado_pagamento + $saldo_a_pagar)-$valor_pago_com_saldo;
+                            $update->valor_arrecadado_total = ($update->valor_arrecadado_total + $saldo_a_pagar)-$valor_pago_com_saldo;
                             $update->update();
                         } else {
                             $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
@@ -1342,7 +1353,6 @@ class PagamentosController extends Controller
     public function salvarPagamentoComSaldo(Request $request, $referencia, $user_id)
     {
         
-    
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         if (!filled($caixas)) {
             $result['message'] = 'Por valor! faça abertura do caixa para efectuar o pagamento.';
@@ -1413,7 +1423,7 @@ class PagamentosController extends Controller
             $pagamento['caixa_id'] = $caixas->codigo;
             $pagamento['status_pagamento'] = 'pendente';
             $pagamento['estado'] = ($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10) ? 1 : 0;
-            $pagamento['Observacao'] =  'Pagamento efectuado com Reserva no Mutue Cash!';
+            $pagamento['Observacao'] =  'Pagamento efectuado com Reserva no Mutue Cash';
             $pagamento['forma_pagamento'] =  '6';
             $pagamento['corrente'] = 1;
             $pagamento['fk_utilizador'] =  auth()->user()->codigo_importado;
@@ -1898,7 +1908,6 @@ class PagamentosController extends Controller
         $alunoRepository = $this->alunoRepository->dadosAlunoLogado($aluno->admissao->preinscricao->user_id);
 
         $data1 = $request->pagamento;
-
         $data1 = json_decode($data1, true);
 
         $data = $request->fatura_item;
@@ -2568,8 +2577,7 @@ class PagamentosController extends Controller
             try {
                 $result['message'] = 'Pagamento efectuado com sucesso! Por favor, verifique a factura gerada pelo sistema.';
 
-                if ($saldo->saldo > 0) {
-
+                if (($saldo->saldo > 0) && ($data1['valor_depositado'] < $valor_apagar) ) {
                     $pagamento['Data'] = date('Y-m-d');
                     $pagamento['Observacao'] = 'Pagamento_Saldo';
                     $pagamento['AnoLectivo'] = $anoCorrente;
@@ -2582,7 +2590,8 @@ class PagamentosController extends Controller
                     $pagamento['codigo_factura'] = $codigo_fatura;
                     $pagamento['fk_utilizador'] =  auth()->user()->codigo_importado;
                     $pagamento['Utilizador'] =  auth()->user()->codigo_importado;
-                    $pagamento['Observacao'] =  'Pagamento efectuado com Reserva no Mutue Cash!';
+                    $pagamento['Observacao'] =  'Pagamento efectuado com Reserva no Mutue Cash';
+                    $pagamento['feito_com_reserva'] =  'Y';
                     $pagamento['forma_pagamento'] =  '6';
                     $pagamento['estado'] = 1;
                     $data['corrente'] = 1;
