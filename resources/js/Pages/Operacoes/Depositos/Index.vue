@@ -127,12 +127,14 @@
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
+                      <th>Nº Ordem</th>
                       <th>Nº Deposito</th>
                       <th>Nº Matricula</th>
                       <th>Nº Candidatura</th>
                       <th>Estudante</th>
                       <th>Valor depositado</th>
                       <th>Reserva após Depósito</th>
+                      <th>Reserva restante após o uso</th>
                       <!-- <th>Forma Pagamento</th> -->
                       <th>Operador</th>
                       <th>Ano Lectivo</th>
@@ -143,7 +145,8 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="item in items.data" :key="item.codigo">
+                    <tr v-for="(item, index) in items.data" :key="item.codigo">
+                      <td>{{ ++index }}</td>
                       <td>{{ item.codigo }}</td>
                       <td>{{ item.codigo_matricula_id ?? "Candidato" }}</td>
                       <td>
@@ -160,7 +163,7 @@
                       </td>
                       <td>{{ formatValor(item.valor_depositar) }}</td>
                       <td>{{ formatValor(item.saldo_apos_movimento) }}</td>
-                      <!-- <td>{{ item.forma_pagamento.descricao }}</td> -->
+                      <td>{{ formatValor(item.candidato.saldo)}}</td>
                       <td>{{ item.user ? item.user.nome : "" }}</td>
                       <td>
                         {{
@@ -387,6 +390,16 @@ export default {
     user() {
       return this.$page.props.auth.user;
     },
+    utilizadores() {
+      const uniqueMap = new Map();
+      return this.utilizadores.filter((item) => {
+        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
+          uniqueMap.set(item.utilizadores.codigo_importado, true);
+          return true;
+        }
+        return false;
+      });
+    },
   },
 
   data() {
@@ -409,7 +422,7 @@ export default {
         disabled: false,
         disabled2: false,
         // falta ser paramentrizado 5000
-        valor_a_depositar: this.valor_a_depositar_padrao.Valor ?? 0,
+        valor_a_depositar: this.valor_a_depositar_padrao.Valor ?? 5000,
         nome_estudante: null,
         bilheite_estudante: null,
         curso_estudante: null,
@@ -420,10 +433,10 @@ export default {
   },
 
   mounted() {
-    this.params.data_inicio = this.data_inicio;
+    // this.params.data_inicio = this.data_inicio;
     this.form.valor_a_depositar = this.formatValor(this.form.valor_a_depositar);
     // this.params.data_final = this.data_final;
-    this.updateData();
+    // this.updateData();
   },
 
   watch: {
@@ -500,7 +513,7 @@ export default {
     async submit() {
       this.$Progress.start();
 
-      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < 5000) {
+      if (this.removerFormatacaoAOA(this.form.valor_a_depositar) < this.valor_a_depositar_padrao.Valor) {
         Swal.fire({
           title: "Atenção",
           text: "O valor a depositar não pode ser menor do que 5.000,00 Kz",
@@ -639,9 +652,13 @@ export default {
 
     imprimirPDF() {
       window.open(
-        `/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
-        "_blank"
-      );
+          `/depositos/pdf?operador=${this.operador}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+          "_blank"
+        );
+      // window.open(
+      //   `/depositos/pdf?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+      //   "_blank"
+      // );
     },
 
     imprimirEXCEL() {

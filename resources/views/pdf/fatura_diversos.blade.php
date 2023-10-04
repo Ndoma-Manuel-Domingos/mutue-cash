@@ -265,7 +265,7 @@
                                 {{ number_format(0, 2, ',', '.') }}<br>
                             @endif
                         @else
-                            {{ $aluno->ValorEntregue > 0 ? number_format($aluno->ValorEntregue, 2, ',', '.') : number_format(0, 2, ',', '.') }}<br>
+                        {{ number_format($aluno->valor_depositado, 2, ',', '.') ?? number_format(0, 2, ',', '.') }}<br>
                         @endif
 
                         @if ($aluno->negociacao)
@@ -283,7 +283,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td style="text-align:left;padding: 0px;font-size:9px;"> São {{ $extenso }}</td>
+                    <td style="text-align:left;padding: 0px;font-size:9px;"> São {{ $extenso }} Kwanzas</td>
                 </tr>
             </tbody>
         </table>

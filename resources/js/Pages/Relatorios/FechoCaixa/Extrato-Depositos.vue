@@ -26,7 +26,23 @@
               <form action="">
                 <div class="card-body">
                   <div class="row">
-                  
+                    
+                    <div class="col-12 col-md-3">
+                      <div class="form-group">
+                        <label for="">Operadores</label>
+                        <select v-model="operador" class="form-control">
+                          <option value="">TODOS</option>
+                          <option
+                            v-for="item in utilizadores"
+                            :key="item"
+                            :value="item.utilizadores.codigo_importado"
+                          >
+                            {{ item.utilizadores.nome }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div class="col-12 col-md-2" >
                       <div class="form-group">
                         <label for="">Nº do Estudante</label>
@@ -180,7 +196,7 @@ import Paginacao from "../../../Shared/Paginacao";
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["items", "valor_deposito"],
+  props: ["items", "valor_deposito","utilizadores"],
   components: { Link, Paginacao },
   data() {
     return {
@@ -199,6 +215,23 @@ export default {
       sortOrder: 1 // 1 para ascendente, -1 para descendente
     };
   },
+
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
+    },
+    utilizadores() {
+      const uniqueMap = new Map();
+      return this.utilizadores.filter((item) => {
+        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
+          uniqueMap.set(item.utilizadores.codigo_importado, true);
+          return true;
+        }
+        return false;
+      });
+    },
+  },
+
   watch: {
     options: function (val) {
       this.params.page = val.page;
@@ -226,6 +259,10 @@ export default {
     },
     data_final: function (val) {
       this.params.data_final = val;
+      this.updateData();
+    },
+    operador: function (val) {
+      this.params.operador = val;
       this.updateData();
     },
   },
@@ -292,7 +329,7 @@ export default {
     },
 
     imprimirExtratoPDF() {
-      window.open(`/relatorios/extrato-deposito/pdf?${this.codigo_matricula ? 'codigo_matricula='+this.codigo_matricula:(this.candidato_id ? 'candidato_id='+this.candidato_id:'')}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`, "_blank");
+      window.open(`/relatorios/extrato-deposito/pdf?${this.codigo_matricula ? 'codigo_matricula='+this.codigo_matricula:(this.candidato_id ? 'candidato_id='+this.candidato_id:'')}&data_inicio=${this.data_inicio}&data_final=${this.data_final}&operador=${this.operador}`, "_blank");
     },
 
     imprimirExtratoEXCEL() {

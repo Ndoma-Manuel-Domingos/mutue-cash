@@ -39,6 +39,7 @@ class DashboardController extends Controller
         }
 
         $movimentos = [];
+        $condicoes = [];
         
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
             
@@ -47,13 +48,18 @@ class DashboardController extends Controller
             }else{
                 $request->data_inicio = date("Y-m-d");
             }
+            if($request->operador_id){
+                $request->operador_id = array_push($condicoes ,['operador_id',$request->operador_id]);
+            }else{
+                $request->operador_id = array_push($condicoes ,['operador_id','>',0]); 
+            }
                         
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
-            })->when($request->operador_id, function($query, $value){
-                $query->where('operador_id', $value);
+            })->when($request->operador_id, function($query, $value) use($condicoes){
+                $query->where($condicoes);
             })->get();
        
 
@@ -61,15 +67,16 @@ class DashboardController extends Controller
         
         if(auth()->user()->hasRole(['Supervisor']))
         {
+
             if($request->data_inicio){
                 $request->data_inicio = $request->data_inicio;
             }else{
                 $request->data_inicio = date("Y-m-d");
             }
             if($request->operador_id){
-                $request->operador_id = $request->operador_id;
+                $request->operador_id = array_push($condicoes ,['operador_id',$request->operador_id]);
             }else{
-                $request->operador_id = Auth::user()->codigo_importado;
+                $request->operador_id = array_push($condicoes ,['operador_id','>',0]); 
             }
             
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
@@ -77,10 +84,9 @@ class DashboardController extends Controller
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
-            ->when($request->operador_id, function($query, $value){
-                $query->where('operador_id', $value);
-            })
-            ->get();
+            ->when($request->operador_id, function($query, $value) use($condicoes){
+                $query->where($condicoes);
+            })->get();
 
         }
         
@@ -96,11 +102,7 @@ class DashboardController extends Controller
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
-            })
-            ->where('status_final', 'pendente')
-            ->where('operador_id', $user->codigo_importado)
-            ->get();
-        
+            })->where('status_final', 'pendente')->where('operador_id', Auth::user()->codigo_importado)->get();
         }
             
         
@@ -117,7 +119,7 @@ class DashboardController extends Controller
             $valor_arrecadado_pagamento += $movimento->valor_arrecadado_pagamento;
         }
         
-        $valor_arrecadado_total = $valor_arrecadado_depositos + $valor_arrecadado_pagamento;
+        $valor_arrecadado_total = $valor_arrecadado_depositos + $valor_facturado_pagamento;
         
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
         $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
@@ -140,7 +142,7 @@ class DashboardController extends Controller
                 "valor_facturado_pagamento" => $valor_facturado_pagamento,
                 "valor_arrecadado_pagamento" => $valor_arrecadado_pagamento,
                 "valor_arrecadado_total" => $valor_arrecadado_total,
-                "utilizadores" => $data['utilizadores'],
+                "utilizadores" => $data['utilizadores'] ?? null,
                 
                 'caixa' => $caixa,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
@@ -157,7 +159,7 @@ class DashboardController extends Controller
                 "valor_facturado_pagamento" => $valor_facturado_pagamento,
                 "valor_arrecadado_pagamento" => $valor_arrecadado_pagamento,
                 "valor_arrecadado_total" => $valor_arrecadado_total,
-                "utilizadores" => $data['utilizadores'],
+                "utilizadores" => $data['utilizadores'] ?? null,
                 'caixa' => $caixa ?? Null,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
                 

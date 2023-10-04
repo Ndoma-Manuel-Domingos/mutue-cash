@@ -236,7 +236,7 @@
                         <th>Data da validação</th>
                         <th>Anexo</th>
                         <!-- <th>Ver recibo</th> -->
-                        <th>Feito com saldo</th>
+                        <th>Feito com Reserva</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -253,7 +253,7 @@
                         <td class="text-center">{{ pagamento.updated_at }}</td>
                         <td class="text-center"><a :href="'https://mutue.ao/storage/documentos/'+pagamento.nome_documento" target="_blink"><i class="fas fa-paperclip"></i></a></td>
                         <!-- <td class="text-center"><a href="" @click.prevent="imprimirFatura(pagamento.codigo_factura)"><i class="fas fa-print"></i></a></td> -->
-                        <td class="text-center"> Não</td>
+                        <td class="text-center"> {{pagamento.feito_com_reserva=='Y'?'SIM': 'NÃO' }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -331,6 +331,16 @@ export default {
   computed: {
     user() {
       return this.$page.props.auth.user;
+    },
+    utilizadores() {
+      const uniqueMap = new Map();
+      return this.utilizadores.filter((item) => {
+        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
+          uniqueMap.set(item.utilizadores.codigo_importado, true);
+          return true;
+        }
+        return false;
+      });
     },
   },
   
