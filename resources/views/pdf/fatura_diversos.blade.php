@@ -368,7 +368,7 @@
             <br><br><br>
             <p style="text-align:center;">Assinatura<br><br>
                 __________________________ <br><br>
-                {{ Auth::user()->nome ?? '' }}
+                {{  $pagamento_utilizador->nome ?? '' }}
 
             </p>
         </div>

@@ -1270,6 +1270,7 @@
         if (typeof number !== "string") {
           return false;
         }
+<<<<<<< HEAD
   
         // Verifica se a string contém letras
         return /[a-zA-Z]/.test(number);
@@ -1293,6 +1294,83 @@
           if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
             //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
             return false;
+=======
+      }else if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (this.fatura.ValorAPagar-this.fatura.ValorEntregue))) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+        document.getElementById("btn").disabled = false;
+        return false;
+      }
+      // this.pagamento.Codigo_PreInscricao = this.candidato.codigo_inscricao;
+      const config = {
+        headers: { "content-type": "multipart/form-data" },
+      };
+
+      let formData = new FormData();
+      var pagamento = JSON.stringify(this.pagamento); //grande  solução.
+      //var codigo_fatura=JSON.stringify(this.fatura_id);
+      var codigo_fatura = JSON.stringify(this.numero_fatura_nao_paga);
+      var switch1 = JSON.stringify(this.switch1);
+      formData.append("pagamento", pagamento);
+      formData.append("switch_troco", switch1);
+      formData.append("codigo_fatura", codigo_fatura);
+      formData.append("talao_banco", this.talao_banco);
+      // formData.append("talao_banco2", this.talao_banco2);
+      formData.append("fonte", 1); // fonte de requisicao
+
+      this.$Progress.start();
+      axios
+        .post(
+          "/pagamentos-estudantes/pagamento/diversos/create/" +
+            this.codigo_matricula,
+          formData,
+          config,
+          { referencia: this.numero_fatura_nao_paga }
+        )
+        .then((response) => {
+          if (response.status === 200) {
+            var fatura = this.numero_fatura_nao_paga;
+
+            Swal.fire({
+              title: "Sucesso",
+              text: response.data.mensagem,
+              icon: "success",
+              confirmButtonColor: "#3d5476",
+              confirmButtonText: "Ok",
+              onClose: this.imprimirFatura(fatura),
+            });
+            this.codigo_matricula = null;
+            (this.nome_estudante = null),
+              (this.bilheite_estudante = null),
+              (this.pagamento.valor_depositado = 0),
+              (this.saldo_aluno = 0),
+              (this.pagamento = {});
+            this.numero_fatura_nao_paga = "";
+            document.getElementById("anexo").value = "";
+
+            sweetSuccess(response.data.mensagem);
+            this.$Progress.finish();
+          } else if (response.status === 500) {
+            sweetError("Falha de comunicação!");
+            this.$Progress.fail();
+          } else {
+            sweetError(response.data);
+            this.$Progress.fail();
+          }
+        })
+        .catch((error) => {
+          if (error.response.status == 422) {
+            this.erros = error.response.data.errors;
+            this.botao = true;
+            document.getElementById("btn").disabled = false;
+
+            this.$Progress.fail();
+>>>>>>> 614e2da418d789b2d303c89ed9a51c4da041b1d2
           }
         }
         // this.pagamento.Codigo_PreInscricao = this.candidato.codigo_inscricao;
@@ -2227,6 +2305,7 @@
         } else {
           this.addOutrosServicos();
         }
+<<<<<<< HEAD
         this.totalAdicionado();
       },
   
@@ -2244,6 +2323,134 @@
   
       pegaFinalista: function () {
         //alert(this.anoLectivo.Codigo)
+=======
+      } else {
+        this.addOutrosServicos();
+      }
+      this.totalAdicionado();
+    },
+
+    AllClean: function (key) {
+      this.$Progress.start();
+      this.tabela.splice(key);
+      this.total_adicionado = 0;
+      this.$Progress.finish();
+    },
+
+    remove: function (key) {
+      //this.meus_servicos.splice(index,1)
+      this.$delete(this.tabela, key);
+    },
+
+    pegaFinalista: function () {
+      //alert(this.anoLectivo.Codigo)
+      this.$Progress.start();
+      axios
+        .get(`/estudante/pega-finalista/${this.codigo_matricula}`, {
+          params: { ano_lectivo: this.anoLectivo.Codigo },
+        })
+        .then((response) => {
+          this.cadeiras = response.data;
+          this.$Progress.finish();
+        })
+        .catch((error) => {
+          this.$Progress.fail();
+        });
+    },
+
+    getRefer: function () {
+      this.$Progress.start();
+
+      axios
+        .get(`/estudante/referencias-nao-pagas/${this.codigo_matricula}`)
+        .then((response) => {
+          this.referencias = response.data;
+          this.numero_fatura = this.referencias.codigo_fatura;
+          this.$Progress.finish();
+        })
+        .catch((error) => {
+          this.$Progress.fail();
+        });
+    },
+
+    onTalaoChange(e) {
+      //console.log(e.target.files[0]);
+      this.talao_banco = e.target.files[0];
+    },
+
+    onTalao2Change(e) {
+      //console.log(e.target.files[0]);
+      this.talao_banco2 = e.target.files[0];
+    },
+
+    activarForm: function () {
+      $("select").formSelect();
+      $(".tabs").tabs();
+      $(".modal").modal();
+      $(".sidenav").sidenav();
+      $(".collapsible").collapsible();
+    },
+
+    registarFatura: function () {
+      if (
+        this.pagamento.valor_depositado == null &&
+        Math.ceil(this.estudante.saldo) < Math.ceil(this.total_adicionado)
+      ) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text: "Por favor preencha o campo: Valor a Depositar",
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+
+        document.getElementById("btn").disabled = false;
+      } else if (this.valor_por_depositar >= 0 && this.estudante.saldo > 0 && Math.ceil(this.valor_por_depositar + this.estudante.saldo) <this.total_adicionado) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:
+            "O Valor entregue é Inferior ao Valor a Pagar =" +
+            this.formatPrice(this.total_adicionado),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+
+        document.getElementById("btn").disabled = false;
+      } else if (this.valor_por_depositar != null && (this.opcoes == 1 || this.opcoes == 2) && (this.pagamento.valor_depositado < this.valor_por_depositar)) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+        document.getElementById("btn").disabled = false;
+        return false;
+      } else {
+        this.botao = false;
+        document.getElementById("btn").disabled = true;
+        //dados do pagamento
+        const config = {
+          headers: { "content-type": "multipart/form-data" },
+        };
+
+        let formData = new FormData();
+        var fatura_item = JSON.stringify(this.tabela); //grande  solução.
+        var anoLectivo = JSON.stringify(this.anoLectivo.Codigo);
+        var parametroSaldo = JSON.stringify(this.pagarComSaldo);
+        var pagamento = JSON.stringify(this.pagamento); //grande  solução.
+        var referencia = JSON.stringify(this.referencia);
+        var switch1 = JSON.stringify(this.switch1);
+        formData.append("fatura_item", fatura_item);
+        formData.append("anoLectivo", anoLectivo);
+        formData.append("parametroSaldo", parametroSaldo);
+        formData.append("pagamento", pagamento);
+        formData.append("switch_troco", switch1);
+        formData.append("referencia", referencia);
+        formData.append("fonte", 2); // fonte de requisicao
+
+>>>>>>> 614e2da418d789b2d303c89ed9a51c4da041b1d2
         this.$Progress.start();
         axios
           .get(`/estudante/pega-finalista/${this.codigo_matricula}`, {
