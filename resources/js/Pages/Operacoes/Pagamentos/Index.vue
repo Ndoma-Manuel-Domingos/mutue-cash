@@ -136,7 +136,7 @@
                       <th>Data Registro</th>
                       <th>Troco</th>
                       <th>Operador</th>
-                      <th class="text-center">Invalidar</th>
+                      <!-- <th class="text-center">Invalidar</th> -->
                       <th class="text-center">Detalhes</th>
                       <th class="text-center">Factura</th>
                       <th class="text-center">Ticket</th>
@@ -158,9 +158,9 @@
                       <td>{{ item.factura ? item.DataRegisto : '' }}</td>
                       <td>{{ formatValor(item.factura.Troco) }}</td>
                       <td>{{ item.operador_novos ? item.operador_novos.nome : item.operador_antigo ? item.operador_antigo.nome : NULL }}</td>
-                      <td class="text-center">
+                      <!-- <td class="text-center">
                         <a @click="invalidar_pagamento(item.Codigo)" class="text-danger"><i class="fas fa-ban"></i></a>
-                      </td>
+                      </td> -->
                       <td class="text-center">
                         <a @click="detalhes(item.Codigo)" class="text-primary"><i class="fas fa-eye"></i></a>
                       </td>

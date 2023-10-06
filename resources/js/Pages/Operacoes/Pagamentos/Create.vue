@@ -27,8 +27,8 @@
             </button>
           </div>
           <!-- voltarPaginaAnterior() {
-              window.history.back();
-            }, -->
+            window.history.back();
+          }, -->
         </div>
       </div>
     </div>
@@ -41,8 +41,6 @@
               <div class="card-header">
                 <h6>Pesquiar Estudantes</h6>
               </div>
-
-              <!--  162969.00 -->
 
               <div class="card-body">
                 <form action="">
@@ -214,8 +212,7 @@
                       class="form-control"
                       :disabled="isFormDisabled"
                       @change="faturaByReference"
-                      v-model="numero_fatura_nao_paga"
-                    >
+                      v-model="numero_fatura_nao_paga">
                       <option disabled>Selecione Facturas a Pagar</option>
                       <option
                         v-for="item in referencias_nao_pagas"
@@ -245,22 +242,10 @@
                             item.codigo_fatura
                           }})</span
                         >
-                        <span v-else-if="item.tipo_fatura == 3"
-                          >Inscrição de Cadeiras ({{
-                            item.codigo_fatura
-                          }})</span
-                        >
-                        <span v-else-if="item.tipo_fatura == 1"
-                          >Factura de Matrícula ({{ item.codigo_fatura }})</span
-                        >
-                        <span v-else-if="item.tipo_fatura == 9"
-                          >Inscrição de Exame de Acesso ({{
-                            item.codigo_fatura
-                          }})</span
-                        >
-                        <span v-else
-                          >Outros Serviços ({{ item.codigo_fatura }})</span
-                        >
+                        <span v-else-if="item.tipo_fatura == 3">Inscrição de Cadeiras ({{item.codigo_fatura}})</span>
+                        <span v-else-if="item.tipo_fatura == 1">Factura de Matrícula ({{item.codigo_fatura}})</span>
+                        <span v-else-if="item.tipo_fatura == 9">Inscrição de Exame de Acesso ({{item.codigo_fatura}})</span>
+                        <span v-else>Outros Serviços ({{ item.codigo_fatura }})</span>
                       </option>
                     </select>
                   </div>
@@ -524,11 +509,7 @@
                   <thead>
                     <tr>
                       <th colspan="3" class="text-info">
-                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{
-                          extensivo(fatura.ValorAPagar) +
-                          " " +
-                          numeroPorExtenso(formatPrice(fatura.ValorAPagar))
-                        }})
+                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{extensivo(fatura.ValorAPagar)+' '+numeroPorExtenso(formatPrice(fatura.ValorAPagar))}})
                       </th>
                     </tr>
 
@@ -591,7 +572,7 @@
                   </tbody>
                   <tfoot>
                     <tr>
-                      <th>Valor a Pagar</th>
+                      <th>Valor Total a Pagar</th>
                       <th>Valor Entregue</th>
                       <th>Valor em Falta</th>
                     </tr>
@@ -647,11 +628,7 @@
 
                     <tr v-if="fatura.ValorAPagar > 0">
                       <td colspan="3">
-                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{
-                          extensivo(fatura.ValorAPagar) +
-                          " " +
-                          numeroPorExtenso(formatPrice(fatura.ValorAPagar))
-                        }})
+                        TOTAL A PAGAR: {{ formatPrice(fatura.ValorAPagar) }} ({{extensivo(fatura.ValorAPagar)+' '+numeroPorExtenso(formatPrice(fatura.ValorAPagar))}})
                       </td>
                     </tr>
                   </tfoot>
@@ -685,17 +662,17 @@
                     <tr>
                       <th>Reserva Disponível</th>
                       <th>Valor em falta</th>
-                      <th>valor a pagar</th>
+                      <th>Valor a pagar</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>{{ formatPrice(estudante.saldo) }}</td>
-                      <td v-if="estudante.saldo >= total_adicionado">
-                        {{ formatPrice(0) }}
+                      <td>
+                        {{ formatPrice(valor_por_depositar) }}
                       </td>
-                      <td v-else>{{ formatPrice(valor_por_depositar) }}</td>
-                      <td>{{ formatPrice(total_adicionado) }}</td>
+                      <!-- <td v-else>{{ formatPrice(valor_por_depositar) }}</td> -->
+                      <td>{{ (total_adicionado>0) ? formatPrice(total_adicionado) : (fatura ? formatPrice(fatura.ValorAPagar-fatura.ValorEntregue) : formatPrice(0)) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -711,15 +688,15 @@
                 >
                   <div class="row">
                     <!-- <div
-                        class="col-12 col-md-6 mb-3">
-                        <label for="" class="form-label">Valor entregue</label>
-                        <input
-                          type="text"
-                          class="form-control"
-                          v-model="pagamento.valor_depositado"
-                          placeholder="Ex: 12346"
-                        />
-                      </div> -->
+                      class="col-12 col-md-6 mb-3">
+                      <label for="" class="form-label">Valor entregue</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="pagamento.valor_depositado"
+                        placeholder="Ex: 12346"
+                      />
+                    </div> -->
                     <div class="col-12 col-md-6 mb-3">
                       <label for="valor_depositado_tese" class="form-label"
                         >Valor entregue</label
@@ -768,9 +745,9 @@
                       v-if="pagamento.forma_pagamento != 'POR REFERÊNCIA'"
                     >
                       <!-- <p>
-                          Talão(Obrigatório) | Formatos permitidos: PNG, PDF, JPG
-                          | Tamanho máx. ficheiro: 2MB
-                        </p> -->
+                        Talão(Obrigatório) | Formatos permitidos: PNG, PDF, JPG
+                        | Tamanho máx. ficheiro: 2MB
+                      </p> -->
                     </div>
                   </div>
                 </form>
@@ -962,120 +939,33 @@
     </div>
   </MainLayouts>
 </template>
-  
-  <script>
+
+<script>
 import Swal from "sweetalert2";
 import { sweetSuccess, sweetError } from "../../../components/Alert";
 // import VueChartkick from "vue-chartkick";
 const extensive = require("extenso");
 
-const unidades = [
-  "",
-  "um",
-  "dois",
-  "três",
-  "quatro",
-  "cinco",
-  "seis",
-  "sete",
-  "oito",
-  "nove",
-];
-const teens = [
-  "dez",
-  "onze",
-  "doze",
-  "treze",
-  "catorze",
-  "quinze",
-  "dezesseis",
-  "dezessete",
-  "dezoito",
-  "dezenove",
-];
-const dezenas = [
-  "",
-  "dez",
-  "vinte",
-  "trinta",
-  "quarenta",
-  "cinquenta",
-  "sessenta",
-  "setenta",
-  "oitenta",
-  "noventa",
-];
-const centenas = [
-  "",
-  "cento",
-  "duzentos",
-  "trezentos",
-  "quatrocentos",
-  "quinhentos",
-  "seiscentos",
-  "setecentos",
-  "oitocentos",
-  "novecentos",
-];
-const milhares = [
-  "",
-  "mil",
-  "dois mil",
-  "três mil",
-  "quatro mil",
-  "cinco mil",
-  "seis mil",
-  "sete mil",
-  "oito mil",
-  "nove mil",
-];
-const milhoes = [
-  "",
-  "um milhão",
-  "dois milhões",
-  "três milhões",
-  "quatro milhões",
-  "cinco milhões",
-  "seis milhões",
-  "sete milhões",
-  "oito milhões",
-  "nove milhões",
-];
-const bilhoes = [
-  "",
-  "um bilhão",
-  "dois bilhões",
-  "três bilhões",
-  "quatro bilhões",
-  "cinco bilhões",
-  "seis bilhões",
-  "sete bilhões",
-  "oito bilhões",
-  "nove bilhões",
-];
-const trilhoes = [
-  "",
-  "um trilhão",
-  "dois trilhões",
-  "três trilhões",
-  "quatro trilhões",
-  "cinco trilhões",
-  "seis trilhões",
-  "sete trilhões",
-  "oito trilhões",
-  "nove trilhões",
-];
+const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+const teens = ['dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+const dezenas = ['', 'dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+const milhares = ['', 'mil', 'dois mil', 'três mil', 'quatro mil', 'cinco mil', 'seis mil', 'sete mil', 'oito mil', 'nove mil'];
+const milhoes = ['','um milhão','dois milhões','três milhões','quatro milhões','cinco milhões','seis milhões','sete milhões','oito milhões','nove milhões'];
+const bilhoes = ['','um bilhão','dois bilhões','três bilhões','quatro bilhões','cinco bilhões','seis bilhões','sete bilhões','oito bilhões','nove bilhões'];
+const trilhoes = ['','um trilhão','dois trilhões','três trilhões','quatro trilhões','cinco trilhões','seis trilhões','sete trilhões','oito trilhões','nove trilhões'];
 
 export default {
   props: ["forma_pagamentos"],
   data() {
     return {
+
       switch1: false,
       codigo_matricula: null,
       codigo_tipo_candidatura: null,
       ano_lectivo_id: null,
       isFormDisabled: true,
-      servico: { Preco: 0 },
+      servico: {Preco:0},
 
       anoLectivo: { Codigo: null },
 
@@ -1238,15 +1128,15 @@ export default {
       meses_bolsa: [],
       prazo_desconto_ano_todo: {},
 
-      form: this.$inertia.form({
-        codigo_inscricao: null,
-        // falta ser paramentrizado 5000
-        valor_a_depositar: 0,
-        nome_estudante: null,
-        bilheite_estudante: null,
-        curso_estudante: null,
-        codigo_tipo_candidatura: null,
-      }),
+        form: this.$inertia.form({
+            codigo_inscricao: null,
+          // falta ser paramentrizado 5000
+          valor_a_depositar: 0,
+          nome_estudante: null,
+          bilheite_estudante: null,
+          curso_estudante: null,
+          codigo_tipo_candidatura: null,
+        }),
     };
   },
 
@@ -1254,7 +1144,7 @@ export default {
     this.getAnoLectivoActual();
   },
 
-  mounted() {
+  mounted(){
     this.pegaFinalista();
   },
 
@@ -1262,47 +1152,23 @@ export default {
     fatura(val) {
       if (val) {
         if (this.fatura.descricao_factura == 5) {
-          if (
-            this.estudante.saldo >= 0 &&
-            this.estudante.saldo < this.metadeValorPagar
-          ) {
-            this.pagamento.valor_depositado =
-              this.metadeValorPagar - this.estudante.saldo;
-            this.valor_depositado_tese = this.formatValor(
-              this.pagamento.valor_depositado
-            );
+          if (this.estudante.saldo >= 0 && this.estudante.saldo < this.metadeValorPagar) {
+            this.pagamento.valor_depositado = (this.metadeValorPagar - this.estudante.saldo);
+            this.valor_por_depositar = (this.metadeValorPagar - this.estudante.saldo);
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
           } else if (this.estudante.saldo >= this.metadeValorPagar) {
-            this.pagamento.valor_depositado =
-              this.estudante.saldo - this.metadeValorPagar;
-            this.valor_depositado_tese = this.formatValor(
-              this.pagamento.valor_depositado
-            );
+            this.pagamento.valor_depositado = (this.estudante.saldo - this.metadeValorPagar);
+            this.valor_por_depositar = (this.estudante.saldo - this.metadeValorPagar);
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
           }
-        } else if (
-          this.estudante.saldo >= 0 &&
-          this.estudante.saldo < this.fatura.ValorAPagar
-        ) {
-          this.pagamento.valor_depositado =
-            this.fatura.ValorAPagar -
-            this.fatura.ValorEntregue -
-            this.estudante.saldo;
-          this.valor_depositado_tese = this.formatValor(
-            this.pagamento.valor_depositado
-          );
-          this.valor_por_depositar =
-            this.fatura.ValorAPagar -
-            this.fatura.ValorEntregue -
-            this.estudante.saldo;
+        } else if (this.estudante.saldo >= 0 && this.estudante.saldo < this.fatura.ValorAPagar) {
+          this.pagamento.valor_depositado = (this.fatura.ValorAPagar - this.fatura.ValorEntregue -this.estudante.saldo);
+          this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+          this.valor_por_depositar = (this.fatura.ValorAPagar - this.fatura.ValorEntregue - this.estudante.saldo);
         } else if (this.estudante.saldo >= this.fatura.ValorAPagar) {
-          this.pagamento.valor_depositado =
-            this.estudante.saldo -
-            (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
-          this.valor_depositado_tese = this.formatValor(
-            this.pagamento.valor_depositado
-          );
-          this.valor_por_depositar =
-            this.estudante.saldo -
-            (this.fatura.ValorAPagar - this.fatura.ValorEntregue);
+          this.pagamento.valor_depositado = this.estudante.saldo -(this.fatura.ValorAPagar - this.fatura.ValorEntregue);
+          this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+          this.valor_por_depositar = this.estudante.saldo -(this.fatura.ValorAPagar - this.fatura.ValorEntregue);
         }
       }
     },
@@ -1310,32 +1176,19 @@ export default {
     total_adicionado(val) {
       if (val) {
         this.pagamento.valor_depositado = this.valor_depositado_tese;
-        if (
-          this.estudante.saldo >= 0 &&
-          this.estudante.saldo < this.total_adicionado
-        ) {
-          this.pagamento.valor_depositado =
-            this.total_adicionado - this.estudante.saldo;
-          this.valor_depositado_tese = this.formatValor(
-            this.pagamento.valor_depositado
-          );
-          this.valor_por_depositar =
-            this.total_adicionado - this.estudante.saldo;
+        if (this.estudante.saldo >= 0 && this.estudante.saldo < this.total_adicionado) {
+          this.pagamento.valor_depositado = (this.total_adicionado - this.estudante.saldo);
+          this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+          this.valor_por_depositar = (this.total_adicionado - this.estudante.saldo);
           // this.estudante.saldo = 0;
         } else {
           if (this.estudante.saldo >= this.total_adicionado) {
-            this.pagamento.valor_depositado =
-              this.estudante.saldo - this.total_adicionado;
-            this.valor_depositado_tese = this.formatValor(
-              this.pagamento.valor_depositado
-            );
-            this.valor_por_depositar =
-              this.estudante.saldo - this.total_adicionado;
+            this.pagamento.valor_depositado =(this.estudante.saldo - this.total_adicionado);
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
+            this.valor_por_depositar = (this.estudante.saldo - this.total_adicionado);
           } else {
             this.pagamento.valor_depositado = this.total_adicionado;
-            this.valor_depositado_tese = this.formatValor(
-              this.pagamento.valor_depositado
-            );
+            this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
             this.valor_por_depositar = this.total_adicionado;
           }
         }
@@ -1392,34 +1245,57 @@ export default {
         currency: "AOA",
       });
 
-      this.pagamento.valor_depositado = this.removerFormatacaoAOA(
-        this.valor_depositado_tese
-      );
+      this.pagamento.valor_depositado = this.removerFormatacaoAOA(this.valor_depositado_tese);
 
       if (this.valor_por_depositar == this.pagamento.valor_depositado) {
-        this.troco = 0;
-      } else if (this.total_adicionado > 0) {
-        this.troco = this.formatPrice(
-          this.pagamento.valor_depositado - this.total_adicionado
-        );
-        if (
-          this.pagamento.valor_depositado - this.total_adicionado > 0 ||
-          this.valor_depositado_tese - this.total_adicionado > 0
-        ) {
+        this.troco = this.formatValor(0);
+        this.condicao_troco = false;
+      } else if(this.total_adicionado > 0) {
+        if((this.pagamento.valor_depositado >= this.total_adicionado)) {
+          if(this.estudante.saldo > 0){
+            Swal.fire({
+              title: "Nota informativa",
+              text:"Caro estudante, gostariamos informá-lo, que uma vez que o valor que você entregou cobre o valor total da factura/restante dela, logo, a Reserva que tens disponível no sistema não será tocada, só será tocada caso o valor entregue seja insuficiente para cobrir o total da factura/restante dela",
+              icon: "warning",
+              confirmButtonColor: "#3d5476",
+              confirmButtonText: "Ok",
+            });
+          }
+          this.troco = this.formatValor(this.pagamento.valor_depositado - this.total_adicionado);
+          if(this.removerFormatacaoAOA(this.troco) > 0){
+            this.condicao_troco = true;
+          }else{
+            this.troco = this.formatValor(0);
+            this.condicao_troco = false;
+          }
+        }else if(((this.pagamento.valor_depositado -this.valor_por_depositar) > 0)) {
+          this.troco = this.formatValor(this.pagamento.valor_depositado - this.valor_por_depositar);
           this.condicao_troco = true;
-        } else {
+        }else{
           this.condicao_troco = false;
         }
-      } else if (this.fatura.ValorAPagar > 0) {
-        this.troco = this.formatPrice(
-          this.pagamento.valor_depositado - this.fatura.ValorAPagar
-        );
-        if (
-          this.pagamento.valor_depositado - this.fatura.ValorAPagar > 0 ||
-          this.valor_depositado_tese - this.fatura.ValorAPagar > 0
-        ) {
+      }else if(this.fatura.ValorAPagar > 0){
+        if((this.pagamento.valor_depositado >= (this.fatura.ValorAPagar-this.fatura.ValorEntregue))) {
+          if(this.estudante.saldo > 0){
+            Swal.fire({
+              title: "Nota informativa",
+              text:"Caro estudante, gostariamos informá-lo, que uma vez que o valor que você entregou cobre o valor total da factura/restante dela, logo, a Reserva que tens disponível no sistema não será tocada, só será tocada caso o valor entregue seja insuficiente para cobrir o total da factura/restante dela",
+              icon: "warning",
+              confirmButtonColor: "#3d5476",
+              confirmButtonText: "Ok",
+            });
+          }
+          this.troco = this.formatValor(this.pagamento.valor_depositado - (this.fatura.ValorAPagar-this.fatura.ValorEntregue));
+          if(this.removerFormatacaoAOA(this.troco) > 0){
+            this.condicao_troco = true;
+          }else{
+            this.troco = this.formatValor(0);
+            this.condicao_troco = false;
+          }
+        }else if(((this.pagamento.valor_depositado -this.valor_por_depositar) > 0)) {
+          this.troco = this.formatValor(this.pagamento.valor_depositado - this.valor_por_depositar);
           this.condicao_troco = true;
-        } else {
+        }else{
           this.condicao_troco = false;
         }
       }
@@ -1450,11 +1326,27 @@ export default {
     },
 
     registarPagamento: function () {
-      if (this.pagamento.forma_pagamento == "POR REFERÊNCIA") {
-        if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
-          //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
-          return false;
-        }
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && this.fatura !=null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)))) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+        document.getElementById("btn").disabled = false;
+        return false;
+      }
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < this.valor_por_depositar)) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+        document.getElementById("btn").disabled = false;
+        return false;
       }
       // this.pagamento.Codigo_PreInscricao = this.candidato.codigo_inscricao;
       const config = {
@@ -1466,8 +1358,10 @@ export default {
       //var codigo_fatura=JSON.stringify(this.fatura_id);
       var codigo_fatura = JSON.stringify(this.numero_fatura_nao_paga);
       var switch1 = JSON.stringify(this.switch1);
+      var troco = this.removerFormatacaoAOA(this.troco);
       formData.append("pagamento", pagamento);
       formData.append("switch_troco", switch1);
+      formData.append("troco", troco);
       formData.append("codigo_fatura", codigo_fatura);
       formData.append("talao_banco", this.talao_banco);
       // formData.append("talao_banco2", this.talao_banco2);
@@ -1494,6 +1388,11 @@ export default {
               confirmButtonText: "Ok",
               onClose: this.imprimirFatura(fatura),
             });
+            this.troco = this.formatValor(this.troco);
+            this.condicao_troco=false;
+            this.switch1=false;
+            this.saldo_aluno=0;
+            this.estudante={};
             this.codigo_matricula = null;
             (this.nome_estudante = null),
               (this.bilheite_estudante = null),
@@ -1546,13 +1445,12 @@ export default {
           if (response.data.dados === null) {
             sweetError("Ocorreu um errro");
           } else {
+
             this.form.codigo_estudante = response.data.dados.Codigo;
             this.form.nome_estudante = response.data.dados.Nome_Completo;
-            this.form.bilheite_estudante =
-              response.data.dados.Bilhete_Identidade;
+            this.form.bilheite_estudante = response.data.dados.Bilhete_Identidade;
             this.form.curso_estudante = response.data.dados.Designacao;
-            this.form.codigo_tipo_candidatura =
-              response.data.dados.codigo_tipo_candidatura;
+            this.form.codigo_tipo_candidatura = response.data.dados.codigo_tipo_candidatura;
             sweetSuccess("Estudante Encontrado com sucesso!");
             this.getDadosPagamentos();
           }
@@ -1565,46 +1463,48 @@ export default {
     },
 
     pesqisar_estudante(e) {
+      this.estudante = {};
+      this.saldo_aluno=0
+      this.valor_depositado_tese = this.formatValor(0);
       e.preventDefault();
       this.$Progress.start();
       $(".table_estudantes").html("");
-      axios
-        .get(`/pesquisar-estudante?search=${this.codigo_matricula}`)
-        .then((response) => {
-          if (response.data.dados === null) {
-            sweetError("Estudante Não Encontrado");
-          } else {
-            this.isFormDisabled = false;
+      axios.get(`/pesquisar-estudante?search=${this.codigo_matricula}`).then((response) => {
+        if (response.data.dados === null) {
+          sweetError("Estudante Não Encontrado");
+        } else {
+          this.isFormDisabled = false;
+          this.troco = this.formatValor(0);
+          this.condicao_troco=false;
+          this.switch1=false;
+          this.codigo_matricula = response.data.dados.Codigo;
+          this.nome_estudante = response.data.dados.Nome_Completo;
+          this.bilheite_estudante = response.data.dados.Bilhete_Identidade;
+          this.codigo_tipo_candidatura =
+            response.data.dados.codigo_tipo_candidatura;
+          this.ano_lectivo_id = response.data.ano_lectivo_id;
+          this.saldo_aluno = response.data.dados.saldo;
 
-            this.codigo_matricula = response.data.dados.Codigo;
-            this.nome_estudante = response.data.dados.Nome_Completo;
-            this.bilheite_estudante = response.data.dados.Bilhete_Identidade;
-            this.codigo_tipo_candidatura =
-              response.data.dados.codigo_tipo_candidatura;
-            this.ano_lectivo_id = response.data.ano_lectivo_id;
-            this.saldo_aluno = response.data.dados.saldo;
+          (this.mostrar_dados_estudante = true), this.pegaAnoLectivo();
+          this.getAnosLectivosEstudante();
+          this.pegaPropina();
+          this.pegaAluno();
+          this.getTodasRefer();
+          this.pegaSaldo();
+          this.getCiclos();
+          this.pegaServicos();
+          this.pegarDescricaoBolseiro();
+          this.pegaBolseiro();
 
-            (this.mostrar_dados_estudante = true), this.pegaAnoLectivo();
-            this.getAnosLectivosEstudante();
-            this.pegaPropina();
-            this.pegaAluno();
-            this.getTodasRefer();
-            this.pegaSaldo();
-            this.getCiclos();
-            this.pegaServicos();
-            this.pegarDescricaoBolseiro();
-            this.pegaBolseiro();
+          this.verificaConfirmacaoNoAnoLectivoCorrente();
 
-            this.verificaConfirmacaoNoAnoLectivoCorrente();
-
-            sweetSuccess("Estudante Encontrado com sucesso!");
-          }
-          this.$Progress.finish();
-        })
-        .catch((errors) => {
-          this.$Progress.fail();
-          sweetError("Estudante Não Encontrado!");
-        });
+          sweetSuccess("Estudante Encontrado com sucesso!");
+        }
+        this.$Progress.finish();
+      }).catch((errors) => {
+        this.$Progress.fail();
+        sweetError("Estudante Não Encontrado!");
+      });
     },
 
     // recuperar totas as factura do aluno não pagas
@@ -1628,15 +1528,10 @@ export default {
     },
     // recuperar totas as factura do aluno não pagas
     getTodasRefer: function () {
-      axios
-        .get(
-          `/pagamentos-estudantes/todas-referencias-nao-pagas/${this.codigo_matricula}`
-        )
-        .then((response) => {
-          this.referencias_nao_pagas = response.data;
-          this.numero_fatura_nao_paga = response.data.codigo_fatura;
-        })
-        .catch((error) => {});
+      axios.get(`/pagamentos-estudantes/todas-referencias-nao-pagas/${this.codigo_matricula}`).then((response) => {
+        this.referencias_nao_pagas = response.data;
+        this.numero_fatura_nao_paga = response.data.codigo_fatura;
+      }).catch((error) => {});
     },
 
     // recuperar todas as facturas
@@ -1657,8 +1552,7 @@ export default {
             this.fatura = response.data.fatura;
             this.extenso = response.data.extenso;
             this.itens = response.data.itens;
-            this.valor_pagamentos =
-              response.data.valor_depositado.valor_depositado;
+            this.valor_pagamentos = response.data.valor_depositado.valor_depositado;
             this.fatura.ValorAPagar = this.fatura.ValorAPagar
               ? this.fatura.ValorAPagar
               : 0;
@@ -1849,17 +1743,14 @@ export default {
           this.mesAtual = response.data.mesAtual;
           this.diaAtual = response.data.diaAtual;
           this.anoAtual = response.data.anoAtual;
-          this.ano_lectivo_sem_cadeiras_inscritas =
-            response.data.ano_lectivo_sem_cadeiras_inscritas;
+          this.ano_lectivo_sem_cadeiras_inscritas = response.data.ano_lectivo_sem_cadeiras_inscritas;
           this.transferencia_curso = response.data.transferencia_curso;
           this.parametroMulta = response.data.parametroMulta;
           this.desconto_incentivo = response.data.taxa_nov21_jul22;
           //desconto_especial_nov_fev2021
-          this.desconto_especial_nov21_jul22 =
-            this.propina.Preco * (response.data.taxa_nov21_jul22 / 100);
+          this.desconto_especial_nov21_jul22 = this.propina.Preco * (response.data.taxa_nov21_jul22 / 100);
 
-          this.desconto_excepcao_todos =
-            this.propina.Preco - this.propina.valor_anterior;
+          this.desconto_excepcao_todos = this.propina.Preco - this.propina.valor_anterior;
 
           //this.loading=false;
           this.pegaFinalista();
@@ -1939,18 +1830,10 @@ export default {
     },
 
     imprimirFatura: function (codigo_fatura) {
-      window.open(
-        `/fatura/diversos/${btoa(btoa(btoa(codigo_fatura)))}?extensivo=${
-          this.extensivo(this.fatura.ValorAPagar) +
-          " " +
-          this.numeroPorExtenso(this.formatPrice(this.fatura.ValorAPagar))
-        }`
-      );
+      window.open(`/fatura/diversos/${btoa(btoa(btoa(codigo_fatura)))}?extensivo=${this.extensivo(this.fatura.ValorAPagar)+' '+this.numeroPorExtenso(this.formatPrice(this.fatura.ValorAPagar))}`);
     },
     imprimirFaturaInscricao: function (codigo_fatura) {
-      window.open(
-        "/fatura-recibo/inscricao/" + btoa(btoa(btoa(codigo_fatura)))
-      );
+      window.open("/fatura-recibo/inscricao/" + btoa(btoa(btoa(codigo_fatura))));
     },
 
     formatPrice(value) {
@@ -2483,12 +2366,7 @@ export default {
         });
 
         document.getElementById("btn").disabled = false;
-      } else if (
-        this.valor_por_depositar >= 0 &&
-        this.estudante.saldo > 0 &&
-        Math.ceil(this.valor_por_depositar + this.estudante.saldo) <
-          this.total_adicionado
-      ) {
+      } else if (this.valor_por_depositar >= 0 && this.estudante.saldo > 0 && Math.ceil(this.valor_por_depositar + this.estudante.saldo) <this.total_adicionado) {
         Swal.fire({
           title: "Dados Incorrectos",
           text:
@@ -2500,16 +2378,10 @@ export default {
         });
 
         document.getElementById("btn").disabled = false;
-      } else if (
-        this.valor_por_depositar != null &&
-        (this.opcoes == 1 || this.opcoes == 2) &&
-        this.pagamento.valor_depositado < this.valor_por_depositar
-      ) {
+      } else if (this.valor_por_depositar != null && (this.opcoes == 1 || this.opcoes == 2) && (this.pagamento.valor_depositado < this.valor_por_depositar)) {
         Swal.fire({
           title: "Dados Incorrectos",
-          text:
-            "O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +
-            this.formatValor(this.valor_por_depositar),
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),
           icon: "error",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
@@ -2531,11 +2403,13 @@ export default {
         var pagamento = JSON.stringify(this.pagamento); //grande  solução.
         var referencia = JSON.stringify(this.referencia);
         var switch1 = JSON.stringify(this.switch1);
+        var troco = this.removerFormatacaoAOA(this.troco);
         formData.append("fatura_item", fatura_item);
         formData.append("anoLectivo", anoLectivo);
         formData.append("parametroSaldo", parametroSaldo);
         formData.append("pagamento", pagamento);
         formData.append("switch_troco", switch1);
+        formData.append("troco", troco);
         formData.append("referencia", referencia);
         formData.append("fonte", 2); // fonte de requisicao
 
@@ -2567,6 +2441,11 @@ export default {
                 // },
                 onClose: this.imprimirFatura(fatura_ref),
               });
+              this.troco = this.formatValor(this.troco);
+              this.condicao_troco=false;
+              this.switch1=false;
+              this.saldo_aluno=0;
+              this.estudante={};
               this.imprimirFatura(fatura_ref);
               this.tabela = [];
               this.codigo_matricula = null;
@@ -2600,45 +2479,47 @@ export default {
     },
 
     efectuarPagamento: function () {
-      axios
+
+        axios
         .post("/pagamentos-preinscricao", this.form)
         .then((response) => {
-          if (response.status === 200) {
-            var fatura_ref = response.data.codigo_factura;
-            // document.getElementById("btn").disabled = false;
-            // this.botao = true;
+            if (response.status === 200) {
+                var fatura_ref = response.data.codigo_factura;
+                // document.getElementById("btn").disabled = false;
+                // this.botao = true;
 
-            Swal.fire({
-              title: "Sucesso",
-              text: response.data.msg,
-              icon: "success",
-              confirmButtonColor: "#3d5476",
-              confirmButtonText: "Ok",
-              onClose: this.imprimirFaturaInscricao(fatura_ref),
-            });
+                Swal.fire({
+                    title: "Sucesso",
+                    text: response.data.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3d5476",
+                    confirmButtonText: "Ok",
+                    onClose: this.imprimirFaturaInscricao(fatura_ref),
+                });
 
-            (this.form.codigo_inscricao = null),
-              (this.form.nome_estudante = null),
-              (this.form.bilheite_estudante = null),
-              (this.form.curso_estudante = null),
-              this.$Progress.finish();
-          } else {
-            Swal.fire({
-              icon: "info",
-              title: "Atenção...",
-              text: response.data.msg,
-            });
-            this.botao = true;
-            this.$Progress.finish();
-          }
+                this.form.codigo_inscricao = null,
+                this.form.nome_estudante = null,
+                this.form.bilheite_estudante = null,
+                this.form.curso_estudante = null,
+
+                this.$Progress.finish();
+            } else {
+                Swal.fire({
+                    icon: "info",
+                    title: "Atenção...",
+                    text: response.data.msg,
+                });
+                this.botao = true;
+                this.$Progress.finish();
+            }
         })
         .catch((error) => {
-          if (error.response.status === 422) {
-            this.erros = error.response.data.errors;
-            this.botao = true;
-            document.getElementById("btn").disabled = false;
-            this.$Progress.fail();
-          }
+            if (error.response.status === 422) {
+              this.erros = error.response.data.errors;
+              this.botao = true;
+              document.getElementById("btn").disabled = false;
+              this.$Progress.fail();
+            }
         });
     },
 
@@ -2656,47 +2537,42 @@ export default {
           this.$Progress.fail();
         });
     },
-    getDadosPagamentos: function () {
-      if (this.form.codigo_tipo_candidatura == 1) {
-        var sigla_do_servico = "TdEdA";
-      } else {
-        var sigla_do_servico = "TdIMeP";
+    getDadosPagamentos: function(){
+      if(this.form.codigo_tipo_candidatura == 1){
+          var sigla_do_servico = 'TdEdA'
+      }else{
+          var sigla_do_servico = 'TdIMeP'
       }
       axios
-        .get("/dados-pagamentos", { params: { sigla_do_servico } })
-        .then((response) => {
-          this.servico = response.data;
-          this.form.valor_a_depositar = this.servico.Preco;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+        .get("/dados-pagamentos",{params:{sigla_do_servico}})
+      .then((response)=> {
+        this.servico= response.data;
+        this.form.valor_a_depositar = this.servico.Preco;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
     },
 
     voltarPaginaAnterior() {
       window.history.back();
     },
 
-    extensivo(numero) {
-      return (
-        extensive(Math.floor(numero), { number: { decimal: "informal" } }) +
-        " kwanzas"
-      );
+    extensivo(numero){
+      return extensive(Math.floor(numero), {number: { decimal: "informal" }})+' kwanzas'
     },
+    
 
     numeroPorExtenso(valor) {
-      const [parteInteira, parteDecimal] = valor.split(",");
-
+      const [parteInteira, parteDecimal] = valor.split(',');
+     
       // const parteInteiraPorExtenso = parteInteira === 0 ? '' : this.numeroInteiroPorExtenso(parteInteira);
-      const parteDecimalPorExtenso =
-        parteDecimal && parteDecimal > 0
-          ? `e ${this.numeroInteiroPorExtenso(parteDecimal)} cêntimos `
-          : "";
+      const parteDecimalPorExtenso = (parteDecimal && parteDecimal > 0) ? `e ${this.numeroInteiroPorExtenso(parteDecimal)} cêntimos ` : '';
 
       // return `${parteInteiraPorExtenso} kwanzas ${parteDecimalPorExtenso}`;
       return `${parteDecimalPorExtenso}`;
     },
-
+    
     numeroInteiroPorExtenso(numero) {
       const num = parseInt(numero, 10);
       if (num < 10) {
@@ -2705,52 +2581,41 @@ export default {
         return teens[num - 10];
       } else if (num < 100) {
         const dezena = dezenas[Math.floor(num / 10)];
-        const unidade = num % 10 !== 0 ? `e ${unidades[num % 10]}` : "";
+        const unidade = num % 10 !== 0 ? `e ${unidades[num % 10]}` : '';
         return `${dezena} ${unidade}`;
       } else if (num < 1000) {
         const centena = centenas[Math.floor(num / 100)];
         const resto = num % 100;
-        const separador = resto !== 0 ? "e " : "";
+        const separador = resto !== 0 ? 'e ' : '';
         return `${centena} ${separador}${numeroInteiroPorExtenso(resto)}`;
-      } else if (num < 1000000) {
-        // Para números em mil (até 999.999)
+      } else if (num < 1000000) { // Para números em mil (até 999.999)
         const milhares = numeroInteiroPorExtenso(Math.floor(num / 1000));
         const resto = num % 1000;
-        const separador = resto !== 0 ? "e " : "";
+        const separador = resto !== 0 ? 'e ' : '';
         return `${milhares} mil ${separador}${numeroInteiroPorExtenso(resto)}`;
-      } else if (num < 1000000000) {
-        // Para números em milhões (até 999.999.999)
+      } else if (num < 1000000000) { // Para números em milhões (até 999.999.999)
         const milhoes = numeroInteiroPorExtenso(Math.floor(num / 1000000));
         const resto = num % 1000000;
-        const separador = resto !== 0 ? "e " : "";
-        return `${milhoes} milhões ${separador}${numeroInteiroPorExtenso(
-          resto
-        )}`;
-      } else if (num < 1000000000000) {
-        // Para números em bilhões (até 999.999.999.999)
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${milhoes} milhões ${separador}${numeroInteiroPorExtenso(resto)}`;
+      } else if (num < 1000000000000) { // Para números em bilhões (até 999.999.999.999)
         const bilhoes = numeroInteiroPorExtenso(Math.floor(num / 1000000000));
         const resto = num % 1000000000;
-        const separador = resto !== 0 ? "e " : "";
-        return `${bilhoes} bilhões ${separador}${numeroInteiroPorExtenso(
-          resto
-        )}`;
-      } else if (num < 1000000000000000) {
-        // Para números em trilhões (até 999.999.999.999.999)
-        const trilhoes = numeroInteiroPorExtenso(
-          Math.floor(num / 1000000000000)
-        );
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${bilhoes} bilhões ${separador}${numeroInteiroPorExtenso(resto)}`;
+      } else if (num < 1000000000000000) { // Para números em trilhões (até 999.999.999.999.999)
+        const trilhoes = numeroInteiroPorExtenso(Math.floor(num / 1000000000000));
         const resto = num % 1000000000000;
-        const separador = resto !== 0 ? "e " : "";
-        return `${trilhoes} trilhões ${separador}${numeroInteiroPorExtenso(
-          resto
-        )}`;
+        const separador = resto !== 0 ? 'e ' : '';
+        return `${trilhoes} trilhões ${separador}${numeroInteiroPorExtenso(resto)}`;
       } else {
-        return "Número muito grande para esta função.";
+        return 'Número muito grande para esta função.';
       }
-    },
+    }
+
   },
+
 };
 </script>
-  
-  
-  
+
+
