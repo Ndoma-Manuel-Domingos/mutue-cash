@@ -1408,7 +1408,7 @@ export default {
             sweetError("Falha de comunicação!");
             this.$Progress.fail();
           } else {
-            sweetError(response.data);
+            sweetError(response.data.message);
             this.$Progress.fail();
           }
         })
@@ -2463,6 +2463,7 @@ export default {
                 title: "Atenção...",
                 text: response.data.message,
               });
+              sweetError(response.data.message);
               this.botao = true;
               this.$Progress.finish();
             }
