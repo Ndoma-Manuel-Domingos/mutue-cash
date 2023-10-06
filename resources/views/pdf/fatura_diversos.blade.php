@@ -265,7 +265,7 @@
                                 {{ number_format(0, 2, ',', '.') }}<br>
                             @endif
                         @else
-                        {{ number_format($aluno->valor_depositado, 2, ',', '.') ?? number_format(0, 2, ',', '.') }}<br>
+                        {{ number_format(($aluno->valor_depositado+$aluno->troco), 2, ',', '.') ?? number_format(0, 2, ',', '.') }}<br>
                         @endif
 
                         @if ($aluno->negociacao)

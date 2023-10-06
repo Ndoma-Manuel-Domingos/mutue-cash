@@ -572,7 +572,7 @@
                   </tbody>
                   <tfoot>
                     <tr>
-                      <th>Valor a Pagar</th>
+                      <th>Valor Total a Pagar</th>
                       <th>Valor Entregue</th>
                       <th>Valor em Falta</th>
                     </tr>
@@ -662,17 +662,17 @@
                     <tr>
                       <th>Reserva Disponível</th>
                       <th>Valor em falta</th>
-                      <th>valor a pagar</th>
+                      <th>Valor a pagar</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>{{ formatPrice(estudante.saldo) }}</td>
-                      <td v-if="estudante.saldo >= total_adicionado">
-                        {{ formatPrice(0) }}
+                      <td>
+                        {{ formatPrice(valor_por_depositar) }}
                       </td>
-                      <td v-else>{{ formatPrice(valor_por_depositar) }}</td>
-                      <td>{{ formatPrice(total_adicionado) }}</td>
+                      <!-- <td v-else>{{ formatPrice(valor_por_depositar) }}</td> -->
+                      <td>{{ (total_adicionado>0) ? formatPrice(total_adicionado) : (fatura ? formatPrice(fatura.ValorAPagar-fatura.ValorEntregue) : formatPrice(0)) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1152,11 +1152,13 @@ export default {
     fatura(val) {
       if (val) {
         if (this.fatura.descricao_factura == 5) {
-          if ( this.estudante.saldo >= 0 && this.estudante.saldo < this.metadeValorPagar) {
+          if (this.estudante.saldo >= 0 && this.estudante.saldo < this.metadeValorPagar) {
             this.pagamento.valor_depositado = (this.metadeValorPagar - this.estudante.saldo);
+            this.valor_por_depositar = (this.metadeValorPagar - this.estudante.saldo);
             this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
           } else if (this.estudante.saldo >= this.metadeValorPagar) {
             this.pagamento.valor_depositado = (this.estudante.saldo - this.metadeValorPagar);
+            this.valor_por_depositar = (this.estudante.saldo - this.metadeValorPagar);
             this.valor_depositado_tese = this.formatValor(this.pagamento.valor_depositado);
           }
         } else if (this.estudante.saldo >= 0 && this.estudante.saldo < this.fatura.ValorAPagar) {
@@ -1246,17 +1248,52 @@ export default {
       this.pagamento.valor_depositado = this.removerFormatacaoAOA(this.valor_depositado_tese);
 
       if (this.valor_por_depositar == this.pagamento.valor_depositado) {
-        this.troco = 0;
+        this.troco = this.formatValor(0);
+        this.condicao_troco = false;
       } else if(this.total_adicionado > 0) {
-        this.troco = this.formatPrice(this.pagamento.valor_depositado - this.total_adicionado);
-        if(((this.pagamento.valor_depositado - this.total_adicionado) > 0) || ((this.valor_depositado_tese - this.total_adicionado) > 0)) {
+        if((this.pagamento.valor_depositado >= this.total_adicionado)) {
+          if(this.estudante.saldo > 0){
+            Swal.fire({
+              title: "Nota informativa",
+              text:"Caro estudante, gostariamos informá-lo, que uma vez que o valor que você entregou cobre o valor total da factura/restante dela, logo, a Reserva que tens disponível no sistema não será tocada, só será tocada caso o valor entregue seja insuficiente para cobrir o total da factura/restante dela",
+              icon: "warning",
+              confirmButtonColor: "#3d5476",
+              confirmButtonText: "Ok",
+            });
+          }
+          this.troco = this.formatValor(this.pagamento.valor_depositado - this.total_adicionado);
+          if(this.removerFormatacaoAOA(this.troco) > 0){
+            this.condicao_troco = true;
+          }else{
+            this.troco = this.formatValor(0);
+            this.condicao_troco = false;
+          }
+        }else if(((this.pagamento.valor_depositado -this.valor_por_depositar) > 0)) {
+          this.troco = this.formatValor(this.pagamento.valor_depositado - this.valor_por_depositar);
           this.condicao_troco = true;
         }else{
           this.condicao_troco = false;
         }
       }else if(this.fatura.ValorAPagar > 0){
-        this.troco = this.formatPrice(this.pagamento.valor_depositado - this.fatura.ValorAPagar);
-        if(((this.pagamento.valor_depositado - this.fatura.ValorAPagar) > 0) || ((this.valor_depositado_tese - this.fatura.ValorAPagar) > 0)) {
+        if((this.pagamento.valor_depositado >= (this.fatura.ValorAPagar-this.fatura.ValorEntregue))) {
+          if(this.estudante.saldo > 0){
+            Swal.fire({
+              title: "Nota informativa",
+              text:"Caro estudante, gostariamos informá-lo, que uma vez que o valor que você entregou cobre o valor total da factura/restante dela, logo, a Reserva que tens disponível no sistema não será tocada, só será tocada caso o valor entregue seja insuficiente para cobrir o total da factura/restante dela",
+              icon: "warning",
+              confirmButtonColor: "#3d5476",
+              confirmButtonText: "Ok",
+            });
+          }
+          this.troco = this.formatValor(this.pagamento.valor_depositado - (this.fatura.ValorAPagar-this.fatura.ValorEntregue));
+          if(this.removerFormatacaoAOA(this.troco) > 0){
+            this.condicao_troco = true;
+          }else{
+            this.troco = this.formatValor(0);
+            this.condicao_troco = false;
+          }
+        }else if(((this.pagamento.valor_depositado -this.valor_por_depositar) > 0)) {
+          this.troco = this.formatValor(this.pagamento.valor_depositado - this.valor_por_depositar);
           this.condicao_troco = true;
         }else{
           this.condicao_troco = false;
@@ -1289,12 +1326,18 @@ export default {
     },
 
     registarPagamento: function () {
-      if (this.pagamento.forma_pagamento == "POR REFERÊNCIA") {
-        if (this.fatura.ValorAPagar < this.pagamento.valor_depositado) {
-          //alert('Valor inválido! Informa um valor menor ou igual ao total a pagar.');
-          return false;
-        }
-      }else if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (this.fatura.ValorAPagar-this.fatura.ValorEntregue))) {
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && this.fatura !=null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)))) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+        document.getElementById("btn").disabled = false;
+        return false;
+      }
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < this.valor_por_depositar)) {
         Swal.fire({
           title: "Dados Incorrectos",
           text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(this.valor_por_depositar),
@@ -1315,8 +1358,10 @@ export default {
       //var codigo_fatura=JSON.stringify(this.fatura_id);
       var codigo_fatura = JSON.stringify(this.numero_fatura_nao_paga);
       var switch1 = JSON.stringify(this.switch1);
+      var troco = this.removerFormatacaoAOA(this.troco);
       formData.append("pagamento", pagamento);
       formData.append("switch_troco", switch1);
+      formData.append("troco", troco);
       formData.append("codigo_fatura", codigo_fatura);
       formData.append("talao_banco", this.talao_banco);
       // formData.append("talao_banco2", this.talao_banco2);
@@ -1343,6 +1388,11 @@ export default {
               confirmButtonText: "Ok",
               onClose: this.imprimirFatura(fatura),
             });
+            this.troco = this.formatValor(this.troco);
+            this.condicao_troco=false;
+            this.switch1=false;
+            this.saldo_aluno=0;
+            this.estudante={};
             this.codigo_matricula = null;
             (this.nome_estudante = null),
               (this.bilheite_estudante = null),
@@ -1413,46 +1463,48 @@ export default {
     },
 
     pesqisar_estudante(e) {
+      this.estudante = {};
+      this.saldo_aluno=0
+      this.valor_depositado_tese = this.formatValor(0);
       e.preventDefault();
       this.$Progress.start();
       $(".table_estudantes").html("");
-      axios
-        .get(`/pesquisar-estudante?search=${this.codigo_matricula}`)
-        .then((response) => {
-          if (response.data.dados === null) {
-            sweetError("Estudante Não Encontrado");
-          } else {
-            this.isFormDisabled = false;
+      axios.get(`/pesquisar-estudante?search=${this.codigo_matricula}`).then((response) => {
+        if (response.data.dados === null) {
+          sweetError("Estudante Não Encontrado");
+        } else {
+          this.isFormDisabled = false;
+          this.troco = this.formatValor(0);
+          this.condicao_troco=false;
+          this.switch1=false;
+          this.codigo_matricula = response.data.dados.Codigo;
+          this.nome_estudante = response.data.dados.Nome_Completo;
+          this.bilheite_estudante = response.data.dados.Bilhete_Identidade;
+          this.codigo_tipo_candidatura =
+            response.data.dados.codigo_tipo_candidatura;
+          this.ano_lectivo_id = response.data.ano_lectivo_id;
+          this.saldo_aluno = response.data.dados.saldo;
 
-            this.codigo_matricula = response.data.dados.Codigo;
-            this.nome_estudante = response.data.dados.Nome_Completo;
-            this.bilheite_estudante = response.data.dados.Bilhete_Identidade;
-            this.codigo_tipo_candidatura =
-              response.data.dados.codigo_tipo_candidatura;
-            this.ano_lectivo_id = response.data.ano_lectivo_id;
-            this.saldo_aluno = response.data.dados.saldo;
+          (this.mostrar_dados_estudante = true), this.pegaAnoLectivo();
+          this.getAnosLectivosEstudante();
+          this.pegaPropina();
+          this.pegaAluno();
+          this.getTodasRefer();
+          this.pegaSaldo();
+          this.getCiclos();
+          this.pegaServicos();
+          this.pegarDescricaoBolseiro();
+          this.pegaBolseiro();
 
-            (this.mostrar_dados_estudante = true), this.pegaAnoLectivo();
-            this.getAnosLectivosEstudante();
-            this.pegaPropina();
-            this.pegaAluno();
-            this.getTodasRefer();
-            this.pegaSaldo();
-            this.getCiclos();
-            this.pegaServicos();
-            this.pegarDescricaoBolseiro();
-            this.pegaBolseiro();
+          this.verificaConfirmacaoNoAnoLectivoCorrente();
 
-            this.verificaConfirmacaoNoAnoLectivoCorrente();
-
-            sweetSuccess("Estudante Encontrado com sucesso!");
-          }
-          this.$Progress.finish();
-        })
-        .catch((errors) => {
-          this.$Progress.fail();
-          sweetError("Estudante Não Encontrado!");
-        });
+          sweetSuccess("Estudante Encontrado com sucesso!");
+        }
+        this.$Progress.finish();
+      }).catch((errors) => {
+        this.$Progress.fail();
+        sweetError("Estudante Não Encontrado!");
+      });
     },
 
     // recuperar totas as factura do aluno não pagas
@@ -1500,8 +1552,7 @@ export default {
             this.fatura = response.data.fatura;
             this.extenso = response.data.extenso;
             this.itens = response.data.itens;
-            this.valor_pagamentos =
-              response.data.valor_depositado.valor_depositado;
+            this.valor_pagamentos = response.data.valor_depositado.valor_depositado;
             this.fatura.ValorAPagar = this.fatura.ValorAPagar
               ? this.fatura.ValorAPagar
               : 0;
@@ -2352,11 +2403,13 @@ export default {
         var pagamento = JSON.stringify(this.pagamento); //grande  solução.
         var referencia = JSON.stringify(this.referencia);
         var switch1 = JSON.stringify(this.switch1);
+        var troco = this.removerFormatacaoAOA(this.troco);
         formData.append("fatura_item", fatura_item);
         formData.append("anoLectivo", anoLectivo);
         formData.append("parametroSaldo", parametroSaldo);
         formData.append("pagamento", pagamento);
         formData.append("switch_troco", switch1);
+        formData.append("troco", troco);
         formData.append("referencia", referencia);
         formData.append("fonte", 2); // fonte de requisicao
 
@@ -2388,6 +2441,11 @@ export default {
                 // },
                 onClose: this.imprimirFatura(fatura_ref),
               });
+              this.troco = this.formatValor(this.troco);
+              this.condicao_troco=false;
+              this.switch1=false;
+              this.saldo_aluno=0;
+              this.estudante={};
               this.imprimirFatura(fatura_ref);
               this.tabela = [];
               this.codigo_matricula = null;
