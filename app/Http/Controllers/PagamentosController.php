@@ -1427,10 +1427,12 @@ class PagamentosController extends Controller
         }
 
         try {
-            if(($fatura_paga->codigo_descricao == 1) || ($fatura_paga->codigo_descricao == 9) || ($fatura_paga->codigo_descricao == 11)){
-                $troc = Factura::find($codigoDaFatura);
-                $troc->update(['Troco' =>$troco_front]);
-            }
+            $troc = Factura::find($codigoDaFatura);
+            $troc->update(['Troco' =>$troco_front]);
+            // if(($fatura_paga->codigo_descricao == 1) || ($fatura_paga->codigo_descricao == 9) || ($fatura_paga->codigo_descricao == 11)){
+            //     $troc = Factura::find($codigoDaFatura);
+            //     $troc->update(['Troco' =>$troco_front]);
+            // }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
             return Response()->json($e->getMessage());
