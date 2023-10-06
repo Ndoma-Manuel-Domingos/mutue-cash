@@ -152,7 +152,7 @@ class SearhController extends Controller
         }
         return Response()->json($bancos);
     }
-
+    
     public function pegaAluno(Request $request, $codigo_matricula)
     {
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
@@ -317,7 +317,7 @@ class SearhController extends Controller
                 ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_pagamentos.Codigo_PreInscricao')
                 ->where('tb_preinscricao.Codigo', $candidato->Codigo)
                 ->where('tb_tipo_servicos.TipoServico', 'Mensal')
-                //->where('tb_pagamentos.AnoLectivo', $anoLectivo->Codigo)
+                // ->where('tb_pagamentos.AnoLectivo', $anoLectivo->Codigo)
                 ->where('tb_pagamentosi.Ano', $anoLectivo->Designacao)
                 //->where('tb_tipo_servicos.Codigo',$data['propina']->Codigo)
                 ->where('tb_pagamentos.corrente', 1)
