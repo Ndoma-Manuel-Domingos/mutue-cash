@@ -35,6 +35,7 @@ use App\Models\GrupoUtilizador;
 use App\Models\MovimentoCaixa;
 use App\Models\PagamentoItems;
 use App\Models\CandidatoProva;
+use App\Models\ControloValidacaoPagamento;
 use App\Models\Utilizador;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -69,6 +70,7 @@ class PagamentosController extends Controller
         $this->parametro_uma = new ParametroUmaController();
         $this->pagamentoService = new PagamentoService();
         $this->faturaService = new FaturaService();
+        
     }
 
     public function index(Request $request)
@@ -143,7 +145,6 @@ class PagamentosController extends Controller
             ->when($request->ano_lectivo, function ($query, $value) {
                 $query->where('AnoLectivo', $value);
             })
-            // ->where('fk_utilizador', $user->codigo_importado)
             ->where('forma_pagamento', 6)
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(15)
@@ -175,6 +176,7 @@ class PagamentosController extends Controller
             ->where('fk_utilizador', $user->codigo_importado)
             ->where('status_pagamento', 'pendente')
             ->where('forma_pagamento', 6)
+            ->whereIn('estado', [1,2])
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(15)
             ->withQueryString();
@@ -284,6 +286,101 @@ class PagamentosController extends Controller
             'data' => $pagamento,
             'items' => $pagamento_itens
         ], 200);
+    }
+
+
+    public function invalida($id)
+    {
+    
+        $user = auth()->user();
+
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect()->route('mc.bloquear-caixa');
+        }
+        
+        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+        
+        if(!$caixas){
+            return response()->json([
+                'message' => 'Sem nenhum caixa aberto para realizar o deposito!',
+            ], 401);
+        }
+        
+        // 
+        $pagamento = Pagamento::findOrFail($id);
+        // 
+        $factura = Factura::findOrFail($pagamento->codigo_factura);
+        
+        if($factura->codigo_descricao != 5){
+            
+            $pagamento->estado = 3;
+            $pagamento->update();
+            
+            $factura->estado = 3;
+            $factura->update();
+            
+        }else 
+        
+        // factura de negociação
+        if($factura->codigo_descricao == 5){
+            
+            $total_pagar = 0;
+            
+            $pagamentos = Pagamento::where('codigo_factura', $pagamento->codigo_factura)->get();
+            
+            if(count($pagamentos) >= 2){
+            
+                $pagamento->estado = 3;
+                $pagamento->update();
+                
+                foreach($pagamentos as $pag){
+                    $total_pagar = $total_pagar + $pag->valor_depositado;
+                }
+                
+                $factura->estado = 3;
+                $factura->update();
+                $factura->ValorEntregue = $total_pagar;
+            }else{
+                $pagamento->estado = 3;
+                $pagamento->update();
+                
+                $factura->estado = 3;
+                $factura->update();
+                $factura->ValorEntregue = 0;
+            }
+            
+        }
+                
+        $movimento = MovimentoCaixa::where('caixa_id', $caixa->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+
+        $update = MovimentoCaixa::findOrFail($movimento->codigo);
+        if($update->valor_arrecadado_pagamento - $pagamento->valor_depositado < 0){
+            $update->valor_arrecadado_pagamento = 0;
+        }else{
+            $update->valor_arrecadado_pagamento = $update->valor_arrecadado_pagamento - $pagamento->valor_depositado;
+        }
+        
+        if($update->valor_facturado_pagamento - $pagamento->valor_depositado < 0){
+            $update->valor_facturado_pagamento = 0;
+        }else{
+            $update->valor_facturado_pagamento = $update->valor_facturado_pagamento - $pagamento->valor_depositado;
+        }
+        
+        if($update->valor_arrecadado_total - $pagamento->valor_depositado < 0){
+            $update->valor_arrecadado_total = 0;
+        }else{
+            $update->valor_arrecadado_total = $update->valor_arrecadado_total - $pagamento->valor_depositado;
+        }
+        
+        $update->update();
+        
+        return response()->json([
+            'message' => "Pagamento invalidado com sucesso!"
+        ], 200);
+        
     }
 
     public function create(Request $request)
@@ -1897,7 +1994,7 @@ class PagamentosController extends Controller
 
     public function faturaDiversos(Request $request, $codigo_matricula)
     {
-        dd("Factura diverso");
+        // dd("Factura diverso");
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -2420,6 +2517,8 @@ class PagamentosController extends Controller
                     $pagamento['corrente'] = 1;
 
                     $id_pag = DB::table('tb_pagamentos')->insertGetId($pagamento);
+                    
+                    dd($id_pag);
                 } catch (\Illuminate\Database\QueryException $e) {
                     DB::rollback();
                     return Response()->json($e->getMessage());

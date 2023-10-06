@@ -344,7 +344,7 @@
                     {{ $aluno->obs }} <br>
                 @endif
 
-                @if ($aluno->negociacao)
+                {{-- @if ($aluno->negociacao)
                     Deverá ser pago os 50% do valor em dívida
                     <b>{{ number_format($aluno->primeiroValorApagar, 2, ',', '.') }}
                         AKZ </b> que cobrirá <b>{{ $aluno->mesesQuitar }}</b> meses de propina. </p>
@@ -352,7 +352,7 @@
                     <b>{{ number_format($aluno->primeiroValorApagar, 2, ',', '.') }} AKZ</b>, deverá ser pago em
                     <b>{{ $aluno->qtd_prestacoes }}</b> prestações no máximo a partir de {{ $aluno->mes_inicial }} no
                     valor de {{ number_format($aluno->valorPrestacoes, 2, ',', '.') }} AKZ <b></b></p>
-                @endif
+                @endif --}}
             </span>
             <?php echo '<img style="Width:10%;  float: right;" src="data:image/png;base64,' .
                 base64_encode(

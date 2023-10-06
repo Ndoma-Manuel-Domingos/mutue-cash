@@ -136,6 +136,7 @@
                       <th>Data Registro</th>
                       <th>Troco</th>
                       <th>Operador</th>
+                      <th class="text-center">Invalidar</th>
                       <th class="text-center">Detalhes</th>
                       <th class="text-center">Factura</th>
                       <th class="text-center">Ticket</th>
@@ -157,6 +158,9 @@
                       <td>{{ item.factura ? item.DataRegisto : '' }}</td>
                       <td>{{ formatValor(item.factura.Troco) }}</td>
                       <td>{{ item.operador_novos ? item.operador_novos.nome : item.operador_antigo ? item.operador_antigo.nome : NULL }}</td>
+                      <td class="text-center">
+                        <a @click="invalidar_pagamento(item.Codigo)" class="text-danger"><i class="fas fa-ban"></i></a>
+                      </td>
                       <td class="text-center">
                         <a @click="detalhes(item.Codigo)" class="text-primary"><i class="fas fa-eye"></i></a>
                       </td>
@@ -402,7 +406,44 @@ export default {
         })
         .catch((error) => {});
     },
-
+    
+    invalidar_pagamento(Codigo){
+      this.loading = true;
+      axios
+        .get(`/pagamentos/${Codigo}/invalida`)
+        .then((response) => {
+        
+          if(response.status == 200){
+            Swal.fire({
+              title: "Atenção",
+              text: response.data.message,
+              icon: "success",
+              confirmButtonColor: "#3d5476",
+              confirmButtonText: "Ok",
+              onClose: () => {},
+            });
+          }else{
+            Swal.fire({
+              title: "Atenção",
+              text: "O correu um erro ao tentar invalida o pagamento!",
+              icon: "error",
+              confirmButtonColor: "#3d5476",
+              confirmButtonText: "Ok",
+              onClose: () => {},
+            });
+          }
+        })
+        .catch((error) => {
+          Swal.fire({
+            title: "Atenção",
+            text: "O correu um erro ao tentar invalida o pagamento!",
+            icon: "error",
+            confirmButtonColor: "#3d5476",
+            confirmButtonText: "Ok",
+            onClose: () => {},
+          });
+        });
+    },
     formatValor(atual) {
       const valorFormatado = Intl.NumberFormat("pt-br", {
         style: "currency",

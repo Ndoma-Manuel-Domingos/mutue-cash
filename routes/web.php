@@ -95,6 +95,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/pagamentos/pdf', [PagamentosController::class, 'pdf'])->middleware('role_or_permission:Gestor de Caixa|criar pagamento|Supervisor|Operador Caixa|listar pagamento');
     Route::get('/pagamentos/excel', [PagamentosController::class, 'excel'])->middleware('role_or_permission:Gestor de Caixa|criar pagamento|Supervisor|Operador Caixa|listar pagamento');
     Route::get('/pagamentos/{id}/detalhes', [PagamentosController::class, 'detalhes'])->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
+    Route::get('/pagamentos/{id}/invalida', [PagamentosController::class, 'invalida'])->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
 
     Route::get('/relatorios/fecho-caixa/operador', [RelatorioController::class, 'fechoCaixaOperador'])->name('mc.fecho-caixa-operador.index');
     Route::get('/relatorios/fecho-caixa/operador/pdf', [RelatorioController::class, 'pdf'])->name('mc.fecho-caixa-operador.pdf');
