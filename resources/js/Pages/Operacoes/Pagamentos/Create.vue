@@ -1307,7 +1307,7 @@ export default {
     },
 
     registarPagamento: function () {
-      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && this.fatura !=null && fatura.descricao_factura != 5 && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)))) {
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && Object.values(this.fatura).length > 0 && this.fatura.descricao_factura != 5 && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)))) {
         Swal.fire({
           title: "Dados Incorrectos",
           text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)),
@@ -1318,10 +1318,10 @@ export default {
         document.getElementById("btn").disabled = false;
         return false;
       }
-      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && this.fatura !=null && fatura.descricao_factura == 5 && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < Number(this.metadeValorPagar))) {
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && Object.values(this.fatura).length > 0 && this.fatura.descricao_factura == 5 && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < Number(this.metadeValorPagar))) {
         Swal.fire({
           title: "Dados Incorrectos",
-          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)),
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(Number(this.metadeValorPagar)),
           icon: "error",
           confirmButtonColor: "#3d5476",
           confirmButtonText: "Ok",
