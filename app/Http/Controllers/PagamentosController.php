@@ -3075,13 +3075,12 @@ class PagamentosController extends Controller
         $data['aluno']->numero_fatura;
         $data['pagamento'] = PagamentoPorReferencia::where('factura_codigo', $data['aluno']->numero_fatura)->first();
 
-        $pagamento = DB::table('tb_pagamentos')->where('codigo_factura', $id)
+        $pagamento = DB::table('tb_pagamentos')->where('codigo_factura', $id)->where('forma_pagamento', 6)
             ->select('tb_pagamentos.fk_utilizador as codigo_importado')
             ->first();
 
         $data['pagamento_utilizador'] = DB::table('mca_tb_utilizador')
             ->where('codigo_importado', $pagamento->codigo_importado)->select('mca_tb_utilizador.nome as nome')->first();
-
         $pdf = PDF::loadView('pdf.fatura_diversos', $data)
             ->setPaper('a5');
 
