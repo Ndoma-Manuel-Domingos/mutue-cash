@@ -1419,7 +1419,10 @@ class PagamentosController extends Controller
         DB::commit();
 
         try {
-            $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
+                $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
             $result['message'] = $e->getMessage();
@@ -1751,10 +1754,10 @@ class PagamentosController extends Controller
         DB::commit();
 
         try {
-            $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
-            // if(($fact_aluno->codigo_descricao == 1) || ($fact_aluno->codigo_descricao == 9) || ($fact_aluno->codigo_descricao == 11)){
-            //     $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
-            // }
+            // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
+                $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
             $result['message'] = $e->getMessage();
@@ -2511,7 +2514,6 @@ class PagamentosController extends Controller
 
                     $id_pag = DB::table('tb_pagamentos')->insertGetId($pagamento);
                     
-                    dd($id_pag);
                 } catch (\Illuminate\Database\QueryException $e) {
                     DB::rollback();
                     return Response()->json($e->getMessage());
@@ -2729,7 +2731,10 @@ class PagamentosController extends Controller
 
         try {
             if(filled($id_pag) && $id_pag > 0){
-                $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
+                    $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                }
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
