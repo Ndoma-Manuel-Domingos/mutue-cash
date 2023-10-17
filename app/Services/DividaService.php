@@ -304,13 +304,14 @@ class DividaService
 
     $user  = $aluno;
 
+    $matricula1 = DB::table('tb_matriculas')
+    ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
+    ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
+    ->select('tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto')
+    ->where('tb_preinscricao.user_id', $user->admissao->preinscricao->user_id)
+    ->first();
+
     if ($user->admissao->preinscricao->codigo_tipo_candidatura == 1) {
-      $matricula1 = DB::table('tb_matriculas')
-      ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
-      ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-      ->select('tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto')
-      ->where('tb_preinscricao.user_id', $user->admissao->preinscricao->user_id)
-      ->first();
 
       $curso = DB::table('tb_cursos')->join('tb_preinscricao', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')
       ->select('tb_cursos.Designacao as curso', 'tb_cursos.Codigo as codigo_curso')
@@ -534,7 +535,7 @@ class DividaService
 
                 if ($bolseiro && $bolseiro->desconto != 100 && $bolseiro->desconto != 0) {
 
-                  $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId, $mes['id'], $semestre);
+                  $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId, $mes['id'], $semestre, $user->admissao->preinscricao->user_id);
 
                   $taxa_desconto = $bolseiro->desconto;
 
@@ -554,7 +555,7 @@ class DividaService
                   $total = $valorComDesconto + $multa;
                 }elseif (!$bolseiro && $bolseiroPrimeiroSemeste && $bolseiroPrimeiroSemeste->desconto != 100 && $bolseiroPrimeiroSemeste->desconto != 0  && $mes['semestre'] == $bolseiroPrimeiroSemeste->semestre) {
 
-                    $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId,$mes['id'],$semestre);
+                    $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId,$mes['id'],$semestre, $user->admissao->preinscricao->user_id);
 
                     $taxa_desconto = $bolseiroPrimeiroSemeste->desconto;
 
@@ -576,7 +577,7 @@ class DividaService
 
                   elseif (!$bolseiro && $bolseiroSegundoSemeste && $bolseiroSegundoSemeste->desconto != 100 && $bolseiroSegundoSemeste->desconto != 0  && $mes['semestre'] == $bolseiroSegundoSemeste->semestre) {
 
-                    $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId,$mes['id'],$semestre);
+                    $bolsaSemestre =  $this->bolsaService->prestacoesPorBolsaSemestreParaDivida($confirmacao->ultimoAnoInscritoId,$mes['id'],$semestre, $user->admissao->preinscricao->user_id);
 
                     $taxa_desconto = $bolseiroSegundoSemeste->desconto;
 
@@ -628,20 +629,11 @@ class DividaService
       //dd($dividas);
       return $collection1;
     } else {
-
       if ($user->codigo_tipo_candidatura == 2) {
         $ano_lectivo_ciclo = $this->anoAtualPrincipal->cicloMestrado()->Codigo;
       } else {
         $ano_lectivo_ciclo = $this->anoAtualPrincipal->cicloDoutoramento()->Codigo;
       }
-
-      $matricula1 = DB::table('tb_matriculas')
-        ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
-
-        ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-        //->select('tb_admissao.pre_incricao as admitido')
-        ->select('tb_matriculas.*', 'tb_preinscricao.Codigo as codigo_inscricao', 'tb_preinscricao.AlunoCacuaco as aluno_cacuaco', 'tb_preinscricao.desconto as desconto')
-        ->where('tb_preinscricao.user_id', $user->user_id)->first();
 
       $curso = DB::table('tb_cursos')->join('tb_preinscricao', 'tb_cursos.Codigo', '=', 'tb_preinscricao.Curso_Candidatura')
       ->select('tb_cursos.Designacao as curso', 'tb_cursos.Codigo as codigo_curso')
@@ -690,7 +682,7 @@ class DividaService
 
       $mesesCiclo = $meses->pluck('id');
 
-      $ano_lectivo = DB::table('tb_ano_lectivo')->where('Codigo', $user->anoLectivo)->select('Designacao', 'Codigo', 'ordem')->first();
+      $ano_lectivo = DB::table('tb_ano_lectivo')->where('Codigo', $user->admissao->preinscricao->anoLectivo)->select('Designacao', 'Codigo', 'ordem')->first();
 
       $ano['ano_lectivo'] = $ano_lectivo->Codigo;
 
