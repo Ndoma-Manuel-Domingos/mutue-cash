@@ -1418,7 +1418,10 @@ class PagamentosController extends Controller
         DB::commit();
 
         try {
-            $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
+                $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
             $result['message'] = $e->getMessage();
@@ -1426,10 +1429,12 @@ class PagamentosController extends Controller
         }
 
         try {
-            if(($fatura_paga->codigo_descricao == 1) || ($fatura_paga->codigo_descricao == 9) || ($fatura_paga->codigo_descricao == 11)){
-                $troc = Factura::find($codigoDaFatura);
-                $troc->update(['Troco' =>$troco_front]);
-            }
+            $troc = Factura::find($codigoDaFatura);
+            $troc->update(['Troco' =>$troco_front]);
+            // if(($fatura_paga->codigo_descricao == 1) || ($fatura_paga->codigo_descricao == 9) || ($fatura_paga->codigo_descricao == 11)){
+            //     $troc = Factura::find($codigoDaFatura);
+            //     $troc->update(['Troco' =>$troco_front]);
+            // }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
             return Response()->json($e->getMessage());
@@ -1750,10 +1755,10 @@ class PagamentosController extends Controller
         DB::commit();
 
         try {
-            $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
-            // if(($fact_aluno->codigo_descricao == 1) || ($fact_aluno->codigo_descricao == 9) || ($fact_aluno->codigo_descricao == 11)){
-            //     $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
-            // }
+            // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
+                $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
             $result['message'] = $e->getMessage();
@@ -2510,7 +2515,6 @@ class PagamentosController extends Controller
 
                     $id_pag = DB::table('tb_pagamentos')->insertGetId($pagamento);
                     
-                    dd($id_pag);
                 } catch (\Illuminate\Database\QueryException $e) {
                     DB::rollback();
                     return Response()->json($e->getMessage());
@@ -2728,7 +2732,10 @@ class PagamentosController extends Controller
 
         try {
             if(filled($id_pag) && $id_pag > 0){
-                $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
+                    $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                }
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
@@ -3074,13 +3081,12 @@ class PagamentosController extends Controller
         $data['aluno']->numero_fatura;
         $data['pagamento'] = PagamentoPorReferencia::where('factura_codigo', $data['aluno']->numero_fatura)->first();
 
-        $pagamento = DB::table('tb_pagamentos')->where('codigo_factura', $id)
+        $pagamento = DB::table('tb_pagamentos')->where('codigo_factura', $id)->where('forma_pagamento', 6)
             ->select('tb_pagamentos.fk_utilizador as codigo_importado')
             ->first();
 
         $data['pagamento_utilizador'] = DB::table('mca_tb_utilizador')
             ->where('codigo_importado', $pagamento->codigo_importado)->select('mca_tb_utilizador.nome as nome')->first();
-
         $pdf = PDF::loadView('pdf.fatura_diversos', $data)
             ->setPaper('a5');
 

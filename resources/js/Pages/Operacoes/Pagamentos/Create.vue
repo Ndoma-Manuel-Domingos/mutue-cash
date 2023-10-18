@@ -265,26 +265,15 @@
                 </div>
 
                 <form id="form" @submit.prevent="adicionarMeses">
-                  <div
-                    class="row"
-                    v-if="
-                      fatura.ValorAPagar <= 0 || numero_fatura_nao_paga == -1
-                    "
-                  >
+                  <div class="row" v-if="fatura.ValorAPagar <= 0 || numero_fatura_nao_paga == -1">
                     <div class="col-12 col-md-6 mb-3">
                       <label for="" class="form-label">Serviço a pagar</label>
                       <select
                         class="form-control"
                         v-model="opcoes"
                         required=""
-                        @change="AllClean"
-                      >
-                        <option
-                          value="1"
-                          v-if="
-                            (bolseiro && bolseiro.desconto != 100) || !bolseiro
-                          "
-                        >
+                        @change="AllClean">
+                        <option value="1" v-if="(bolseiro && bolseiro.desconto != 100) || !bolseiro">
                           Propina
                         </option>
                         <option value="2">Outros Serviços</option>
@@ -353,17 +342,9 @@
                     </div>
                     <div class="col-12 col-md-12 mb-3" v-if="opcoes == 2">
                       <label for="" class="form-label">Serviços</label>
-                      <select
-                        :disabled="!anoLectivo"
-                        v-model="add_servico"
-                        class="form-control"
-                      >
+                      <select :disabled="!anoLectivo" v-model="add_servico" class="form-control">
                         <option disabled value="">--opções--</option>
-                        <option
-                          v-for="servico in servicos"
-                          v-bind:value="servico"
-                          :key="servico"
-                        >
+                        <option v-for="servico in servicos" v-bind:value="servico" :key="servico">
                           {{ servico.Descricao }}
                         </option>
                       </select>
@@ -1540,14 +1521,7 @@ export default {
     },
 
     registarPagamento: function () {
-      if (
-        Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null &&
-        this.fatura != null &&
-        (this.opcoes == 1 || this.opcoes == 2) &&
-        Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) +
-          Number(this.saldo_aluno) <
-          Number(this.fatura.ValorAPagar) - Number(this.fatura.ValorEntregue)
-      ) {
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && Object.values(this.fatura).length > 0 && this.fatura.descricao_factura != 5 && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < (Number(this.fatura.ValorAPagar)-Number(this.fatura.ValorEntregue)))) {
         Swal.fire({
           title: "Dados Incorrectos",
           text:
@@ -1563,13 +1537,18 @@ export default {
         document.getElementById("btn").disabled = false;
         return false;
       }
-      if (
-        Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null &&
-        (this.opcoes == 1 || this.opcoes == 2) &&
-        Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) +
-          Number(this.saldo_aluno) <
-          this.valor_por_depositar
-      ) {
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && Object.values(this.fatura).length > 0 && this.fatura.descricao_factura == 5 && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < Number(this.metadeValorPagar))) {
+        Swal.fire({
+          title: "Dados Incorrectos",
+          text:"O Valor entregue não corresponde ao valor da factura, deve ser igual ou maior a " +this.formatValor(Number(this.metadeValorPagar)),
+          icon: "error",
+          confirmButtonColor: "#3d5476",
+          confirmButtonText: "Ok",
+        });
+        document.getElementById("btn").disabled = false;
+        return false;
+      }
+      if (Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) != null && (this.opcoes == 1 || this.opcoes == 2) && ((Number(this.removerFormatacaoAOA(this.valor_depositado_tese)) + Number(this.saldo_aluno)) < this.valor_por_depositar)) {
         Swal.fire({
           title: "Dados Incorrectos",
           text:
@@ -1645,7 +1624,7 @@ export default {
             sweetError("Falha de comunicação!");
             this.$Progress.fail();
           } else {
-            sweetError(response.data);
+            sweetError(response.data.message);
             this.$Progress.fail();
           }
         })
@@ -1702,7 +1681,9 @@ export default {
 
     pesqisar_estudante(e) {
       this.estudante = {};
-      this.saldo_aluno = 0;
+      this.fatura = {ValorAPagar:0};
+      this.numero_fatura_nao_paga = "";
+      this.saldo_aluno=0
       this.valor_depositado_tese = this.formatValor(0);
       e.preventDefault();
       this.$Progress.start();
@@ -2764,6 +2745,7 @@ export default {
                 title: "Atenção...",
                 text: response.data.message,
               });
+              sweetError(response.data.message);
               this.botao = true;
               this.$Progress.finish();
             }
