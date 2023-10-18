@@ -346,6 +346,7 @@
                         type="radio"
                         value="Ticket"
                         v-model="form.factura"
+                        checked
                         class="form-control"
                       />
                     </div>
@@ -542,7 +543,7 @@ export default {
           this.form.valor_a_depositar = this.formatValor(
             this.form.valor_a_depositar
           );
-
+     
           if(response.data.data.tipo_folha == 'Ticket'){
             this.imprimirComprovativoTicket(response.data.data);
           }
@@ -550,7 +551,6 @@ export default {
           if(response.data.data.tipo_folha == 'A4'){
             this.imprimirComprovativo(response.data.data);
           }
-
 
           // Faça algo com a resposta, se necessário
         } catch (error) {

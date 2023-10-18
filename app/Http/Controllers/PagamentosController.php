@@ -289,7 +289,6 @@ class PagamentosController extends Controller
         ], 200);
     }
 
-
     public function invalida($id)
     {
     
@@ -400,7 +399,6 @@ class PagamentosController extends Controller
 
         return Inertia::render('Operacoes/Pagamentos/Create', $data);
     }
-
 
     public function getTodasReferencias(Request $request, $codigo_matricula)
     {
@@ -561,6 +559,7 @@ class PagamentosController extends Controller
         $data = json_decode($request->pagamento, true);
         $fonte = json_decode($request->fonte, true);
         $switch_troco = json_decode($request->switch_troco, true);
+        $tipo_folha_impressao = json_decode($request->tipo_folha_impressao, true);
         $codigoDaFatura = json_decode($request->codigo_fatura, true);
         if(filled($request->troco)){
             $troco_front = floatval($request->troco);
@@ -1435,7 +1434,9 @@ class PagamentosController extends Controller
             DB::rollback();
             return Response()->json($e->getMessage());
         }
-
+        
+        $response['tipo_folha_impressao'] = $tipo_folha_impressao ?? 'Ticket';
+        
         return Response()->json($response);
     }
 
@@ -3086,7 +3087,6 @@ class PagamentosController extends Controller
         return $pdf->stream('fatura.pdf');
     }
 
-
     public function FaturaTicket(Request $request, $id)
     {
         // ESTA FUNÇÃO É UTILIZADA PARA IMPRIMIR FACTURAS. FUNÇÃO EM USO
@@ -3247,7 +3247,6 @@ class PagamentosController extends Controller
         }
         
         $data['extenso'] = $request->has('extensivo') ? $request->get('extensivo') : $this->valor_por_extenso($data['total_apagar'], false);
-
 
         \QrCode::size(250)
             ->format('png')

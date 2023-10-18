@@ -13,6 +13,11 @@ use Illuminate\Support\Str;
         
         *{
             padding: 2px 0;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6{
+            
         }
         hr{
             padding: 0;
@@ -26,9 +31,9 @@ use Illuminate\Support\Str;
     </style>
 </head>
 
-<body style="margin-top: 0px;margin-left: 50px;">
+<body style="margin-top: 0px;">
     <div id="app" class="cupom"
-        style="width: 250px; padding: 5px 35px 5px 15px; overflow: hidden; position:relative; border: 1px solid #999; text-transform:uppercase; margin: 5px 0px 0px 5px; font: bold 15px 'Courier New';">
+        style="width: 210px; padding: 5px 35px 5px 15px; overflow: hidden; position:relative; border: 1px solid #999; text-transform:uppercase; margin: 5px 0px 0px 5px; font: bold 15px 'Courier New';">
         
         <center><img src="{{ public_path('images/logotipo.png') }}" width="150px" /> <br><br></center>
         
@@ -237,7 +242,7 @@ use Illuminate\Support\Str;
             <tr>
                 <td class="descricao"
                     style="font-weight:bold;text-align: left; line-height: 10px; margin-bottom: 0px; padding-right: 12px; font-size:10px;">
-                    Operador: {{ $pagamento_utilizador->nome ?? '' }}</td>
+                    Operador: {{ $pagamento_utilizador->nome ?? Auth::user()->nome }}</td>
             </tr>
             <tr class="descricao" style="text-align: left; margin-bottom: 0px; padding-right: 12px; font-size:10px;">
                 <td width="50%" align="left" style="font-weight:bold;font-size:8px;">Data: {{ $aluno->DataFactura }}</td>

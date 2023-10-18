@@ -184,8 +184,7 @@ class DepositoController extends Controller
             'valor_a_depositar.required' => "Valor a depositar Invalido!",
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
-        
-        
+                
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if(!$caixas){
@@ -205,13 +204,16 @@ class DepositoController extends Controller
         
         $saldo_apos_movimento = $resultado->saldo + $request->valor_a_depositar;
         
+        
+        $tipo_folha_impressao = $request->factura ?? 'Ticket';
+        
         // registramos o deposito 
         $create = Deposito::create([
             'codigo_matricula_id' => $request->codigo_matricula,
             'Codigo_PreInscricao' => $resultado->Codigo,
             'valor_depositar' => $request->valor_a_depositar,
             'saldo_apos_movimento' => $saldo_apos_movimento,
-            'tipo_folha' => $request->factura,
+            'tipo_folha' => $tipo_folha_impressao,
             'forma_pagamento_id' => 6,
             'caixa_id' => $caixas->codigo,
             'status' => 'pendente',
@@ -234,13 +236,12 @@ class DepositoController extends Controller
         $update->valor_arrecadado_total = $update->valor_arrecadado_total + $request->valor_a_depositar;
         $update->update();
         
-        //sucesso
-        // return redirect()->back()->with();
-        
+
         // Retorne a resposta em JSON
         return response()->json([
             'message' => 'Deposito realizado com sucesso!',
-            'data' => $create
+            'data' => $create,
+            'tipo_folha_impressao' => $tipo_folha_impressao
         ]);
         
 
@@ -425,7 +426,6 @@ class DepositoController extends Controller
     
     public function ticket(Request $request)
     {
-        
         $data['item'] = Deposito::when($request->data_inicio, function($query, $value){
             $query->where('created_at', '>=' ,Carbon::parse($value) );
         })->when($request->data_final, function($query, $value){
