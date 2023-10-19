@@ -1272,7 +1272,7 @@ class PagamentosController extends Controller
                     }
                     
                     try {
-                        DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->update(['saldo' => $novo_saldo_aluno]);
+                        DB::table('tb_preinscricao')->where('tb_preinscricao.Codigo', $codigo)->update(['saldo' => ($novo_saldo_aluno-$valor_pago_com_saldo)]);
                     } catch (\Illuminate\Database\QueryException $e) {
                         DB::rollback();
                         return Response()->json($e->getMessage());
