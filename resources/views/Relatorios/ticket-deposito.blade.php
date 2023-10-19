@@ -12,6 +12,9 @@ use Illuminate\Support\Str;
     <style>
         * {
             padding: 2px 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         hr {
@@ -29,7 +32,7 @@ use Illuminate\Support\Str;
 
 <body style="margin-top: 0px;margin-left: 0px;">
     <div id="app" class="cupom"
-        style="width: 250px; padding: 5px 35px 5px 15px; overflow: hidden; position:relative; border: 1px solid #999; text-transform:uppercase; margin: 5px 0px 0px 5px; font: bold 15px 'Courier New';">
+        style="width: 210px; padding: 5px 35px 5px 15px; overflow: hidden; position:relative; border: 1px solid #999; text-transform:uppercase; margin: 5px 0px 0px 5px; font: bold 15px 'Courier New';">
 
         <center><img src="{{ public_path('images/logotipo.png') }}" width="150px" /> <br><br></center>
 
