@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\ActiveUserScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -27,16 +28,23 @@ class User extends Authenticatable
         'userName',
         'password',
         'obs',
+        'active_state'
     ];
-    
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope(new ActiveUserScope());
+    }
+
+
     public function tipo_grupo()
     {
         return $this->hasOne(GrupoUtilizador::class, 'fk_utilizador', 'pk_utilizador');
     }
     
-    
-    
-    
+
      /**
      * The accessors to append to the model's array form.
      *

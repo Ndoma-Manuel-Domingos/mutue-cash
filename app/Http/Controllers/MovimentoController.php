@@ -544,6 +544,7 @@ class MovimentoController extends Controller
         }
         
         $user = User::where('userName', Auth::user()->userName)->where('password', md5($password))
+        ->where('active_state', 1)
         ->first();
         
         if($user) {
