@@ -152,7 +152,7 @@ class SearhController extends Controller
         }
         return Response()->json($bancos);
     }
-    
+
     public function pegaAluno(Request $request, $codigo_matricula)
     {
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
@@ -691,15 +691,14 @@ class SearhController extends Controller
 
         $data['primeira_prestacao'] = $mes_tem;
 
-        if ($codigo_anoLectivo == $this->anoLectivoCorrente->index()) {
+        if (($aluno->admissao->preinscricao->codigo_tipo_candidatura == 1 && $codigo_anoLectivo == $this->anoLectivoCorrente->index()) || ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 2 && $codigo_anoLectivo == $this->anoLectivoCorrente->cicloMestrado()->Codigo) || ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 3 && $codigo_anoLectivo == $this->anoLectivoCorrente->cicloDoutoramento()->Codigo)) {
             try {
                 //code...
-                $data['prazo_desconto_ano_todo'] = $this->prazoExpiracaoService->prazoPagamentoAnoTodoComDesconto($codigo_anoLectivo, 1); // prazo para ter o desconto de 5% pelo pagamento do ano todo. Neste caso dentro do mes da primeira prestacao
+                $data['prazo_desconto_ano_todo'] = $this->prazoExpiracaoService->prazoPagamentoAnoTodoComDesconto($codigo_anoLectivo, $aluno, 1); // prazo para ter o desconto de 5% pelo pagamento do ano todo. Neste caso dentro do mes da primeira prestacao
             } catch (\Throwable $th) {
                 $data['prazo_desconto_ano_todo'] = null;
             }
         }
-
         return response()->json($data);
     }
 
@@ -1307,18 +1306,40 @@ class SearhController extends Controller
         $data['mesAtual'] = date('m');
         $data['anoAtual'] = $anoCorrente;
         $data['taxa_nov21_jul22'] = 0;
+        $data['desconto_alunos_agro_pecuaria'] = 0;
+        $data['desconto_de_anuidade'] = 0;
 
 
 
-        if ($ano == $anoCorrente && $candidato->AlunoCacuaco == 'NAO') {
+        if ($candidato->AlunoCacuaco == 'NAO') {
             $taxa_nov21_jul22 = $this->descontoService->descontoNov21Jul22();
-
-            if ($taxa_nov21_jul22) {
+            $taxa_desconto_agro = $this->descontoService->descontoAgropecuaria();
+            $taxa_desconto_anuidade = $this->descontoService->descontoAnuidade();
+            
+            if ($taxa_nov21_jul22 && $alunoLogado->codigo_tipo_candidatura == 1) {
                 if (($alunoLogado->anoLectivo >= 18) && ($alunoLogado->estado_matricula != 'inactivo') && ($alunoLogado->Codigo_Turno == 6)) {
                     $data['taxa_nov21_jul22'] = $taxa_nov21_jul22->taxa;
                 }
             }
+
+            if ($taxa_desconto_agro) {
+                if (($alunoLogado->anoLectivo == $taxa_desconto_agro->ano_lectivo_id && $alunoLogado->curso_matricula == $taxa_desconto_agro->curso_id && $alunoLogado->codigo_tipo_candidatura == $taxa_desconto_agro->tipo_candidatura_id) && ($alunoLogado->estado_matricula != 'inactivo')) {
+                    $data['desconto_alunos_agro_pecuaria'] = ($taxa_desconto_agro->taxa / 100);
+                }
+            }
+
+            // desconto de anuidade
+          if((int)$ano == $anoCorrente && $taxa_desconto_anuidade && $alunoLogado->codigo_tipo_candidatura == 1){
+            if (($alunoLogado->estado_matricula != 'inactivo')) {
+              $data['desconto_de_anuidade'] = ($taxa_desconto_anuidade->taxa / 100);
+            }
+          }elseif(((int)$ano == $this->anoAtualPrincipal->cicloMestrado()->Codigo || (int)$ano == $this->anoAtualPrincipal->cicloDoutoramento()->Codigo) && $taxa_desconto_anuidade && $alunoLogado->codigo_tipo_candidatura != 1){
+            if (($alunoLogado->estado_matricula != 'inactivo')) {
+              $data['desconto_de_anuidade'] = ($taxa_desconto_anuidade->taxa / 100);
+            }
+          }
         }
+
         return Response()->json($data);
     }
 

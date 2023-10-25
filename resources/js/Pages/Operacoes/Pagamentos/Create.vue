@@ -486,7 +486,7 @@
                           <td>{{ formatPrice(item.Preco) }}</td>
                           <td>{{ formatPrice(item.Multa) }}</td>
                           <td>{{ formatPrice(item.Desconto) }}</td>
-                          <td>{{ formatPrice(item.Total) }}</td>
+                          <td>{{ (item.Total<0)?formatPrice(item.Total*(-1)):formatPrice(item.Total) }}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -1151,6 +1151,7 @@ export default {
       estudante_tipo3: {},
       estudante_tipo4: {},
       desconto_incentivo: 0,
+      desconto_alunos_pecuaria: 0,
       add_servico: {},
       info_desconto_ano_todo: "",
       desconto_finalista: 0,
@@ -1927,23 +1928,11 @@ export default {
     },
 
     aplicarDescontoAnoTodo() {
-      if (
-        this.opcoes == 1 &&
-        this.anoLectivo.Codigo == this.ano_lectivo_actual
-      ) {
-        //angola
-        if (
-          this.mes_id == +this.ultima_prestacao.id &&
-          this.tabela.length == +this.prestacoes_por_ano - 1 &&
-          this.prazo_desconto_ano_todo
-        ) {
-          //if((new Date().toISOString().substr(0, 10)) >= "2021-10-30"){
-          this.add_servico.Desconto = this.desconto_anoTodo; // não é aplicada a multa porque o desconto é sempre no ultimo mês de propina
-          this.add_servico.Total =
-            this.add_servico.Preco - this.add_servico.Desconto;
-          this.info_desconto_ano_todo = "Desconto de 5% aplicado";
-          //primeira_prestacao_sem_isencao
-          //}
+      if ((this.opcoes == 1)) { //Mensalidade
+        if (this.mes_id == +this.ultima_prestacao.id && this.tabela.length == (+this.prestacoes_por_ano-1) && this.prazo_desconto_ano_todo) {
+          this.add_servico.Desconto = this.desconto_anoTodo*(+this.prestacoes_por_ano); // não é aplicada a multa porque o desconto é sempre no ultimo mês de propina
+          this.add_servico.Total = (this.add_servico.Preco - this.add_servico.Desconto);
+          this.info_desconto_ano_todo = 'Desconto de 5% aplicado';
         }
       }
     },
@@ -1977,11 +1966,10 @@ export default {
           this.parametroMulta = response.data.parametroMulta;
           this.desconto_incentivo = response.data.taxa_nov21_jul22;
           //desconto_especial_nov_fev2021
-          this.desconto_especial_nov21_jul22 =
-            this.propina.Preco * (response.data.taxa_nov21_jul22 / 100);
-
-          this.desconto_excepcao_todos =
-            this.propina.Preco - this.propina.valor_anterior;
+          this.desconto_especial_nov21_jul22 = this.propina.Preco * (response.data.taxa_nov21_jul22 / 100);
+          this.desconto_alunos_pecuaria = this.propina.Preco * response.data.desconto_alunos_agro_pecuaria;
+          this.desconto_anoTodo = this.propina.Preco * response.data.desconto_de_anuidade;
+          this.desconto_excepcao_todos = this.propina.Preco - this.propina.valor_anterior;
 
           //this.loading=false;
           this.pegaFinalista();
@@ -2007,10 +1995,7 @@ export default {
 
           this.desconto_finalista = this.propina.Preco * 0.5;
 
-          this.desconto_anoTodo = this.propina.Preco * 0.5;
-
-          this.descontoDaPreinscricao =
-            this.propina.Preco * (this.desconto_preinscricao / 100);
+          this.descontoDaPreinscricao = this.propina.Preco * (this.desconto_preinscricao / 100);
 
           this.loading = false;
 
@@ -2284,6 +2269,10 @@ export default {
       }
     },
 
+    aplicarDescontoAgroPecuaria(){
+      this.add_servico.Desconto = this.desconto_alunos_pecuaria;
+    },
+
     aplicarMultaAnoAtual() {
       var valor_com_desconto = 0;
       var multa_do_desconto = 0;
@@ -2404,6 +2393,9 @@ export default {
         if (this.desconto_preinscricao > 0) {
           this.aplicarDescontoPreinscricao();
           //}
+        } 
+        if (this.desconto_alunos_pecuaria > 0) {
+          this.aplicarDescontoAgroPecuaria();
         }
         this.add_servico.Total =
           this.add_servico.Preco -
