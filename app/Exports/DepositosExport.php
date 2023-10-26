@@ -34,13 +34,16 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
     public $data_final;
     public $operador;
     public $titulo;
+    public $total_registros;
     
 
-    public function __construct($request)
+    public function __construct($request, $titulo = "LISTA DE DEPOSITOS", $total_registros = 0)
     {
         $this->data_inicio = $request->data_inicio;
         $this->data_final = $request->data_final;
-        $this->titulo = "LISTA DE DEPOSITOS";
+        $this->operador = $request->operador;
+        $this->titulo = $titulo;
+        $this->total_registros = $total_registros;
     }
 
     public function headings():array
@@ -66,7 +69,7 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
             $item->matricula->admissao->preinscricao->Nome_Completo,
             number_format($item->valor_depositar ?? 0, 2, ',', '.'),
             number_format($item->saldo_apos_movimento ?? 0, 2, ',', '.'),
-            $item->forma_pagamento->descricao,
+            $item->forma_pagamento->descricao ?? "CASH",
             $item->user->nome,
             $item->ano_lectivo->Designacao,
             date("Y-m-d", strtotime($item->created_at)),
@@ -80,16 +83,19 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
     {
     
         $data['items'] = Deposito::when($this->data_inicio, function($query, $value){
-            $query->where('created_at', '>=' ,Carbon::parse($value) );
+            $query->whereDate('data_movimento', '>=' ,Carbon::parse($value) );
         })
         ->when($this->data_final, function($query, $value){
-            $query->where('created_at', '<=' ,Carbon::parse($value));
+            $query->whereDate('data_movimento', '<=' ,Carbon::parse($value));
         })
         ->when($this->operador, function($query, $value){
             $query->where('created_by', $value);
         })
         ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao'])
         ->get();
+        
+        $this->total_registros = count($data['items']);
+        
         
         return $data['items'];
     }
@@ -142,19 +148,23 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
     {
         return 'A10';
     }
+    
+        
     public function styles(Worksheet $sheet)
     {
         //$sheet->getStyle('A7:D7')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
         //$sheet->mergeCells('A1:D6');
         //Adicionar Título na Célula C5.
         //$sheet->setCellValue('G6', 'UNIVERSIDADE METODISTA DE ANGOLA');
-        $sheet->setCellValue('D7', strtoupper($this->titulo));
+        $sheet->setCellValue('C8', strtoupper($this->titulo));
         // $sheet->setCellValue('M6', 'Semestre');
         // $sheet->setCellValue('O6', '2º');
-        $sheet->setCellValue('M7', 'Mês');
-        $sheet->setCellValue('O7', date('m'));
-        $sheet->setCellValue('M8', 'Ano');
-        $sheet->setCellValue('O8', date('Y'));
+        $sheet->setCellValue('F3', 'DATA INICIO');
+        $sheet->setCellValue('G3', $this->data_inicio);
+        $sheet->setCellValue('F4', 'DATA FINAL');
+        $sheet->setCellValue('G4', $this->data_final);
+        $sheet->setCellValue('F5', "TOTAL DE REGISTROS");
+        $sheet->setCellValue('G5', $this->total_registros);
         //$sheet->styles('')//setBorder('A1', 'solid');
         // $sheet->setBorder('A1:F10', 'thin');
         //Recuperar todas cordenadas envolvidadas
@@ -168,16 +178,20 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
 
             ],
 
-            'M6:O8'    => [
+            'F3:G5'    => [
                 'font' => ['bold' => false, 'color' => ['rgb' => 'FCFCFD']],
                 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2b5876']]
 
             ],
 
             // Styling a specific cell by coordinate.
-            'D7' => ['font' => ['bold' => true, 'color' => ['rgb' => '00008B']]],
-            'F7' => ['font' => ['bold' => true, 'color' => ['rgb' => '00008B']]],
-            'G6' => ['font' => ['bold' => true, 'color' => ['rgb' => '00008B']]],
+            'C8' => ['font' => ['bold' => true, 'color' => ['rgb' => '00008B']]],
+            'F3' => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]],
+            'F4' => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]],
+            'G3' => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]],
+            'G4' => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]],
+            'F5' => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]],
+            'G5' => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']]],
 
             'A11:' . end($coordenadas) => ['borders' => [
                 'allBorders' => [
@@ -192,7 +206,7 @@ class DepositosExport extends DefaultValueBinder implements FromCollection, With
         ];
         //$sheet->getStyle('A7')->getFont()->setBold(true);
     }
-
+    
     public function bindValue(CellCell $cell, $value)
     {
 

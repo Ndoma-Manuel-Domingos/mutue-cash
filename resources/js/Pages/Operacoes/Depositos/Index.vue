@@ -663,7 +663,7 @@ export default {
 
     imprimirEXCEL() {
       window.open(
-        `/depositos/excel?data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
+        `/depositos/excel?operador=${this.operador}&data_inicio=${this.data_inicio}&data_final=${this.data_final}`,
         "_blank"
       );
     },
