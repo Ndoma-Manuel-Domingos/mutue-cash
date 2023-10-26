@@ -204,7 +204,7 @@ class RoleController extends Controller
         
         // $data["utilizadores"] = $array_utilizadores;
         
-        $data["utilizadores"] = User::with('roles')->whereIn('pk_utilizador', $array_utilizadores)->get();
+        $data["utilizadores"] = User::with('roles')->whereIn('pk_utilizador', $array_utilizadores)->where('active_state', 1)->get();
         
         $data['roles'] = Role::where('sistema', 'cash')->get();
     

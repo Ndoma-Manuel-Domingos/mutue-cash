@@ -21,6 +21,7 @@ class Utilizador extends Model
         'userName',
         'password',
         'obs',
+        'active_state'
     ];
-
+    
 }

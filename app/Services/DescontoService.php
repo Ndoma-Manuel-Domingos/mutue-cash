@@ -52,4 +52,33 @@ class DescontoService
     return $taxa;
   }
 
+  public function descontoAnuidade(){
+    $taxa = null;
+
+    $taxa1 = DB::table('descontos_especiais')->where('id', 6)->where('estado', 1)->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_fim)')])->first();
+    $taxa4 = DB::table('descontos_especiais')->where('id', 6)->where('estado', 1)->first();
+    $taxa1Fim = DB::table('descontos_especiais')->where('id', 6)->where('estado', 1)->where(DB::raw('CURDATE()'), '>',  DB::raw('date(data_fim)'))->first();
+
+    $taxa = $taxa1;
+
+    if ($taxa1Fim) {
+      $taxa->taxa = 0;
+    }
+    return ($taxa);
+  }
+
+  public function descontoAgropecuaria(){
+    $taxa = null;
+
+    $taxa1 = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_fim)')])->first();
+    $taxa1Fim = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->where(DB::raw('CURDATE()'), '>',  DB::raw('date(data_fim)'))->first();
+    
+    $taxa = $taxa1;
+
+    if ($taxa1Fim) {
+      $taxa->taxa = 0;
+    }
+    return ($taxa);
+  }
+
 }

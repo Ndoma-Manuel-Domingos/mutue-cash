@@ -32,9 +32,9 @@ class prazoExpiracaoService
       ->where('codigo_tipo_candidatura', 1)
       ->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_termino)')])->first();
 
-     
 
-      
+
+
     $antes_prazo = DB::table('tb_calendario_actividade_lectivas')
       ->where('codigo_ano_lectivo', $ano_lectivo)
       ->where('codigo_tipo_calendario', 4)
@@ -160,7 +160,7 @@ class prazoExpiracaoService
     } elseif ($pos_prazo) {
       $msg = 'Prezado Estudante, a época para inscrição de Recurso terminou.';
       $response = null;
-    } elseif($prazo) {
+    } elseif ($prazo) {
 
       $response = 1;
     }
@@ -196,7 +196,7 @@ class prazoExpiracaoService
     } elseif ($pos_prazo) {
       $msg = 'Prezado Estudante, a época para inscrição de Melhoria de notas terminou.';
       $response = null;
-    } elseif($prazo) {
+    } elseif ($prazo) {
       $response = 1;
     }
 
@@ -231,7 +231,7 @@ class prazoExpiracaoService
     } elseif ($pos_prazo) {
       $msg = 'Prezado Estudante, a época para inscrição de Exame de Época Especial terminou.';
       $response = null;
-    } elseif($prazo) {
+    } elseif ($prazo) {
       $response = 1;
     }
 
@@ -240,8 +240,8 @@ class prazoExpiracaoService
 
     return $data;
   }
-  
-  
+
+
   public function prazoSolicitacaoReingresso($ano_lectivo)
   {
     $response = null;
@@ -268,7 +268,7 @@ class prazoExpiracaoService
     } elseif ($pos_prazo) {
       $msg = 'Prezado Estudante, a época para Solicitação de Reingresso terminou.';
       $response = null;
-    } elseif($prazo) {
+    } elseif ($prazo) {
       $response = 1;
     }
 
@@ -304,7 +304,7 @@ class prazoExpiracaoService
     } elseif ($pos_prazo) {
       $msg = 'Prezado Estudante, a época para Solicitação de Mudança de UC p/outra terminou.';
       $response = null;
-    } elseif($prazo) {
+    } elseif ($prazo) {
       $response = 1;
     }
 
@@ -340,7 +340,7 @@ class prazoExpiracaoService
     } elseif ($pos_prazo) {
       $msg = 'Prezado Estudante, a época para Solicitação de Mudança de Curso Interno terminou.';
       $response = null;
-    } elseif($prazo) {
+    } elseif ($prazo) {
       $response = 1;
     }
 
@@ -364,33 +364,33 @@ class prazoExpiracaoService
     if ($prazo) {
 
       $resposta = 1;
-      
-    }elseif(!$prazo){
+    } elseif (!$prazo) {
       $msg = "Prezado Estudante, as Inscrição para Unidades Extra-Curriculares não está disponível!";
-      $resposta=null; 
+      $resposta = null;
     }
     $data['msg'] = $msg;
     $data['resposta'] = $resposta;
     return $data;
   }
-  public function prazoPagamentoAnoTodoComDesconto($ano_lectivo,$numero_prestacao) // prazo para ter o desconto de 5% pelo pagamento do ano todo 
+  public function prazoPagamentoAnoTodoComDesconto($ano_lectivo, $aluno, $numero_prestacao) // prazo para ter o desconto de 5% pelo pagamento do ano todo 
   {
-  
     $condicoes = [];
-    if(auth()->user()->preinscricao->codigo_tipo_candidatura==1){
+    if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
       array_push($condicoes, ['activo', 1]);
-      
-    }else{
-
+    } else {
       $condicoes = array_push($condicoes, ['activo_posgraduacao', 1]);
     }
-  
-      
-        $prazo=DB::table('mes_temp')->where('ano_lectivo',$ano_lectivo)->where('prestacao', $numero_prestacao)
-        ->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicial)'), DB::raw('date(data_final_desconto)')])
-        ->where($condicoes)->first();
 
-    
+    $prazo = DB::table('mes_temp')->where('ano_lectivo', $ano_lectivo)->where('prestacao', $numero_prestacao)
+      ->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicial)'), DB::raw('date(data_final_desconto)')])
+      ->where(function ($q) use ($aluno) {
+        if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
+          $q->where('activo', 1);
+        } else {
+          $q->where('activo_posgraduacao', 1);
+        }
+      })->first();
+
     return $prazo;
   }
 
@@ -411,6 +411,4 @@ class prazoExpiracaoService
 
     return $data;
   }
- 
-  
 }

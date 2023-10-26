@@ -35,8 +35,7 @@ class AuthController extends Controller
             "password.required" => "Campo Obrigatório"
         ]);
 
-        $user = User::where('userName', $request->get('email'))
-            ->first();
+        $user = User::where('userName', $request->get('email'))->first();
 
         if ($user) {     
    

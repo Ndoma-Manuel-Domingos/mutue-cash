@@ -148,7 +148,7 @@ class ParametroUmaController extends Controller
         if($codigo_anoLectivo==$this->anoLectivoCorrente->index()){
             try {
               //code...
-                $data['prazo_desconto_ano_todo']=$this->prazoExpiracaoService->prazoPagamentoAnoTodoComDesconto($codigo_anoLectivo,1);// prazo para ter o desconto de 5% pelo pagamento do ano todo. Neste caso dentro do mes da primeira prestacao
+                $data['prazo_desconto_ano_todo']=$this->prazoExpiracaoService->prazoPagamentoAnoTodoComDesconto($codigo_anoLectivo,auth()->user()->preinscricao,1);// prazo para ter o desconto de 5% pelo pagamento do ano todo. Neste caso dentro do mes da primeira prestacao
             } catch (\Throwable $th) {
                 $data['prazo_desconto_ano_todo']=null;
             }
@@ -164,7 +164,7 @@ class ParametroUmaController extends Controller
     {
         $isencaoMes_tempIds = $this->getIsencaoMes_tempIds($codigo_anoLectivo);
         $isencaoMesIds = $this->getIsencaoMesIds($codigo_anoLectivo);
-        $verificaPagamentoMarco= $this->alunoRepository->verificaPagamentoMarco($codigo_anoLectivo);
+        $verificaPagamentoMarco= $this->alunoRepository->verificaPagamentoMarco($codigo_anoLectivo, auth()->user()->preinscricao);
         $anosLectivo = $this->anoLectivoService->AnosLectivo($codigo_anoLectivo);
         $todos_meses_pagos = null;
 
@@ -203,7 +203,7 @@ class ParametroUmaController extends Controller
 
         $data['mes_temp'] = $mes_tem;
 
-        $data['prestacoes_por_ano'] = count($this->totalPrestacoesPagarPorAno($codigo_anoLectivo));
+        $data['prestacoes_por_ano'] = count($this->totalPrestacoesPagarPorAno($codigo_anoLectivo, auth()->user()->preinscricao->codigo_tipo_candidatura));
 
         $data['todos_meses_pagos'] = count($todos_meses_pagos);
 
@@ -229,7 +229,7 @@ class ParametroUmaController extends Controller
     public function getIsencaoMes_tempIds($codigo_anoLectivo)
     {
 
-        $aluno=$this->alunoRepository->dadosAlunoLogado();
+        $aluno=$this->alunoRepository->dadosAlunoLogado(auth()->user()->id);
 
         $isencao=DB::table('tb_isencoes')
           ->where('mes_temp_id','!=',null)
