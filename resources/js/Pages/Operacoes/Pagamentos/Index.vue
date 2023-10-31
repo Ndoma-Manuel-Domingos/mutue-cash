@@ -97,7 +97,7 @@
             <div class="card">
               <div class="card-header">
                 <Link
-                  :href="route('mc.pagamentos.create')"
+                  href="/pagamentos/criar"
                   class="btn btn-info float-right"
                   type="button"
                   v-if="user.auth.can['criar pagamento']"

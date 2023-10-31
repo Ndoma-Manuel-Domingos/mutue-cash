@@ -4,7 +4,7 @@
       <div class="lockscreen-wrapper">
         <div class="lockscreen-logo">
           <b>MUTUE</b>CASH
-          <!-- <Link :href="route('mc.dashboard')"><b>MUTUE</b>CASH</Link> -->
+          <!-- <Link href="/dashboard"><b>MUTUE</b>CASH</Link> -->
         </div>
 
         <div class="lockscreen-name" v-if="caixa">{{ caixa.nome }}</div>

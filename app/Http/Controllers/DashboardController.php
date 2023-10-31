@@ -35,7 +35,7 @@ class DashboardController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $movimentos = [];

@@ -78,7 +78,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
@@ -202,7 +202,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $ano = AnoLectivo::where('status', '1')->first();
@@ -248,7 +248,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         return Excel::download(new PagamentosExport($request), 'lista-de-pagamentos.xlsx');
@@ -294,7 +294,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
         
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
@@ -386,7 +386,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $user = auth()->user();
@@ -403,7 +403,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);
@@ -445,7 +445,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $codigo_fatura = $request->get('codigo_fatura');
@@ -540,7 +540,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
@@ -2003,7 +2003,7 @@ class PagamentosController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($codigo_matricula);

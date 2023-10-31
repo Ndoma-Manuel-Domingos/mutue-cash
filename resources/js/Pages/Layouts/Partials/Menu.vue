@@ -6,13 +6,15 @@
       role="menu"
       data-accordion="false"
     >
-    
       <li class="nav-item">
-      <!-- <li class="nav-item" v-if="user.roles['Gestor de Caixa']"> -->
+        <!-- <li class="nav-item" v-if="user.roles['Gestor de Caixa']"> -->
+
         <Link
-          :href="route('mc.dashboard')"
+          href="/dashboard"
           class="nav-link"
-          :class="{ active: $page.component == 'Dashboard' }"
+          :class="{
+            active: $page.component == 'Dashboard',
+          }"
         >
           <i class="nav-icon fas fa-home"></i>
           <p>Dashboard</p>
@@ -32,28 +34,39 @@
           </p>
         </a>
         <ul class="nav nav-treeview">
-          <li class="nav-item" title="DEPOSITOS" v-if="user.auth.can['listar deposito']">
+          <li
+            class="nav-item"
+            title="DEPOSITOS"
+            v-if="user.auth.can['listar deposito']"
+          >
             <Link
-              :href="route('mc.depositos.index')"
+              href="/depositos"
               class="nav-link"
               :class="{
-                active:
-                  $page.component == 'Operacoes/Depositos/Index',
+                active: $page.component == 'Operacoes/Depositos/Index',
               }"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Deposito</p>
             </Link>
           </li>
-          <li class="nav-item" title="PAGAMENTOS" v-if="user.auth.can['listar pagamento']">
+          <li
+            class="nav-item"
+            title="PAGAMENTOS"
+            v-if="user.auth.can['listar pagamento']"
+          >
             <Link
-              :href="route('mc.pagamentos.index')"
-              class="nav-link" :class="{active: $page.component == 'Operacoes/Pagamentos/Index',}">
+              href="pagamentos"
+              class="nav-link"
+              :class="{
+                active: $page.component == 'Operacoes/Pagamentos/Index',
+              }"
+            >
               <i class="far fa-circle nav-icon"></i>
               <p>Pagamentos</p>
             </Link>
           </li>
-          
+
           <!-- <li class="nav-item" title="REGISTRAR SAIDAS">
             <Link
               href="/movimentos/registrar-saidas"
@@ -62,24 +75,31 @@
               <p>Registrar Saída</p>
             </Link>
           </li> -->
-          
-          <li class="nav-item" title="CRIAR CAIXAS" v-if="user.auth.can['listar caixa']">
+
+          <li
+            class="nav-item"
+            title="CRIAR CAIXAS"
+            v-if="user.auth.can['listar caixa']"
+          >
             <Link
               href="/operacoes/caixas"
-              class="nav-link" :class="{active: $page.component == 'Operacoes/Caixas/Index',}">
+              class="nav-link"
+              :class="{ active: $page.component == 'Operacoes/Caixas/Index' }"
+            >
               <i class="far fa-circle nav-icon"></i>
               <p>Lista dos Caixas</p>
             </Link>
           </li>
-
         </ul>
       </li>
-      
+
       <li class="nav-item" title="MOVIMENTOS">
         <a
           href="#"
           class="nav-link"
-          :class="{ active: $page.component.startsWith('Operacoes/Movimentos') }"
+          :class="{
+            active: $page.component.startsWith('Operacoes/Movimentos'),
+          }"
         >
           <i class="nav-icon fas fa-box"></i>
           <p>
@@ -88,22 +108,24 @@
           </p>
         </a>
         <ul class="nav nav-treeview">
-        
-          <li class="nav-item" title="CAIXAS ABERTOS" v-if="user.auth.can['visualizar caixa abertos']">
+          <li
+            class="nav-item"
+            title="CAIXAS ABERTOS"
+            v-if="user.auth.can['visualizar caixa abertos']">
             <Link
               href="/movimentos/caixas-abertos"
-              class="nav-link"
-              :class="{
-                active:
-                  $page.component == 'Operacoes/Movimentos/Abertura',
-              }"
+              class="nav-link" :class="{active: $page.component == 'Operacoes/Movimentos/Abertura',}"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Caixas Abertos</p>
             </Link>
           </li>
-        
-          <li class="nav-item" title="ABERTURA DO CAIXA" v-if="user.auth.can['relatorio diario caixa']">
+
+          <li
+            class="nav-item"
+            title="ABERTURA DO CAIXA"
+            v-if="user.auth.can['relatorio diario caixa']"
+          >
             <Link
               href="/movimentos/diarios-operador"
               class="nav-link"
@@ -116,24 +138,31 @@
               <p>Diários</p>
             </Link>
           </li>
-        
-          <li class="nav-item" title="ABERTURA DO CAIXA" v-if="user.auth.can['abertura caixa']">
+
+          <li
+            class="nav-item"
+            title="ABERTURA DO CAIXA"
+            v-if="user.auth.can['abertura caixa']"
+          >
             <Link
-              :href="route('mc.movimentos-abertura-caixa')"
+              href="/movimentos/abertura-caixa"
               class="nav-link"
               :class="{
-                active:
-                  $page.component == 'Operacoes/Movimentos/Abertura',
+                active: $page.component == 'Operacoes/Movimentos/Abertura',
               }"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Abertura Caixa</p>
             </Link>
           </li>
-          
-          <li class="nav-item" title="FECHO DE CAIXA" v-if="user.auth.can['fecho caixa']">
+
+          <li
+            class="nav-item"
+            title="FECHO DE CAIXA"
+            v-if="user.auth.can['fecho caixa']"
+          >
             <Link
-              :href="route('mc.movimentos-fecho-caixa')"
+              href="/movimentos/fecho-caixa"
               class="nav-link"
               :class="{
                 active: $page.component == 'Operacoes/Movimentos/Fecho',
@@ -143,24 +172,27 @@
               <p>Fecho do Caixa</p>
             </Link>
           </li>
-          
-          
-          <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.auth.can['validar caixa']">
-          <!-- <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.type_user == 'Administrador'"> -->
+
+          <li
+            class="nav-item"
+            title="VALIDAR FECHO DE CAIXA"
+            v-if="user.auth.can['validar caixa']"
+          >
+            <!-- <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.type_user == 'Administrador'"> -->
             <Link
-              :href="route('mc.movimentos-validar-fecho-caixa')"
+              href="/movimentos/validar-fecho"
               class="nav-link"
               :class="{
-                active: $page.component == 'Operacoes/Movimentos/ValidarFechoCaixa',
+                active:
+                  $page.component == 'Operacoes/Movimentos/ValidarFechoCaixa',
               }"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Validar Fecho do Caixa</p>
             </Link>
           </li>
-
         </ul>
-      </li>      
+      </li>
 
       <li class="nav-item" v-if="user.auth.can['listar relatorio']">
         <a
@@ -180,21 +212,24 @@
         <ul class="nav nav-treeview">
           <li class="nav-item" title="FECHO DO CAIXA POR OPERADOR">
             <Link
-              :href="route('mc.fecho-caixa-operador.index')"
+              href="/relatorios/fecho-caixa/operador"
               class="nav-link"
               :class="{
-                active:
-                  $page.component == 'Relatorios/FechoCaixa/Operador',
+                active: $page.component == 'Relatorios/FechoCaixa/Operador',
               }"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Extrato por Operador</p>
             </Link>
           </li>
-          
-          <li class="nav-item" title="EXTRATOS DE DEPÓSITOS" v-if="user.auth.can['extrato deposito']">
+
+          <li
+            class="nav-item"
+            title="EXTRATOS DE DEPÓSITOS"
+            v-if="user.auth.can['extrato deposito']"
+          >
             <Link
-              :href="route('mc.extrato-depositos.index')"
+              href="/relatorios/extrato-depositos"
               class="nav-link"
               :class="{
                 active:
@@ -205,10 +240,14 @@
               <p>Extrato de Depósitos</p>
             </Link>
           </li>
-          
-          <li class="nav-item" title="EXTRATOS DOS PAGAMENTOS" v-if="user.auth.can['extrato pagamento']">
+
+          <li
+            class="nav-item"
+            title="EXTRATOS DOS PAGAMENTOS"
+            v-if="user.auth.can['extrato pagamento']"
+          >
             <Link
-              :href="route('mc.extrato-pagamentos.index')"
+              href="/relatorios/extrato-pagamentos"
               class="nav-link"
               :class="{
                 active:
@@ -219,10 +258,9 @@
               <p>Extrato de Pagamentos</p>
             </Link>
           </li>
-          
         </ul>
       </li>
-      
+
       <li class="nav-item" v-if="user.auth.can['criar operador']">
         <a
           href="#"
@@ -239,37 +277,42 @@
           </p>
         </a>
         <ul class="nav nav-treeview">
-          <li class="nav-item" title="GESTÃO DE UTILIZADORES" v-if="user.auth.can['criar operador']">
+          <li
+            class="nav-item"
+            title="GESTÃO DE UTILIZADORES"
+            v-if="user.auth.can['criar operador']"
+          >
             <Link
               href="/roles/index"
               class="nav-link"
               :class="{
-                active:
-                  $page.component == 'Utilizadores/Roles/Index',
+                active: $page.component == 'Utilizadores/Roles/Index',
               }"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Perfil</p>
             </Link>
           </li>
-          
-          <li class="nav-item" title="DEFINIR PERMISSIONS OPERADOR" v-if="user.auth.can['criar operador']">
+
+          <li
+            class="nav-item"
+            title="DEFINIR PERMISSIONS OPERADOR"
+            v-if="user.auth.can['criar operador']"
+          >
             <Link
               href="/roles/utilizadores"
               class="nav-link"
               :class="{
-                active:
-                  $page.component == 'Utilizadores/Index',
+                active: $page.component == 'Utilizadores/Index',
               }"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Utilizadores</p>
             </Link>
           </li>
-          
         </ul>
       </li>
-      
+
       <!-- <div class="ml-auto" >
         <ul class="navbar-nav">
           <li class="nav-item text-left">
@@ -286,91 +329,88 @@
           </li>
         </ul>
       </div> -->
-
-
     </ul>
   </nav>
 </template>
 
 <script setup>
-  import { computed } from "vue";
-  import { usePage } from "@inertiajs/inertia-vue3";
-  import { Link } from "@inertiajs/inertia-vue3";
+import { computed } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/inertia-vue3";
 
-  // const user = computed(() => {
-  //   return usePage().props.value.auth.user;
-  // });
-  
+// const user = computed(() => {
+//   return usePage().props.value.auth.user;
+// });
 </script>
 
 <script>
+export default {
+  data: () => ({
+    perfil: "",
+    user_roles: [],
+    roles: [],
+  }),
 
-  export default {
-    data: () => ({
-      perfil:"",
-      user_roles: [],
-      roles: [],
-    }),
-    
-    computed: {
-      user() {
-        return this.$page.props.auth.user;
-      },
+  computed: {
+    user() {
+      return this.$page.props.auth.user;
     },
-    
-    mounted() {
-      // alert(JSON.stringify(this.user.auth.can['abertura caixa']))
-      // this.getUserRoles();
-    }, 
-  
-    methods: {
-    
-      logout: function () {
-        this.loading = true;
-        this.axios.post("/logout").then((response) => {
+  },
+
+  mounted() {
+    // alert(JSON.stringify(this.user.auth.can['abertura caixa']))
+    // this.getUserRoles();
+  },
+
+  methods: {
+    logout: function () {
+      this.loading = true;
+      this.axios
+        .post("/logout")
+        .then((response) => {
           if (response.status === 302 || 401) {
             console.log(error);
             this.loading = false;
           } else {
-            window.location.replace('/login');
+            window.location.replace("/login");
             // throw error and go to catch block
           }
-        }).catch((error) => {
+        })
+        .catch((error) => {
           this.loading = false;
           console.log(error);
         });
-      },
-    
-    
-      // logout(){
-      //   axios.post("/logout").then((response) => {
-      //     Swal.fire({
-      //       icon: response.data? "warning" : "success!",
-      //       title: response.data ? "Atenção" : "Sucesso!",
-      //       text: response.data ? response.data.message : "Conta encerrada com sucesso!",
-      //     });
-      //     setTimeout(() => {
-      //       window.location.reload();
-      //     }, 2500);
-      //   }).catch((error) => {
-      //     console.error(error);
-      //   });
-      // },
-      
-      // getUserRoles() {
-      //   alert(JSON.stringify(user))
-
-      //   this.user.auth.roles.forEach((role) => {
-      //     this.user_roles.push(role.name);
-      //   });
-      //   for (let index = 0; index < this.user_roles.length; index++) {
-      //     const element = this.user_roles[index];
-      //     this.roles[element] = true;
-      //     this.perfil = element; //R29102020
-      //   }
-      // },
     },
-  };
+
+    // logout(){
+    //   axios.post("/logout").then((response) => {
+    //     Swal.fire({
+    //       icon: response.data? "warning" : "success!",
+    //       title: response.data ? "Atenção" : "Sucesso!",
+    //       text: response.data ? response.data.message : "Conta encerrada com sucesso!",
+    //     });
+    //     setTimeout(() => {
+    //       window.location.reload();
+    //     }, 2500);
+    //   }).catch((error) => {
+    //     console.error(error);
+    //   });
+    // },
+
+    // getUserRoles() {
+    //   alert(JSON.stringify(user))
+
+    //   this.user.auth.roles.forEach((role) => {
+    //     this.user_roles.push(role.name);
+    //   });
+    //   for (let index = 0; index < this.user_roles.length; index++) {
+    //     const element = this.user_roles[index];
+    //     this.roles[element] = true;
+    //     this.perfil = element; //R29102020
+    //   }
+    // },
+  },
+};
 </script>
 
 
