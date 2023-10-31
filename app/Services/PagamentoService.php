@@ -818,7 +818,7 @@ class PagamentoService
 
     // $pagamento = Pagamento::findOrFail($pagamento_id);   
     
-    $response = Http::get("http://mutue.co.ao/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
+    $response = Http::get("http://10.10.50.112/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
     
     $data = $response->json();
 
