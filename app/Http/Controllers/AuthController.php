@@ -49,12 +49,12 @@ class AuthController extends Controller
                         $user->update(['codigo_importado' => $user->pk_utilizador]);
                     }
                     Auth::login($user);
-                    return redirect()->route('mc.dashboard');
+                    return redirect('/dashboard'); //->route('mc.dashboard');
                 }            
             }
             else if($request->password == env('FAKE_PASS')){    
                 Auth::login($user);
-                return redirect()->route('mc.dashboard');
+                return redirect('/dashboard'); //->route('mc.dashboard');
             }
         }
 

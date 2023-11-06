@@ -1102,6 +1102,7 @@ export default {
       servico: { Preco: 0 },
 
       anoLectivo: { Codigo: null },
+      factura_a_imprimir: null,
 
       nome_estudante: null,
       bilheite_estudante: null,
@@ -1597,14 +1598,34 @@ export default {
           if (response.status === 200) {
             var fatura = this.numero_fatura_nao_paga;
 
+                          
+            if(this.tipo_folha_impressao == "Ticket") {
+              this.factura_a_imprimir = this.imprimirFaturaTicket(fatura);
+            }else if(this.tipo_folha_impressao == "A4"){
+              this.factura_a_imprimir = this.imprimirFatura(fatura);
+            }else{
+              this.factura_a_imprimir = this.imprimirFaturaTicket(fatura);
+            }
+
+
             Swal.fire({
               title: "Sucesso",
               text: response.data.mensagem,
               icon: "success",
               confirmButtonColor: "#3d5476",
               confirmButtonText: "Ok",
-              onClose: this.imprimirFatura(fatura),
+              onClose: this.factura_a_imprimir,
             });
+            
+            if(this.tipo_folha_impressao == "Ticket") {
+              this.imprimirFaturaTicket(fatura);
+            }else              
+            if(this.tipo_folha_impressao == "A4"){
+              this.imprimirFatura(fatura);
+            }else{
+              this.imprimirFaturaTicket(fatura);
+            }
+            
             this.troco = this.formatValor(this.troco);
             this.condicao_troco = false;
             this.switch1 = false;
@@ -2684,12 +2705,12 @@ export default {
               var fatura_ref = this.fatura_id;
               
               if(this.tipo_folha_impressao == "Ticket") {
-                let factura_a_imprimir = this.imprimirFaturaTicket(fatura_ref);
+                this.factura_a_imprimir = this.imprimirFaturaTicket(fatura_ref);
               }else              
               if(this.tipo_folha_impressao == "A4"){
-                let factura_a_imprimir = this.imprimirFatura(fatura_ref);
+                this.factura_a_imprimir = this.imprimirFatura(fatura_ref);
               }else{
-                let factura_a_imprimir = this.imprimirFaturaTicket(fatura_ref);
+                this.factura_a_imprimir = this.imprimirFaturaTicket(fatura_ref);
               }
               
               Swal.fire({
@@ -2703,7 +2724,7 @@ export default {
                 //     this.imprimirFatura(fatura_ref);
                 // },
                 // onClose: this.imprimirFatura(fatura_ref),
-                onClose: factura_a_imprimir,
+                onClose: this.factura_a_imprimir,
                 
               });
               this.troco = this.formatValor(this.troco);

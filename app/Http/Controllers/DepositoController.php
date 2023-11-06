@@ -37,7 +37,7 @@ class DepositoController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
                  
          // utilizadores validadores
@@ -348,7 +348,7 @@ class DepositoController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         if($request->data_inicio){
@@ -389,7 +389,7 @@ class DepositoController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         return Excel::download(new DepositosExport($request), 'lista-de-depositos.xlsx');
@@ -402,7 +402,7 @@ class DepositoController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
         
         $data['item'] = Deposito::when($request->data_inicio, function($query, $value){

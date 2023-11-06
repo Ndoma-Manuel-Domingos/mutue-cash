@@ -36,7 +36,7 @@ class RelatorioController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
     
         $user = auth()->user();
@@ -354,7 +354,7 @@ class RelatorioController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
         
         $ano = AnoLectivo::where('status', '1')->first();
@@ -527,7 +527,7 @@ class RelatorioController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
@@ -577,7 +577,7 @@ class RelatorioController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         return Excel::download(new DepositosExtratoExport($request), 'lista-de-extratos-depositos.xlsx');
@@ -593,7 +593,7 @@ class RelatorioController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
@@ -700,7 +700,7 @@ class RelatorioController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
 
         $estudante = Matricula::with(['admissao.preinscricao'])->find($request->codigo_matricula);
@@ -802,7 +802,7 @@ class RelatorioController extends Controller
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
         if($caixa && $caixa->bloqueio == 'Y'){
-            return redirect()->route('mc.bloquear-caixa');
+            return redirect('/movimentos/bloquear-caixa');
         }
         
         return Excel::download(new PagamentosExtratoExport($request), 'lista-de-pagamentos-extrato.xlsx');

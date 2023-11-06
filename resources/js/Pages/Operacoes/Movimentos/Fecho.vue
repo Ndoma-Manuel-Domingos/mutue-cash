@@ -69,7 +69,7 @@
 
                     <div class="form-group col-12 col-md-6">
                       <label for="valor_depositado" class="form-label"
-                        ><Link :href="route('mc.depositos.index')"
+                        ><Link href="depositos"
                           >TOTAL DE DEPÓSITOS</Link
                         ></label
                       >
@@ -90,7 +90,7 @@
 
                     <div class="form-group col-12 col-md-3">
                       <label for="valor_pagamento" class="form-label"
-                        ><Link :href="route('mc.pagamentos.index')"
+                        ><Link href="pagamentos"
                           >TOTAL DE PAGAMENTOS</Link
                         ></label
                       >
@@ -111,7 +111,7 @@
 
                     <div class="form-group col-12 col-md-3">
                       <label for="valor_facturado" class="form-label"
-                        ><Link :href="route('mc.pagamentos.index')"
+                        ><Link href="pagamentos"
                           >VALOR FACTURADO</Link
                         ></label
                       >

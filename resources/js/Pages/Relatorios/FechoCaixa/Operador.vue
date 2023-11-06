@@ -116,7 +116,7 @@
               <div class="icon">
                 <i class="ion ion-bag"></i>
               </div>
-              <Link :href="route('mc.depositos.index')" class="small-box-footer">Mais detalhe <i class="fas fa-arrow-circle-right"></i></Link>
+              <Link href="depositos" class="small-box-footer">Mais detalhe <i class="fas fa-arrow-circle-right"></i></Link>
             </div>
           </div>
 

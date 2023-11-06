@@ -55,7 +55,7 @@ class DescontoService
   public function descontoAnuidade(){
     $taxa = null;
 
-    $taxa1 = DB::table('descontos_especiais')->where('id', 6)->where('estado', 1)->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_fim)')])->first();
+    $taxa1 = DB::table('descontos_especiais')->where('id', 6)->where('estado', 1)->first();
     $taxa4 = DB::table('descontos_especiais')->where('id', 6)->where('estado', 1)->first();
     $taxa1Fim = DB::table('descontos_especiais')->where('id', 6)->where('estado', 1)->where(DB::raw('CURDATE()'), '>',  DB::raw('date(data_fim)'))->first();
 
@@ -70,7 +70,7 @@ class DescontoService
   public function descontoAgropecuaria(){
     $taxa = null;
 
-    $taxa1 = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_fim)')])->first();
+    $taxa1 = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->first();
     $taxa1Fim = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->where(DB::raw('CURDATE()'), '>',  DB::raw('date(data_fim)'))->first();
     
     $taxa = $taxa1;
