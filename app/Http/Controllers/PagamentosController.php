@@ -897,7 +897,7 @@ class PagamentosController extends Controller
                         $pagamento_saldo['codigo_factura'] = $fatura_paga->codigo;
                         $pagamento_saldo['caixa_id'] = $caixas->codigo;
                         $pagamento_saldo['status_pagamento'] = 'pendente';
-                        $pagamento_saldo['estado'] = ($fatura_paga->codigo_descricao == 2 || $fatura_paga->codigo_descricao == 4 || $fatura_paga->codigo_descricao == 5 || $fatura_paga->codigo_descricao == 10) ? 1 : 0;
+                        $pagamento_saldo['estado'] = 1;
                         $pagamento_saldo['corrente'] = 1;
                         $pagamento_saldo['Observacao'] = "Pagamento efectuado com Reserva no Mutue Cash";
                         $pagamento_saldo['forma_pagamento'] = "6";
@@ -1558,7 +1558,7 @@ class PagamentosController extends Controller
             $pagamento['codigo_factura'] = $fact_aluno->Codigo;
             $pagamento['caixa_id'] = $caixas->codigo;
             $pagamento['status_pagamento'] = 'pendente';
-            $pagamento['estado'] = ($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10) ? 1 : 0;
+            $pagamento['estado'] = 1;
             $pagamento['Observacao'] =  'Pagamento efectuado com Reserva no Mutue Cash';
             $pagamento['forma_pagamento'] =  '6';
             $pagamento['feito_com_reserva'] =  'Y';
@@ -2733,7 +2733,7 @@ class PagamentosController extends Controller
                     $pagamento['Observacao'] =  'Pagamento efectuado com Reserva no Mutue Cash';
                     $pagamento['feito_com_reserva'] =  'Y';
                     $pagamento['forma_pagamento'] =  '6';
-                    $pagamento['estado'] = ($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10) ? 1 : 0;
+                    $pagamento['estado'] = 1;
                     $data['corrente'] = 1;
 
                     $id_pag = DB::table('tb_pagamentos')->insertGetId($pagamento);
