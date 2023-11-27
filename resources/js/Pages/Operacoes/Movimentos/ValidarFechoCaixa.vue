@@ -96,7 +96,11 @@
           <div class="col-12 col-md-12">
             <div class="card">
               <div class="card-header">
-                
+                <div class="float-left text-left">
+                  <a class="p-1 bg-danger mr-1 text-capitalize">REPRESENTA FECHO NÃO VALIDADO</a>
+                  <a class="p-1 bg-success mr-1 text-capitalize">REPRESENTA FECHO VALIDADO</a>
+                  <a class="p-1 bg-info mr-1 text-capitalize">REPRESENTA FECHO PENDENTE</a>
+                </div>
                 
                 <button
                   class="btn btn-success float-right mr-1"
@@ -141,7 +145,16 @@
                       <td>{{ item.operador ? item.operador.nome :  '' }}</td>
                       <td>{{ item.caixa.nome ?? '' }} </td>
                       <td class="text-capitalize">{{ item.status ?? '' }}</td>
-                      <td class="text-capitalize">{{ item.status_admin ?? '' }}</td>
+                      <template v-if="item.status_admin == 'nao validado'">
+                        <td class="text-uppercase bg-danger">{{ item.status_admin ?? '' }}</td>
+                      </template>
+                      <template v-else-if="item.status_admin == 'validado'">
+                        <td class="text-uppercase bg-success">{{ item.status_admin ?? '' }}</td>
+                      </template>
+                      <template v-else-if="item.status_admin == 'pendente'">
+                        <td class="text-uppercase bg-info">{{ item.status_admin ?? '' }}</td>
+                      </template>
+                      <!-- <td class="text-capitalize">{{ item.status_admin ?? '' }}</td> -->
                       <td class="text text-center text-danger">{{ item.motivo_rejeicao ?? 'Nenhum motivo' }}</td>
                       <td>{{ formatValor(item.valor_abertura ?? 0)}}</td>
                       <td>{{ formatValor(item.valor_facturado_pagamento ?? 0)}}</td>

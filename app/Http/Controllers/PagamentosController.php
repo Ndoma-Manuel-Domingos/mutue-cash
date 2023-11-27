@@ -33,6 +33,7 @@ use App\Models\GrupoUtilizador;
 use App\Models\MovimentoCaixa;
 use App\Models\PagamentoItems;
 use App\Models\CandidatoProva;
+use App\Models\GradeCurricularAluno;
 use App\Models\Utilizador;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -88,7 +89,7 @@ class PagamentosController extends Controller
 
 
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
-
+        
             if($request->data_inicio){
                 $request->data_inicio = $request->data_inicio;
             }else{
@@ -179,7 +180,6 @@ class PagamentosController extends Controller
             ->withQueryString();
 
         }
-
 
         if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
             $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
@@ -536,6 +536,7 @@ class PagamentosController extends Controller
 
     public function salvarPagamentosDiversos(Request $request, $codigo_matricula)
     {
+        
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -629,7 +630,6 @@ class PagamentosController extends Controller
                 return Response()->json($e->getMessage());
             }
         }
-        
  
         $Somapagamentos = DB::table('factura')->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
             ->join('tb_admissao', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
@@ -638,10 +638,8 @@ class PagamentosController extends Controller
             ->where('factura.Codigo', $codigoDaFatura)->where('tb_preinscricao.Codigo', $codigo)
             ->select('tb_pagamentos.valor_depositado as valor_depositado', 'factura.ValorAPagar as ValorAPagar', 'factura.codigo_descricao', 'factura.Codigo', 'factura.ValorEntregue as ValorEntregue', 'factura.estado as estado_factura', 'factura.ano_lectivo as ano_factura')
             ->get();  
-         
 
         $total = $Somapagamentos->sum('valor_depositado');
-        
         
         if ($fatura_paga && $Somapagamentos && $total >= $fatura_paga->ValorAPagar && $fonte == 1) {
             $result['message']="Ja efectuou o pagamento da fatura referida!";
@@ -1422,12 +1420,46 @@ class PagamentosController extends Controller
             }
         }
        
+       
         DB::commit();
 
         try {
             // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
             if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
                 $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                $this->pagamentoService->corrigirFalhaDeValidacaoDaAPI($id_pag);
+            }
+            
+            if($fact_aluno->codigo_descricao == 3){
+                $this->pagamentoService->corrigirFalhaDeValidacaoDaAPI($id_pag);
+                // $ano = AnoLectivo::where('estado', 'Activo')->first();
+                // $pagamento = Pagamento::findOrFail($id_pag);  
+                
+                // if($ano){
+                
+                //     if ($pagamento) {
+            
+                //         $pagamento->estado = 1;
+                //         $pagamento->forma_pagamento = 6;
+                //         $pagamento->update();
+            
+                //         $preinscricao = Preinscricao::leftJoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
+                //             ->leftJoin('tb_matriculas', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
+                //             ->select('tb_matriculas.Codigo AS codigo_matricula','tb_preinscricao.Codigo AS codigo_preinscricao')
+                //             ->findOrFail($pagamento->Codigo_PreInscricao);
+                //         if ($preinscricao) {
+                            
+                //             $grades = GradeCurricularAluno::where('codigo_matricula', $preinscricao->codigo_matricula)->where('codigo_ano_lectivo', $ano->Codigo)->get();
+                //             if($grades){
+                //                 foreach($grades as $grade){
+                //                     $update = GradeCurricularAluno::findOrFail($grade->codigo);
+                //                     $update->Codigo_Status_Grade_Curricular = 2;
+                //                     $update->update();
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
@@ -1435,6 +1467,7 @@ class PagamentosController extends Controller
             return Response()->json($result['message']);
         }
 
+       
         try {
             $troc = Factura::find($codigoDaFatura);
             $troc->update(['Troco' =>$troco_front]);
@@ -1765,6 +1798,7 @@ class PagamentosController extends Controller
             // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
             if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
                 $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                $this->pagamentoService->corrigirFalhaDeValidacaoDaAPI($id_pag);
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
@@ -1986,6 +2020,7 @@ class PagamentosController extends Controller
 
             try {
                 $this->pagamentoService->validarPagamentoAdmin($pagamento->Codigo, Auth::user()->pk_utilizador);
+                $this->pagamentoService->corrigirFalhaDeValidacaoDaAPI($pagamento->Codigo);
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollback();
                 $resultado['msg'] = $e->getMessage();
@@ -2742,6 +2777,7 @@ class PagamentosController extends Controller
                 // $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
                 if(!($fact_aluno->codigo_descricao == 2 || $fact_aluno->codigo_descricao == 4 || $fact_aluno->codigo_descricao == 5 || $fact_aluno->codigo_descricao == 10)){
                     $this->pagamentoService->validarPagamentoAdmin($id_pag, Auth::user()->pk_utilizador);
+                    $this->pagamentoService->corrigirFalhaDeValidacaoDaAPI($id_pag);
                 }
             }
         } catch (\Illuminate\Database\QueryException $e) {
@@ -3109,10 +3145,10 @@ class PagamentosController extends Controller
 
         $aluno = Matricula::with(['admissao.preinscricao'])->findOrFail($fatura->CodigoMatricula);
 
-        if ($fatura->codigo_descricao == 5) {
-            $id = base64_encode(base64_encode(base64_encode($id)));
-            return redirect('estudante/fatura/negociacao/show/' . $id);
-        }
+        // if ($fatura->codigo_descricao == 5) {
+        //     $id = base64_encode(base64_encode(base64_encode($id)));
+        //     return redirect('estudante/fatura/negociacao/show/' . $id);
+        // }
 
         $id_aluno = $aluno->admissao->preinscricao->user_id;
         $data['aluno'] = DB::table('tb_preinscricao')

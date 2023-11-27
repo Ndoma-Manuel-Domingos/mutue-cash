@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use App\Repositories\AlunoRepository;
 // nunca usar prezoExpiracaoService nesta classe vai, dar um ciclo infinito porque ela ja chama o pagamentoService
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
+use App\Models\AnoLectivo;
+use App\Models\GradeCurricularAluno;
 use App\Models\Pagamento;
 use App\PagamentoItem;
 use App\Models\Preinscricao;
@@ -811,19 +813,60 @@ class PagamentoService
     return $codigo_documento;
   }
 
-
   //Api para validação de pagamento via ADMIN JSF
-  public function validarPagamentoAdmin($pagamento_id, $operador_id){
+  public function validarPagamentoAdmin($pagamento_id, $operador_id)
+  {
     $user = auth()->user();
 
-    // $pagamento = Pagamento::findOrFail($pagamento_id);   
-    
-    $response = Http::get("http://10.10.50.112/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
-    
+    $response = Http::get("http://mutue.co.ao/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
+
     $data = $response->json();
 
     return $data;
   }
 
+  //Api para validação de pagamento via ADMIN JSF
+  public function corrigirFalhaDeValidacaoDaAPI($pagamento_id)
+  {
+    $ano = AnoLectivo::where('estado', 'Activo')->where('status', 1)->first();
+    $pagamento = Pagamento::findOrFail($pagamento_id);
+    $avaliacoes = DB::table('inscricao_avaliacoes')->where('codigo_factura',$pagamento->codigo_factura)->get();
 
+    try {
+      if ($ano) {
+
+        if ($pagamento) {
+
+          $pagamento->estado = 1;
+          $pagamento->forma_pagamento = 6;
+          $pagamento->fk_utilizador = $pagamento->Utilizador;
+          $pagamento->update();
+
+          $preinscricao = Preinscricao::leftJoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
+            ->leftJoin('tb_matriculas', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
+            ->select('tb_matriculas.Codigo AS codigo_matricula', 'tb_preinscricao.Codigo AS codigo_preinscricao')
+            ->findOrFail($pagamento->Codigo_PreInscricao);
+          
+          if ($preinscricao) {
+            $grades = GradeCurricularAluno::where('codigo_matricula', $preinscricao->codigo_matricula)->where('codigo_ano_lectivo', $ano->Codigo)->get();
+            if ($grades) {
+              foreach ($grades as $grade) {
+                $update = GradeCurricularAluno::findOrFail($grade->codigo);
+                $update->Codigo_Status_Grade_Curricular = 2;
+                $update->update();
+              }
+            }
+            if(filled($avaliacoes)){
+              foreach ($avaliacoes as $avaliacao) {
+                $avaliacoes = DB::table('inscricao_avaliacoes')->where('codigo_factura', $avaliacao->codigo_factura)->update(['estado' => 'validado']);
+              }
+            }
+          }
+        }
+      }
+    } catch (\Throwable $th) {
+      return Response()->json($th->getMessage());
+    }
+
+  }
 }

@@ -103,7 +103,6 @@
                   v-if="user.auth.can['criar pagamento']"
                   >
                   Novos Pagamentos
-                  
                 </Link>
 
                 <button class="btn btn-success float-right mr-1" type="button" @click="imprimirEXCEL">
