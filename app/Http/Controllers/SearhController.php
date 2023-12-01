@@ -8,7 +8,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
 use App\Http\Controllers\Extenso;
 use App\Http\Controllers\Divida\ControloDivida;
+use App\Models\AnoLectivo;
 use App\Models\Caixa;
+use App\Models\GradeCurricularAluno;
 use App\Models\Pagamento;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\AlunoRepository;
@@ -22,6 +24,8 @@ use App\Services\PagamentoService;
 use App\Services\PropinaService;
 use \Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\Http;
 
 class SearhController extends Controller
 {
@@ -1315,7 +1319,7 @@ class SearhController extends Controller
             $taxa_nov21_jul22 = $this->descontoService->descontoNov21Jul22();
             $taxa_desconto_agro = $this->descontoService->descontoAgropecuaria();
             $taxa_desconto_anuidade = $this->descontoService->descontoAnuidade();
-            
+
             if ($taxa_nov21_jul22 && $alunoLogado->codigo_tipo_candidatura == 1) {
                 if (($alunoLogado->anoLectivo >= 18) && ($alunoLogado->estado_matricula != 'inactivo') && ($alunoLogado->Codigo_Turno == 6)) {
                     $data['taxa_nov21_jul22'] = $taxa_nov21_jul22->taxa;
@@ -1329,15 +1333,15 @@ class SearhController extends Controller
             }
 
             // desconto de anuidade
-          if((int)$ano == $anoCorrente && $taxa_desconto_anuidade && $alunoLogado->codigo_tipo_candidatura == 1){
-            if (($alunoLogado->estado_matricula != 'inactivo')) {
-              $data['desconto_de_anuidade'] = ($taxa_desconto_anuidade->taxa / 100);
+            if ((int)$ano == $anoCorrente && $taxa_desconto_anuidade && $alunoLogado->codigo_tipo_candidatura == 1) {
+                if (($alunoLogado->estado_matricula != 'inactivo')) {
+                    $data['desconto_de_anuidade'] = ($taxa_desconto_anuidade->taxa / 100);
+                }
+            } elseif (((int)$ano == $this->anoAtualPrincipal->cicloMestrado()->Codigo || (int)$ano == $this->anoAtualPrincipal->cicloDoutoramento()->Codigo) && $taxa_desconto_anuidade && $alunoLogado->codigo_tipo_candidatura != 1) {
+                if (($alunoLogado->estado_matricula != 'inactivo')) {
+                    $data['desconto_de_anuidade'] = ($taxa_desconto_anuidade->taxa / 100);
+                }
             }
-          }elseif(((int)$ano == $this->anoAtualPrincipal->cicloMestrado()->Codigo || (int)$ano == $this->anoAtualPrincipal->cicloDoutoramento()->Codigo) && $taxa_desconto_anuidade && $alunoLogado->codigo_tipo_candidatura != 1){
-            if (($alunoLogado->estado_matricula != 'inactivo')) {
-              $data['desconto_de_anuidade'] = ($taxa_desconto_anuidade->taxa / 100);
-            }
-          }
         }
 
         return Response()->json($data);
@@ -1495,5 +1499,45 @@ class SearhController extends Controller
         } else {
             return response()->json(['message' => $message3, 'status' => 200]);
         }
+    }
+
+    public function teste($pagamento_id = '731492', $operador_id)
+    {
+        //Api para validação de pagamento via ADMIN JSF
+        $user = auth()->user();
+
+        // $response = Http::get("http://10.10.50.112/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
+
+        // $data = $response->json();
+        $pagamento = Pagamento::findOrFail($pagamento_id);
+        $ano = AnoLectivo::where('estado', 'Activo')->first();
+        
+        if($ano){
+        
+            if ($pagamento) {
+    
+                $pagamento->estado = 1;
+                $pagamento->update();
+    
+                $preinscricao = Preinscricao::leftJoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
+                    ->leftJoin('tb_matriculas', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
+                    ->select('tb_matriculas.Codigo AS codigo_matricula','tb_preinscricao.Codigo AS codigo_preinscricao')
+                    ->findOrFail($pagamento->Codigo_PreInscricao);
+                if ($preinscricao) {
+                    
+                    $grades = GradeCurricularAluno::where('codigo_matricula', $preinscricao->codigo_matricula)->where('codigo_ano_lectivo', $ano->Codigo)->get();
+                    if($grades){
+                        foreach($grades as $grade){
+                            $update = GradeCurricularAluno::findOrFail($grade->codigo);
+                            $update->Codigo_Status_Grade_Curricular = 2;
+                            $update->update();
+                        }
+                    }
+                
+                }
+            }
+        }
+
+        // return $data;
     }
 }

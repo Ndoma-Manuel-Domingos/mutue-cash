@@ -278,6 +278,7 @@ class MovimentoController extends Controller
         $movimento->valor_arrecadado_pagamento = $movimento->valor_arrecadado_pagamento;
         $movimento->status = "fechado";
         $movimento->status_final = "concluido";
+        $movimento->status_final = date("Y-m-d");
         $movimento->observacao = $request->observacao;
         $movimento->update();
         
@@ -367,7 +368,8 @@ class MovimentoController extends Controller
             ->when($request->caixa_id, function($query, $value){
                 $query->where('caixa_id', $value);
             })
-            ->with(['operador', 'caixa'])->where('status', 'fechado')
+            ->with(['operador', 'caixa'])
+            ->where('status', 'fechado')
             ->orderBy('codigo', 'desc')
             ->paginate(10)
             ->withQueryString();        
@@ -394,7 +396,8 @@ class MovimentoController extends Controller
             ->when($request->caixa_id, function($query, $value){
                 $query->where('caixa_id', $value);
             })
-            ->with(['operador', 'caixa'])->where('status', 'fechado')
+            ->with(['operador', 'caixa'])
+            ->where('status', 'fechado')
             ->orderBy('codigo', 'desc')
             ->paginate(10)
             ->withQueryString(); 
@@ -439,6 +442,7 @@ class MovimentoController extends Controller
         
         try {
             $movimento->status_admin = 'validado';
+            $movimento->data_validacao = date("Y-m-d");
             $movimento->operador_admin_id = Auth::user()->codigo_importado;
             $movimento->update();
         } catch (\Throwable $th) {
@@ -495,6 +499,7 @@ class MovimentoController extends Controller
         try {
             $movimento->status_admin = 'nao validado';
             $movimento->motivo_rejeicao = $motivo;
+            $movimento->data_validacao = date("Y-m-d");
             $movimento->operador_admin_id = Auth::user()->codigo_importado;
             $movimento->update();
         } catch (\Throwable $th) {

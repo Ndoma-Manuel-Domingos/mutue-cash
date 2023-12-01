@@ -79,9 +79,7 @@
               </div>
             </div>
         </div>
-  
-  
-  
+    
         <div class="modal fade" id="modelActualizarPerfil">
           <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -153,7 +151,7 @@
 
   import { Link } from "@inertiajs/inertia-vue3";
   import { sweetSuccess, sweetError } from "../../components/Alert"
-  import Paginacao from "../../Shared/Paginacao"
+  import Paginacao from "../../Shared/Paginacao.vue"
   
   export default {
     props: ["utilizadores", "roles"],

@@ -56,7 +56,7 @@
             v-if="user.auth.can['listar pagamento']"
           >
             <Link
-              href="pagamentos"
+              href="/pagamentos"
               class="nav-link"
               :class="{
                 active: $page.component == 'Operacoes/Pagamentos/Index',
@@ -178,7 +178,6 @@
             title="VALIDAR FECHO DE CAIXA"
             v-if="user.auth.can['validar caixa']"
           >
-            <!-- <li class="nav-item" title="VALIDAR FECHO DE CAIXA" v-if="user.type_user == 'Administrador'"> -->
             <Link
               href="/movimentos/validar-fecho"
               class="nav-link"
@@ -381,34 +380,6 @@ export default {
           console.log(error);
         });
     },
-
-    // logout(){
-    //   axios.post("/logout").then((response) => {
-    //     Swal.fire({
-    //       icon: response.data? "warning" : "success!",
-    //       title: response.data ? "Atenção" : "Sucesso!",
-    //       text: response.data ? response.data.message : "Conta encerrada com sucesso!",
-    //     });
-    //     setTimeout(() => {
-    //       window.location.reload();
-    //     }, 2500);
-    //   }).catch((error) => {
-    //     console.error(error);
-    //   });
-    // },
-
-    // getUserRoles() {
-    //   alert(JSON.stringify(user))
-
-    //   this.user.auth.roles.forEach((role) => {
-    //     this.user_roles.push(role.name);
-    //   });
-    //   for (let index = 0; index < this.user_roles.length; index++) {
-    //     const element = this.user_roles[index];
-    //     this.roles[element] = true;
-    //     this.perfil = element; //R29102020
-    //   }
-    // },
   },
 };
 </script>

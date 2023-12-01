@@ -51,22 +51,28 @@ class PagamentosExport extends DefaultValueBinder implements FromCollection, Wit
     public function headings():array
     {
         return[
+            'Nº Estudante',
+            'Estudante',
             'Nº Factura',
             'Valor a pagar',
             'Valor pago',
             'Data da factura',
             'Reserva Actual',
+            'Operador'
         ];
     }
 
     public function map($item):array
     {
         return[
+            $item->factura->matriculas ? $item->factura->matriculas->Codigo : ($item->preinscricao ? $item->preinscricao->Codigo : NULL),
+            $item->factura->matriculas ? $item->factura->matriculas->admissao->preinscricao->Nome_Completo : ($item->preinscricao ? $item->preinscricao->Nome_Completo : NULL),
             $item->codigo_factura,
             number_format($item->ValorAPagar ?? 0, 2, ',', '.'),
             number_format($item->valor_depositado ?? 0, 2, ',', '.'),
             date("Y-m-d", strtotime($item->DataRegisto)),
             number_format(0, 2, ',', '.'),
+            $item->operador_novos ? $item->operador_novos->nome : ($item->operador_antigo ? $item->operador_antigo->nome : NULL),
         ];
     }
 
@@ -75,14 +81,14 @@ class PagamentosExport extends DefaultValueBinder implements FromCollection, Wit
     */
     public function collection()
     {
-    
         $ano = AnoLectivo::where('status', '1')->first();
         
         if(!$this->ano_lectivo){
             $this->ano_lectivo = $ano->Codigo;
         }
 
-        $data['items'] = Pagamento::when($this->data_inicio, function ($query, $value) {
+        $data['items'] = Pagamento::with('factura.matriculas.admissao.preinscricao', 'preinscricao.curso','operador_novos','operador_antigo','utilizadores')
+        ->when($this->data_inicio, function ($query, $value) {
             $query->whereDate('Data', '>=', Carbon::createFromDate($value));
         })
         ->when($this->data_final, function ($query, $value) {

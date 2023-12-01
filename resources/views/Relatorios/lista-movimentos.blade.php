@@ -90,7 +90,7 @@
                 <th style="text-align: center;padding: 4px 2px" >OPERADOR</th>
                 <th style="text-align: center;padding: 4px 2px" >VALIDAÇÃO</th>
                 <th style="text-align: center;padding: 4px 2px" >DATA DE ABERTURA</th>
-                <th style="text-align: center;padding: 4px 2px" >DATA DO FECHO</th>
+                <th style="text-align: center;padding: 4px 2px" >DATA DO FECHAMENTO</th>
             </tr>
             
         </thead>
@@ -101,24 +101,26 @@
                 <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">{{ $movimento->operador->nome ?? '' }}</td>
                 <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">{{ $movimento->operador_admin->nome ?? '' }}</td>
                 <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">{{ date("Y-m-d H:i:s", strtotime($movimento->created_at ?? '')) }}</td>
-                <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">{{ ($movimento->status && $movimento->status=='aberto') ? NULL : date("Y-m-d H:i:s", strtotime($movimento->updated_at ?? '')) }}</td>
+                {{-- <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">{{ date("Y-m-d H:i:s", strtotime($movimento->data_fecho ?? '')) }}</td> --}}
+                <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">{{ ($movimento->status && $movimento->status=='aberto') ? NULL : date($movimento->data_fecho ?? '') }}</td>
             </tr>
         </tbody>
         
         <thead>
             <tr style="background-color: #3F51B5;color: #ffffff">
+                <th style="text-align: center;padding: 4px 2px" >DATA DE VALIDAÇÃO</th>
                 <th style="text-align: center;padding: 4px 2px" >VALOR DE ABERTURA</th>
                 <th style="text-align: center;padding: 4px 2px" >TOTAL DE DEPÓSITOS</th>
                 <th style="text-align: center;padding: 4px 2px" >TOTAL DE PAG.RECEBIDO</th>
                 <th style="text-align: center;padding: 4px 2px" >TOTAL FACTURADO</th>
                 <th style="text-align: center;padding: 4px 2px" >TOTAL ARRECADADO</th>
-                <th style="text-align: center;padding: 4px 2px" ></th>
             </tr>
             
         </thead>
         <tbody>
             
             <tr>
+                <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">{{ date($movimento->data_validacao ?? '') }}</td>
                 <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">A0A - {{ number_format($movimento->valor_abertura ?? 0, 2, ",", ".") }}</td>
                 <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">A0A - {{ number_format($movimento->valor_arrecadado_depositos ?? 0, 2, ",", ".") }}</td>
                 <td style="text-align: center;text-transform: uppercase;padding: 10px 0;background-color: #ccc">A0A - {{ number_format($movimento->valor_arrecadado_pagamento ?? 0, 2, ",", ".") }}</td>

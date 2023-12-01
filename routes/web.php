@@ -58,7 +58,7 @@ Route::group(["middleware" => "auth"], function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('mc.logout');
 
-    Route::get('/dashboard', [DashboardController::class, 'dashboard']);
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('mc.dashboard');
     
     Route::get('/depositos', [DepositoController::class, 'index']);
     Route::post('/depositos/store', [DepositoController::class, 'store']); //->name('mc.depositos.store');
@@ -162,5 +162,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/verificar-caixa-aberto',  [SearhController::class, 'verificarCaixaAberto']);
     
     Route::resource('notifications',  NotificationController::class)->except(['edit']);
+    
+    
+    Route::get('/teste-api/{pag}/{op}',  [SearhController::class, 'teste']);
 
 });

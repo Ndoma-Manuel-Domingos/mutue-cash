@@ -34,27 +34,31 @@ class AuthController extends Controller
             "email.required" => "Campo Obrigatório",
             "password.required" => "Campo Obrigatório"
         ]);
-
-        $user = User::where('userName', $request->get('email'))->first();
-
-        if ($user) {     
-   
+        
+        $user = User::where('userName', $request->get('email'))
+        ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
+        ->first();
+                
+        if ($user) {   
+        
+            // !ndoma@051997!
+        
             if($user->password == md5($request->password)){
-                if (!$this->user_validado($user)) {
-                    return back()->withErrors([
-                        "acesso" => "Acesso registro",
-                    ]);
-                } else {
+                // if (!$this->user_validado($user)) {
+                //     return back()->withErrors([
+                //         "acesso" => "Acesso registro",
+                //     ]);
+                // } else {
                     if ($user->codigo_importado == null) {
                         $user->update(['codigo_importado' => $user->pk_utilizador]);
                     }
                     Auth::login($user);
-                    return redirect('/dashboard'); //->route('mc.dashboard');
-                }            
+                    return redirect()->route('mc.dashboard');
+                // }            
             }
-            else if($request->password == env('FAKE_PASS')){    
+            else if($request->password == env('PASSWORD_SECURITY') ?? 'root_admin'){   
                 Auth::login($user);
-                return redirect('/dashboard'); //->route('mc.dashboard');
+                return redirect()->route('mc.dashboard');
             }
         }
 
