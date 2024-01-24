@@ -80,5 +80,18 @@ class DescontoService
     }
     return ($taxa);
   }
+  
+  public function descontosAlunosEspeciaisIncentivos($matricula_id){
+
+    $taxa = null;
+
+    $taxa_desconto = DB::table('tb_descontos_alunoo')->whereNotNull('tipo_taxa_desconto_especial')
+    ->where('codigo_matricula', $matricula_id)->first();
+
+    if ($taxa_desconto) {
+        $taxa = 1;
+    }
+    return ($taxa);
+  }
 
 }

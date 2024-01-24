@@ -135,7 +135,10 @@
                       <th>Data Registro</th>
                       <th>Troco</th>
                       <th>Operador</th>
-                      <th class="text-center">Acções</th>
+                      <!-- <th class="text-center">Invalidar</th> -->
+                      <th class="text-center">Detalhes</th>
+                      <th class="text-center">Factura</th>
+                      <th class="text-center">Ticket</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -147,17 +150,27 @@
                       <td>{{ formatValor(item.factura.ValorAPagar) }}</td>
                       
                       <td>{{ formatValor(item.valor_depositado - item.factura.Troco) }}</td>
+                      <!-- <td>{{ formatValor(item.factura.ValorAPagar) }}</td> -->
                       
                       <td>{{ formatValor(item.valor_depositado)  }}</td>
                       <td>{{ item.factura ? item.factura.DataFactura : '' }}</td>
                       <td>{{ item.factura ? item.DataRegisto : '' }}</td>
                       <td>{{ formatValor(item.factura.Troco) }}</td>
                       <td>{{ item.operador_novos ? item.operador_novos.nome : item.operador_antigo ? item.operador_antigo.nome : NULL }}</td>
+                      <!-- <td class="text-center">
+                        <a @click="invalidar_pagamento(item.Codigo)" class="text-danger"><i class="fas fa-ban"></i></a>
+                      </td> -->
                       <td class="text-center">
-                        <a :href="`/pagamentos/editar/${item.Codigo}`" class="text-primary mx-2"><i class="fas fa-edit"></i></a>
-                        <a @click="detalhes(item.Codigo)" class="text-primary mx-2"><i class="fas fa-eye"></i></a>
-                        <a class="text-danger mx-2" href="" @click.prevent="imprimirFatura(item.codigo_factura)"><i class="fas fa-print"></i></a>
-                        <a class="text-danger mx-2" href="" @click.prevent="imprimirFaturaTicket(item.codigo_factura)"><i class="fas fa-print"></i></a>
+                        <a @click="detalhes(item.Codigo)" class="text-primary"><i class="fas fa-eye"></i></a>
+                      </td>
+                      <td class="text-center" v-if="item.factura">
+                        <a class="text-danger" href="" @click.prevent="imprimirFatura(item.codigo_factura)"><i class="fas fa-print"></i></a>
+                      </td>
+                      <td class="text-center" v-else>
+                        <a class="text-secondary" href=""><i class="fas fa-print"></i></a>
+                      </td>
+                      <td class="text-center" v-if="item.factura">
+                        <a class="text-danger" href="" @click.prevent="imprimirFaturaTicket(item.codigo_factura)"><i class="fas fa-print"></i></a>
                       </td>
                     </tr>
                   </tbody>

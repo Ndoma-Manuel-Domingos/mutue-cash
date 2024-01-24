@@ -129,6 +129,34 @@
           </div>
         </div>
         
+        <div class="row" v-if="user.auth.can['listar relatorio']">
+          <div class="col-12 col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h6>Grafigos de pagamentos dos ultimos seis(6) Meses 
+                <!-- <a href="/pagamentos/ultimos-seis-meses" class="btn-sm btn-primary float-right">Mais detalhes</a> -->
+                </h6>
+              </div>
+              <div class="card-body">
+                <column-chart :download="true" :library="{ responsive: true }" :data="graficoPagamentos" :colors="color" :stacked="true" :round="2" prefix="" decimal="," suffix=" Kzs" thousands="."></column-chart>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-12 col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h6>Grafigos de depositos dos ultimos seis(6) Meses 
+                <!-- <a href="/depositos/ultimos-seis-meses" class="btn-sm btn-primary float-right">Mais detalhes</a> -->
+                </h6>
+              </div>
+              <div class="card-body">
+                <column-chart :download="true" :library="{ responsive: true }" :data="graficoDepositos" :colors="color2" :stacked="true" :round="2" prefix="" decimal="," suffix=" Kzs" thousands="."></column-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+        
       </div>
     </div>
   </MainLayouts>
@@ -138,12 +166,26 @@
 import { Link } from "@inertiajs/inertia-vue3";
 
 export default {
-  props: ["valor_arrecadado_depositos", "valor_facturado_pagamento", "valor_arrecadado_total", "valor_arrecadado_pagamento", "ano_lectivos", "ano_lectivo_activo_id", "caixa", "utilizadores"],
+  props: [
+    "ultimosDepositos", 
+    "ultimosPagamentos", 
+    "valor_arrecadado_depositos", 
+    "valor_facturado_pagamento", 
+    "valor_arrecadado_total", 
+    "valor_arrecadado_pagamento", 
+    "ano_lectivos", 
+    "ano_lectivo_activo_id", 
+    "caixa", 
+    "utilizadores"
+  ],
   components: {
     Link,
   },
   data() {
     return {
+    
+      color: ["#17a08c"],
+      color2: ["#17a065"],
       
       operador_id: this.$page.props.auth.user.id,
       ano_lectivo: this.ano_lectivo_activo_id,
@@ -151,6 +193,9 @@ export default {
       data_final: new Date().toISOString().substr(0, 10),
       
       params: {},
+      
+      graficoPagamentos: {},
+      graficoDepositos: {}
       
     };
   },
@@ -173,7 +218,8 @@ export default {
   },
 
   mounted() {
-    
+    this.montarGrafico();
+    this.montarGraficoDeposito();
   },
   
   watch: {
@@ -207,6 +253,7 @@ export default {
       this.updateData();
     },
   },
+  
   methods: {
     updateData() {
       this.$Progress.start();
@@ -221,7 +268,7 @@ export default {
         },
       });
     },
-    
+
     somarNumeros(numero1, numero2) {
       // Realiza a soma dos números
       var soma = parseInt(numero1) + parseInt(numero2);
@@ -239,6 +286,37 @@ export default {
 
     voltarPaginaAnterior() {
       window.history.back();
+    },
+    
+    montarGrafico() {
+      // Converter os dados do Laravel para o formato esperado pelo Chartkick
+      this.graficoPagamentos = this.formatarDadosParaChartkick();
+    },
+    
+    montarGraficoDeposito() {
+      // Converter os dados do Laravel para o formato esperado pelo Chartkick
+      this.graficoDepositos = this.formatarDadosParaChartkickDepositos();
+    },
+    
+    formatarDadosParaChartkick() {
+      const dadosFormatados = {};
+
+      this.ultimosPagamentos.forEach(pagamento => {
+        dadosFormatados[pagamento.mes] = pagamento.total;
+      });
+
+      return dadosFormatados;
+    },
+    
+      
+    formatarDadosParaChartkickDepositos() {
+      const dadosFormatados = {};
+
+      this.ultimosDepositos.forEach(pagamento => {
+        dadosFormatados[pagamento.mes] = pagamento.total;
+      });
+
+      return dadosFormatados;
     },
   },
 };

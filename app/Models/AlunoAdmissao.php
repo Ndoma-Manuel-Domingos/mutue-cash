@@ -31,7 +31,7 @@ class AlunoAdmissao extends Model
 
     public function matricula()
     {
-        return $this->hasOne(Matricula::class, 'Codigo', 'codigo');
+        return $this->hasOne(Matricula::class, 'Codigo_Aluno', 'codigo');
     }
 
     public function matriculaTeste()

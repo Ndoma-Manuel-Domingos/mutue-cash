@@ -1320,8 +1320,17 @@ class SearhController extends Controller
             $taxa_desconto_agro = $this->descontoService->descontoAgropecuaria();
             $taxa_desconto_anuidade = $this->descontoService->descontoAnuidade();
 
+            // if ($taxa_nov21_jul22 && $alunoLogado->codigo_tipo_candidatura == 1) {
+            //     if (($alunoLogado->anoLectivo >= 18) && ($alunoLogado->estado_matricula != 'inactivo') && ($alunoLogado->Codigo_Turno == 6)) {
+            //         $data['taxa_nov21_jul22'] = $taxa_nov21_jul22->taxa;
+            //     }
+            // }
+            
+            $taxa_desconto_incentivo = $this->descontoService->descontosAlunosEspeciaisIncentivos($matricula->codigo_matricula);
+
+            // desconto de incentivo para alunos noturnos
             if ($taxa_nov21_jul22 && $alunoLogado->codigo_tipo_candidatura == 1) {
-                if (($alunoLogado->anoLectivo >= 18) && ($alunoLogado->estado_matricula != 'inactivo') && ($alunoLogado->Codigo_Turno == 6)) {
+                if (($alunoLogado->anoLectivo >= 18 && $alunoLogado->estado_matricula != 'inactivo' && $alunoLogado->Codigo_Turno == 6) || ($taxa_desconto_incentivo)) {
                     $data['taxa_nov21_jul22'] = $taxa_nov21_jul22->taxa;
                 }
             }

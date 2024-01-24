@@ -68,6 +68,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/imprimir-comprovativo-ticket', [DepositoController::class, 'ticket']);
     Route::get('/depositos/editar/{id}', [DepositoController::class, 'edit']);
     Route::post('/depositos/update', [DepositoController::class, 'update']);
+    Route::get('/depositos/ultimos-seis-meses', [DepositoController::class, 'depositosUltimosSeisMeses']);
 
     Route::get('/movimentos/diarios-operador', [MovimentoController::class, 'diariosOperador']);
     Route::get('/movimentos/caixas-abertos', [MovimentoController::class, 'caixasAbertos']);
@@ -88,7 +89,6 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/movimentos/confirmar-senhar-admin/{id}', [MovimentoController::class, 'confirmarSenhaAdmin']);
     Route::get('/movimentos/bloquear-caixa', [MovimentoController::class, 'bloquearCaixa']);//->name('mc.bloquear-caixa');
     Route::post('/movimentos/bloquear-caixa-store', [MovimentoController::class, 'bloquearCaixaStore']);//->name('mc.bloquear-caixa-store');
-    
 
     Route::get('/pagamentos', [PagamentosController::class, 'index']);//->name('mc.pagamentos.index')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
     Route::get('/pagamentos/criar', [PagamentosController::class, 'create']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
@@ -96,6 +96,10 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/pagamentos/excel', [PagamentosController::class, 'excel'])->middleware('role_or_permission:Gestor de Caixa|criar pagamento|Supervisor|Operador Caixa|listar pagamento');
     Route::get('/pagamentos/{id}/detalhes', [PagamentosController::class, 'detalhes'])->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
     Route::get('/pagamentos/{id}/invalida', [PagamentosController::class, 'invalida'])->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
+    Route::get('/pagamentos/ultimos-seis-meses', [PagamentosController::class, 'pagamentoUltimosSeisMeses']);
+    Route::get('/pagamentos/editar/{id}', [PagamentosController::class, 'edit']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
+    Route::post('/pagamentos/update-servico', [PagamentosController::class, 'updateServico']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
+    Route::post('/pagamentos/update-numero-matricula-estudante', [PagamentosController::class, 'updateNumeroMatriculaEstudante']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
 
     Route::get('/relatorios/fecho-caixa/operador', [RelatorioController::class, 'fechoCaixaOperador']);//->name('mc.fecho-caixa-operador.index');
     Route::get('/relatorios/fecho-caixa/operador/pdf', [RelatorioController::class, 'pdf']);//->name('mc.fecho-caixa-operador.pdf');
@@ -165,5 +169,8 @@ Route::group(["middleware" => "auth"], function () {
     
     
     Route::get('/teste-api/{pag}/{op}',  [SearhController::class, 'teste']);
+    
+    
+    Route::get('/carregar-pagamentos-ultimos-seis-meses',  [DashboardController::class, 'pagamentoUltimosSeisMeses']);
 
 });

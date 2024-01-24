@@ -87,11 +87,11 @@
                       >
                         <option value="">Selecione</option>
                         <option
-                          :value="item.utilizadores.codigo_importado ?? item.utilizadores.pk_utilizador"
+                          :value="item.codigo_importado ?? item.pk_utilizador"
                           v-for="item in utilizadores"
-                          :key="item.utilizadores.codigo_importado"
+                          :key="item.codigo_importado"
                         >
-                          {{ item.utilizadores.nome }} 
+                          {{ item.nome }} 
                         </option>
                       </select>
                       <div class="p-0" v-if="form.errors.operador_id">
@@ -147,8 +147,8 @@ export default {
     utilizadores() {
       const uniqueMap = new Map();
       return this.utilizadores.filter((item) => {
-        if (!uniqueMap.has(item.utilizadores.codigo_importado)) {
-          uniqueMap.set(item.utilizadores.codigo_importado, true);
+        if (!uniqueMap.has(item.codigo_importado)) {
+          uniqueMap.set(item.codigo_importado, true);
           return true;
         }
         return false;

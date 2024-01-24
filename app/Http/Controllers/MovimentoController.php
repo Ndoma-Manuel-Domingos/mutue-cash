@@ -113,7 +113,11 @@ class MovimentoController extends Controller
         $movimento = null;
         
         if($caixa){
-            $movimento = MovimentoCaixa::with('operador', 'caixa')->where('caixa_id', $caixa->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+            $movimento = MovimentoCaixa::with('operador', 'caixa')
+            ->where('caixa_id', $caixa->codigo)
+            ->where('operador_id', Auth::user()->codigo_importado)
+            ->where('status', 'aberto')
+            ->first();
         }
         
         if($caixa && $caixa->bloqueio == 'Y'){
@@ -129,13 +133,22 @@ class MovimentoController extends Controller
         $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
 
-        $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+        // $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
         // $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)
         // ->whereHas('utilizadores', function($query, $value){
         //     dd($value);
         // })
         // ->with('utilizadores')->get();
         // dd($utilizadores);
+        
+                
+        $utilizadores = User::whereIn('user_pertence', ['Cash','Finance-Cash', 'Todos'])
+        ->with('roles')
+        // ->whereIn('pk_utilizador', $array_utilizadores)
+        ->where('active_state', 1)
+        ->get();
+    
+        //dd($utilizadores);
     
         $header = [
             "caixas" => $caixas,
@@ -278,7 +291,7 @@ class MovimentoController extends Controller
         $movimento->valor_arrecadado_pagamento = $movimento->valor_arrecadado_pagamento;
         $movimento->status = "fechado";
         $movimento->status_final = "concluido";
-        $movimento->status_final = date("Y-m-d");
+        $movimento->data_fecho = date("Y-m-d");
         $movimento->observacao = $request->observacao;
         $movimento->update();
         

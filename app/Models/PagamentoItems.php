@@ -29,6 +29,11 @@ class PagamentoItems extends Model
         'mes_id',
         'mes_temp_id',
     ];
+    
+    public function pagamento()
+    {
+        return $this->hasOne(Pagamento::class, 'Codigo', 'Codigo_Pagamento');
+    }
 
     public function servico()
     {

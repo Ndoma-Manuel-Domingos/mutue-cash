@@ -9,6 +9,8 @@ use App\Models\Grupo;
 use App\Models\GrupoUtilizador;
 use App\Models\MovimentoCaixa;
 use App\Models\Pagamento;
+use App\Models\PagamentoItems;
+use App\Models\TipoServico;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -41,6 +43,7 @@ class DashboardController extends Controller
         $movimentos = [];
         $condicoes = [];
         
+        
         if(auth()->user()->hasRole(['Gestor de Caixa'])){
             
             if($request->data_inicio){
@@ -48,18 +51,21 @@ class DashboardController extends Controller
             }else{
                 $request->data_inicio = date("Y-m-d");
             }
-            if($request->operador_id){
-                $request->operador_id = array_push($condicoes ,['operador_id',$request->operador_id]);
-            }else{
-                $request->operador_id = array_push($condicoes ,['operador_id','>',0]); 
-            }
+            
+            // $operador_id = $request->operador_id;
+            // if($operador_id){
+            //     $operador_id = array_push($condicoes ,['operador_id',$operador_id]);
+            // }else{
+            //     $operador_id = array_push($condicoes ,['operador_id','>',0]); 
+            // }
+            // dd($operador_id);
                         
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
-            })->when($request->operador_id, function($query, $value) use($condicoes){
-                $query->where($condicoes);
+            })->when($request->operador_id, function($query, $value){
+                $query->where('operador_id', $value);
             })->get();
        
 
@@ -73,19 +79,22 @@ class DashboardController extends Controller
             }else{
                 $request->data_inicio = date("Y-m-d");
             }
-            if($request->operador_id){
-                $request->operador_id = array_push($condicoes ,['operador_id',$request->operador_id]);
-            }else{
-                $request->operador_id = array_push($condicoes ,['operador_id','>',0]); 
-            }
+            
+            // $operador_id = $request->operador_id;
+            
+            // if($operador_id){
+            //     $operador_id = array_push($condicoes ,['operador_id',$operador_id]);
+            // }else{
+            //     $operador_id = array_push($condicoes ,['operador_id','>',0]); 
+            // }
             
             $movimentos = MovimentoCaixa::when($request->data_inicio, function($query, $value){
                 $query->whereDate('data_at', '>=', Carbon::createFromDate($value));
             })->when($request->data_final, function($query, $value){
                 $query->whereDate('data_at', '<=', Carbon::createFromDate($value));
             })
-            ->when($request->operador_id, function($query, $value) use($condicoes){
-                $query->where($condicoes);
+            ->when($request->operador_id, function($query, $value){
+                $query->where('operador_id', $value);
             })->get();
 
         }
@@ -127,15 +136,55 @@ class DashboardController extends Controller
         $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
        
         if(auth()->user()->hasRole(['Gestor de Caixa', 'Supervisor'])){
-            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
+            $data['utilizadores'] = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])
+            ->orWhere('fk_utilizador', Auth::user()->pk_utilizador)
+            ->with('utilizadores')
+            ->get();
         }
         
         if(auth()->user()->hasRole(['Operador Caixa'])){
             $data['utilizadores'] = GrupoUtilizador::whereHas('utilizadores', function ($query) {
-                $query->where('codigo_importado', auth()->user()->codigo_importado);
-            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
+                $query->where('codigo_importado', auth()
+                ->user()->codigo_importado);
+            })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])
+            ->with('utilizadores')
+            ->get();
         }
         
+        
+        // dd($data['utilizadores']);
+        
+        if($request->operador_id){
+            $request->operador_id = $request->operador_id;
+        }else{
+            $request->operador_id = "";
+        }
+          
+        // Obtém a data atual
+        $dataAtual = Carbon::now();
+
+        // Calcula a data há seis meses atrás
+        $dataSeisMesesAtras = $dataAtual->subMonths(6);
+         
+        // Query para obter os últimos pagamentos nos últimos seis meses e somar os valores
+        $ultimosPagamentos = Pagamento::when($request->operador_id, function($query, $value){
+            $query->where('fk_utilizador', $value);
+        })->whereIn('estado', [1])
+            ->where('forma_pagamento', 6)
+            ->where('Data', '>=', $dataSeisMesesAtras)
+            ->selectRaw('DATE_FORMAT(Data, "%Y-%m") AS mes, SUM(valor_depositado) AS total')
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->get();
+            
+        $ultimosDepositos = Deposito::when($request->operador_id, function($query, $value){
+            $query->where('created_by', $value);
+        })->where('data_movimento', '>=', $dataSeisMesesAtras)
+            ->selectRaw('DATE_FORMAT(data_movimento, "%Y-%m") AS mes, SUM(valor_depositar) AS total')
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->get();
+            
         try {
             $header = [
                 "valor_arrecadado_depositos" => $valor_arrecadado_depositos,
@@ -150,7 +199,9 @@ class DashboardController extends Controller
                 "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
                 
                 "ano_lectivos" => $user->roles()->get(),
-                "usuario" => $user
+                "usuario" => $user,
+                "ultimosPagamentos" => $ultimosPagamentos,
+                "ultimosDepositos" => $ultimosDepositos,
             ];
             //code...
         } catch (\Throwable $th) {
@@ -166,11 +217,18 @@ class DashboardController extends Controller
                 "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
                 
                 "ano_lectivos" => $user->roles()->get(),
-                "usuario" => $user
+                "usuario" => $user,
+                "ultimosPagamentos" => $ultimosPagamentos,
+                "ultimosDepositos" => $ultimosDepositos,
             ];
         }
         
+
         return Inertia::render('Dashboard', $header);
+    }
+    
+    public function pagamentoUltimosSeisMeses(Request $request)
+    {
     }
 
 }

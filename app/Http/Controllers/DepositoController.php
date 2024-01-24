@@ -280,9 +280,6 @@ class DepositoController extends Controller
     
     public function update(Request $request)
     {
-        
-        
-    
         $request->validate([
             'codigo_matricula' => 'required',
             'valor_a_depositar' => 'required|numeric'
@@ -292,8 +289,6 @@ class DepositoController extends Controller
             'valor_a_depositar.required' => "Valor a depositar Invalido!",
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
-        
-      
         
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
@@ -341,6 +336,7 @@ class DepositoController extends Controller
         ]);
 
     }  
+    
     public function pdf(Request $request)
     {
             
@@ -444,5 +440,30 @@ class DepositoController extends Controller
         return $pdf->stream();
         
     }
+    
+    public function depositosUltimosSeisMeses(Request $request)
+    {
+        $user = auth()->user();
+                
+        // verificar se o caixa esta bloqueado
+        $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+    
+        if($caixa && $caixa->bloqueio == 'Y'){
+            return redirect('/movimentos/bloquear-caixa');
+        }
         
+        $data['items'] = Deposito::when($request->data_inicio, function($query, $value){
+            $query->whereDate('data_movimento', '>=', Carbon::createFromDate($value));
+        })->when($request->data_final, function($query, $value){
+            $query->whereDate('data_movimento', '<=', Carbon::createFromDate($value));
+         })->when($request->operador, function($query, $value){
+             $query->where('created_by', $value);
+         })
+         ->with(['user', 'forma_pagamento', 'ano_lectivo', 'matricula.admissao.preinscricao','candidato'])
+         ->orderBy('codigo', 'desc')
+         ->paginate(15)
+         ->withQueryString();
+
+        return Inertia::render('Operacoes/Depositos/Index-mensal', $data);
+    }        
 }

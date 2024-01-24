@@ -8,7 +8,9 @@
     <script src="{{ mix('/js/app.js') }}" defer></script>
     @inertiaHead
 </head>
-<body>
-    @inertia
+<body class="hold-transition sidebar-mini layout-fixed layout-fixed layout-navbar-fixed layout-footer-fixed sidebar-collapse">
+    <div class="wrapper">
+        @inertia
+    </div>
 </body>
 </html>

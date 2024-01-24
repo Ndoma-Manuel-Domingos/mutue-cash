@@ -71,10 +71,8 @@ createInertiaApp({
         if (page.layout == null) {
             page.layout = MainLayouts
         }
-
         return page
     },
-
     setup({
       el,
       App,

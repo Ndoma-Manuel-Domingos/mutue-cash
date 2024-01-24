@@ -803,10 +803,7 @@
                   id="btn"
                   type="submit"
                   v-if="
-                    tabela.length != 0 ||
-                    (fatura &&
-                      fatura.ValorAPagar > 0 &&
-                      !numero_fatura_nao_paga > 0)
+                    tabela.length != 0 && !numero_fatura_nao_paga
                   "
                   form="formulario_pagamento"
                   @click="registarFatura"
@@ -824,7 +821,7 @@
                 <button
                   type="submit"
                   id="btn"
-                  v-if="tabela.length == 0 && numero_fatura_nao_paga > 0"
+                  v-if="numero_fatura_nao_paga > 0"
                   form="formulario_pagamento"
                   @click="registarPagamento"
                   class="btn btn-success"
@@ -1607,7 +1604,6 @@ export default {
               this.factura_a_imprimir = this.imprimirFaturaTicket(fatura);
             }
 
-
             Swal.fire({
               title: "Sucesso",
               text: response.data.mensagem,
@@ -1785,14 +1781,24 @@ export default {
 
     // recuperar todas as facturas
     faturaByReference: function () {
+      
       if (this.numero_fatura_nao_paga == -1) {
         this.fatura = [];
         this.extenso = "";
         this.itens = [];
         this.valor_pagamentos = 0;
+        
+        // alert("1")
         //novo
         this.AllClean();
       } else {
+        // alert("2")
+        
+        this.fatura = [];
+        this.extenso = "";
+        this.itens = [];
+        this.valor_pagamentos = 0;
+        
         axios
           .get("/pagamentos-estudantes/fatura-by-reference", {
             params: { codigo_fatura: this.numero_fatura_nao_paga },
