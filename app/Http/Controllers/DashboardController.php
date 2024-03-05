@@ -196,7 +196,7 @@ class DashboardController extends Controller
                 'caixa' => $caixa,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
                 
-                "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+                "ano_lectivos" => AnoLectivo::where('status', '1')->where('ordem', '>=', 15)->get(),
                 
                 "ano_lectivos" => $user->roles()->get(),
                 "usuario" => $user,
@@ -214,7 +214,7 @@ class DashboardController extends Controller
                 'caixa' => $caixa ?? Null,
                 'ano_lectivo_activo_id' => $this->anoLectivoActivo(),
                 
-                "ano_lectivos" => AnoLectivo::where('status', '1')->get(),
+                "ano_lectivos" => AnoLectivo::where('status', '1')->where('ordem', '>=', 15)->get(),
                 
                 "ano_lectivos" => $user->roles()->get(),
                 "usuario" => $user,

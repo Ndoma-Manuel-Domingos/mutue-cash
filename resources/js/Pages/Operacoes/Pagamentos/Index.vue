@@ -154,7 +154,7 @@
                       <td>{{ formatValor(item.factura.Troco) }}</td>
                       <td>{{ item.operador_novos ? item.operador_novos.nome : item.operador_antigo ? item.operador_antigo.nome : NULL }}</td>
                       <td class="text-center">
-                        <a :href="`/pagamentos/editar/${item.Codigo}`" class="text-primary mx-2"><i class="fas fa-edit"></i></a>
+                        <a href="" @click.prevent="visualizar_pagamento(item.Codigo)" class="text-primary mx-2"><i class="fas fa-edit"></i></a>
                         <a @click="detalhes(item.Codigo)" class="text-primary mx-2"><i class="fas fa-eye"></i></a>
                         <a class="text-danger mx-2" href="" @click.prevent="imprimirFatura(item.codigo_factura)"><i class="fas fa-print"></i></a>
                         <a class="text-danger mx-2" href="" @click.prevent="imprimirFaturaTicket(item.codigo_factura)"><i class="fas fa-print"></i></a>
@@ -391,6 +391,11 @@ export default {
 
         })
         .catch((error) => {});
+    },
+    
+        
+    visualizar_pagamento(codigo) {
+      window.location.href = "/pagamentos/editar?pagamento_id=" + btoa(btoa(btoa(codigo)));
     },
     
     invalidar_pagamento(Codigo){

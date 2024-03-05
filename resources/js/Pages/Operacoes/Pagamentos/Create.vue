@@ -120,10 +120,10 @@
                   </div>
 
                   <div class="col s12 m6" v-if="bolseiro" style="float: right">
-                    <template v-if="bolseiro.desconto == 100">
+                    <template v-if="bolseiro.desconto == 100 || bolseiro.desconto == 0">
                       <b
-                        >{{ this.estudante_tipo4.designacao }} ({{
-                          estudante_tipo4.descricao
+                        >{{ this.estudante_tipo3.designacao }} ({{
+                          estudante_tipo3.descricao
                         }})</b
                       >
                     </template>
@@ -134,8 +134,8 @@
                       "
                     >
                       <b
-                        >{{ this.estudante_tipo3.designacao }} ({{
-                          estudante_tipo3.descricao
+                        >{{ this.estudante_tipo4.designacao }} ({{
+                          estudante_tipo4.descricao
                         }}
                         - {{ bolseiro.desconto }}%)</b
                       >
@@ -1260,6 +1260,8 @@ export default {
       desconto_especial_nov21_jul22: 0,
       meses_bolsa: [],
       prazo_desconto_ano_todo: {},
+      
+      desconto_atribuido: {},
 
       form: this.$inertia.form({
         codigo_inscricao: null,
@@ -1734,6 +1736,7 @@ export default {
             this.pegaServicos();
             this.pegarDescricaoBolseiro();
             this.pegaBolseiro();
+            this.pegaDescontoAtribuido();
 
             this.verificaConfirmacaoNoAnoLectivoCorrente();
 
@@ -2100,6 +2103,19 @@ export default {
     formatPriceNegociacao(value) {
       let val = (value / 1).toFixed(3).replace(".", ",");
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    
+    pegaDescontoAtribuido: function () {
+      this.$Progress.start();
+      axios
+        .get(`/aluno-pega-desconto-atribuido/${this.codigo_matricula}`)
+        .then((response) => {
+          this.desconto_atribuido = response.data;
+          this.$Progress.finish();
+        })
+        .catch((error) => {
+          this.$Progress.fail();
+        });
     },
 
     validar: function () {

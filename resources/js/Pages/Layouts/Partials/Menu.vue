@@ -111,10 +111,14 @@
           <li
             class="nav-item"
             title="CAIXAS ABERTOS"
-            v-if="user.auth.can['visualizar caixa abertos']">
+            v-if="user.auth.can['visualizar caixa abertos']"
+          >
             <Link
               href="/movimentos/caixas-abertos"
-              class="nav-link" :class="{active: $page.component == 'Operacoes/Movimentos/Abertura',}"
+              class="nav-link"
+              :class="{
+                active: $page.component == 'Operacoes/Movimentos/Abertura',
+              }"
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Caixas Abertos</p>
@@ -255,6 +259,26 @@
             >
               <i class="far fa-circle nav-icon"></i>
               <p>Extrato de Pagamentos</p>
+            </Link>
+          </li>
+
+          <!--   v-if="user.auth.can['LISTAGEM LOGS ACESSO']"-->
+          <li
+            class="nav-item"
+            title="LISTAGEM LOGS"
+          
+          >
+            <Link
+              href="/relatorios/listar-loggs-acesso"
+              class="nav-link"
+              :class="{
+                active:
+                  $page.component ==
+                  'Relatorios/FechoCaixa/ListarLoggsAcesso',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Listar Loggs</p>
             </Link>
           </li>
         </ul>

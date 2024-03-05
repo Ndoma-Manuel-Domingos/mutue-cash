@@ -183,6 +183,27 @@ class SearhController extends Controller
         return Response()->json($dados);
     }
 
+    public function descontoAtribuido(Request $request, $codigo_matricula)
+    {
+        $ano = AnoLectivo::where('estado', 'Activo')->first();
+
+        $desconto = DB::table('tb_descontos_alunoo')->join('descontos_especiais', 'tb_descontos_alunoo.tipo_taxa_desconto_especial', 'descontos_especiais.id')
+            ->where('tb_descontos_alunoo.codigo_matricula', $codigo_matricula)
+            ->where('tb_descontos_alunoo.estatus_desconto_id', 1)
+            ->where('tb_descontos_alunoo.codigo_anoLectivo', $ano->Codigo)
+            // ->where('status',  0)
+            // ->select('*', 'tb_tipo_bolsas.designacao as tipo_bolsa')
+            ->first(); //Abordagem do ano actual
+     
+        // dd($ano, $desconto, $codigo_matricula);
+     
+        if ($desconto) {
+            return Response()->json($desconto);
+        } else {
+            return Response()->json('');
+        }
+    }
+    
     public function pegaAnolectivo(Request $request, $codigo_matricula)
     {
         $ano_lectivo = null;
@@ -639,12 +660,28 @@ class SearhController extends Controller
             ->join('tb_admissao', 'tb_admissao.codigo', '=', 'tb_matriculas.Codigo_Aluno')
             ->join('tb_preinscricao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')->where('tb_preinscricao.user_id', $id)->select('tb_matriculas.Codigo as matricula', 'tb_matriculas.Codigo_Curso as curso_matricula', 'tb_preinscricao.Curso_Candidatura as curso_preinscricao')->first();
 
-        $bolseiro = $this->bolsaService->Bolsa($aluno->matricula, $ano_lectivo);
+        // $bolseiro = $this->bolsaService->Bolsa($aluno->matricula, $ano_lectivo);
 
+        // if ($bolseiro) {
+        //     return Response()->json($bolseiro);
+        // } else {
+        //     return Response()->json('');
+        // }
+        
+        
+        $bolseiro1 = $this->bolsaService->BolsaPorSemestre1($aluno->matricula, $ano_lectivo, 1);
+        $bolseiro2 = $this->bolsaService->BolsaPorSemestre2($aluno->matricula, $ano_lectivo, 2);
+        $bolseiro = "";
+    
+        if($bolseiro1){
+          $bolseiro = $bolseiro1;
+        }elseif($bolseiro2){
+          $bolseiro = $bolseiro2;
+        }
         if ($bolseiro) {
-            return Response()->json($bolseiro);
+          return Response()->json($bolseiro);
         } else {
-            return Response()->json('');
+          return Response()->json('');
         }
     }
 

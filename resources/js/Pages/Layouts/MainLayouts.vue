@@ -80,7 +80,7 @@
         </div>
       </nav>
 
-      <aside class="main-sidebar sidebar-secondary elevation-4">
+      <aside class="main-sidebar sidebar-dark-primary sidebar-secondary elevation-1" style="background: linear-gradient(to center, #55c9f2, #0c9979)">
         <Link
           href="/dashboard"
           class="brand-link text-center"
@@ -114,7 +114,7 @@
             </div>
             <div class="info">
               <a href="#" class="d-block">{{ user.nome }}</a>
-              <h6 v-for="perfil in user.perfils" :key="perfil">
+              <h6 v-for="perfil in user.perfils" :key="perfil" class="text-white">
                 {{ perfil.name }}
               </h6>
             </div>

@@ -97,7 +97,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/pagamentos/{id}/detalhes', [PagamentosController::class, 'detalhes'])->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
     Route::get('/pagamentos/{id}/invalida', [PagamentosController::class, 'invalida'])->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
     Route::get('/pagamentos/ultimos-seis-meses', [PagamentosController::class, 'pagamentoUltimosSeisMeses']);
-    Route::get('/pagamentos/editar/{id}', [PagamentosController::class, 'edit']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
+    Route::get('/pagamentos/editar/{id?}', [PagamentosController::class, 'edit']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
     Route::post('/pagamentos/update-servico', [PagamentosController::class, 'updateServico']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
     Route::post('/pagamentos/update-numero-matricula-estudante', [PagamentosController::class, 'updateNumeroMatriculaEstudante']);//->name('mc.pagamentos.create')->middleware('role_or_permission:Gestor de Caixa|Supervisor|Operador Caixa|criar pagamento|listar pagamento');
 
@@ -109,7 +109,8 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/pagamentos/imprmir/{id}/detalhes', [RelatorioController::class, 'extratoDetalhesPagamento']);
     Route::get('/relatorios/extrato-deposito/pdf', [RelatorioController::class, 'pdf_deposito']);
     Route::get('/relatorios/extrato-deposito/excel', [RelatorioController::class, 'excel_deposito']);
-
+    Route::get('/relatorios/listar-loggs-acesso', [RelatorioController::class, 'listarLoggsAcesso']); //->name('mf.relatorio-listar-estudantes');
+    
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search']);//->name('mc.searh-estudante.index');
 
@@ -127,9 +128,12 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/fatura-recibo/inscricao/{factura_id}', [PagamentosController::class, 'pdfFatReciboIExameAcesso']);
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
     Route::get('/imprimir-factura-ticket/{factura_id}', [PagamentosController::class, 'FaturaTicket']);
+    
+
 
     Route::get('/banco-formaPagamento', [SearhController::class, 'bancosFormaPagamento']);//->name('mc.banco-formas-pagamento');
     Route::get('/aluno/{id_user}', [SearhController::class, 'pegaAluno']);
+    Route::get('/aluno-pega-desconto-atribuido/{id_user}', [SearhController::class, 'descontoAtribuido']);
     Route::get('/saldo/{id_user}', [SearhController::class, 'pegaAluno']);
     Route::get('/get-ano-lectivo/{id_user}', [SearhController::class, 'pegaAnolectivo']);
     Route::get('/pega-anos-lectivos-estudante/{id_user}', [SearhController::class, 'anosLectivoEstudante']);

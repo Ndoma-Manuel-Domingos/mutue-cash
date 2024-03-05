@@ -26,6 +26,7 @@ use App\Services\PagamentoService;
 use App\Services\FaturaService;
 
 use App\Http\Controllers\ClassesAuxiliares\anoAtual;
+use App\Models\Acesso;
 use App\Models\AnoLectivo;
 use App\Models\Caixa;
 use App\Models\Grupo;
@@ -121,7 +122,7 @@ class PagamentosController extends Controller
             if($request->operador){
                 $request->operador = $request->operador;
             }else{
-                $request->operador = $user->codigo_importado;
+                $request->operador = ""; //$user->codigo_importado;
             }
 
             if ($request->data_inicio) {
@@ -147,6 +148,8 @@ class PagamentosController extends Controller
             ->orderBy('tb_pagamentos.Codigo', 'desc')
             ->paginate(15)
             ->withQueryString();
+            
+            // dd($data['items']);
         
         }
 
@@ -191,7 +194,7 @@ class PagamentosController extends Controller
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         }
 
-        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
+        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->where('ordem', '>=', 15)->get();
 
         return Inertia::render('Operacoes/Pagamentos/Index', $data);
     }
@@ -395,13 +398,14 @@ class PagamentosController extends Controller
         return Inertia::render('Operacoes/Pagamentos/Create', $data);
     }
 
-    public function edit($id)
+    public function edit(Request $request)
     {
         // 
         $ano = AnoLectivo::where('estado', 'Activo')->first();
         
         $data['servicos'] = TipoServico::whereNotNull('Descricao')->where('estado', 'Ativo')->where('codigo_ano_lectivo', $ano->Codigo)->get();
-        // $data['servicos'] = TipoServico::get();
+        
+        $id = base64_decode(base64_decode(base64_decode($request->pagamento_id)));
         
         $pagamento = Pagamento::findOrFail($id);
         
@@ -411,7 +415,6 @@ class PagamentosController extends Controller
         
         $gets_pagamento_items = PagamentoItems::with(['servico'])->where('Codigo_Pagamento', $pagamento->Codigo)->get();
   
-        // 
         $factura = Factura::findOrFail($pagamento->codigo_factura);
         
         $data['pagamento'] = $pagamento;
@@ -427,6 +430,13 @@ class PagamentosController extends Controller
 
     public function updateServico(Request $request)
     {
+    
+        $user = auth()->user();
+        
+        $browser = $_SERVER['HTTP_USER_AGENT'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $rotaAtual = $_SERVER['REQUEST_URI'];
+
         $request->validate([
             'servico_antigo' => 'required',
             'novo_servico' => 'required',
@@ -440,16 +450,31 @@ class PagamentosController extends Controller
         $pagamento = Pagamento::findOrFail($request->codigo);
         // 
         $servico = TipoServico::findOrFail($request->novo_servico);
+        $pagamento_items = PagamentoItems::where('Codigo_Pagamento', $pagamento->Codigo)->first();
+        $servico_antigo = TipoServico::findOrFail($pagamento_items->Codigo_Servico);
+        
+        $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user->nome . " usou mutue cash para fazer a alteração do serviço no pagamento número {$pagamento->Codigo}, de {$servico_antigo->Descricao} para {$servico->Descricao}. Ás"  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+                              
         // 
         $factura = Factura::findOrFail($pagamento->codigo_factura);
         
-        $pagamento_items = PagamentoItems::where('Codigo_Pagamento', $pagamento->Codigo)->first();
         $pagamento_items->Codigo_Servico = $servico->Codigo;
         $pagamento_items->update();
         
         $factura_items = FacturaItem::where('CodigoFactura', $factura->Codigo)->first();
         $factura_items->CodigoProduto = $servico->Codigo;
         $factura_items->update();
+      
+  
+        Acesso::create([
+            'designacao' => Auth::user()->nome ,
+            'descricao' => $descricao,
+            'ip_maquina' => $ip,
+            'browser' => $browser,
+            'rota_acessado' => $rotaAtual,
+            'nome_maquina' => NULL,
+            'utilizador_id' => $user->pk_utilizador,
+        ]);
         
         // Retorne a resposta em JSON
         return response()->json([
@@ -459,6 +484,15 @@ class PagamentosController extends Controller
     
     public function updateNumeroMatriculaEstudante(Request $request)
     {
+    
+        
+        $user = auth()->user();
+        
+        $browser = $_SERVER['HTTP_USER_AGENT'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $rotaAtual = $_SERVER['REQUEST_URI'];
+
+
         $request->validate([
             'nova_matricula' => 'required',
             'codigo_pagamento' => 'required',
@@ -474,11 +508,16 @@ class PagamentosController extends Controller
         $pagamento = Pagamento::findOrFail($request->codigo_pagamento);
         $pagamento->Codigo_PreInscricao = $estudante->admissao->preinscricao->Codigo;
         $pagamento->update();
+        
+        
+        
         // 
         $factura = Factura::findOrFail($pagamento->codigo_factura);
         $factura->CodigoMatricula = $estudante->Codigo;
+        
+        $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user->nome . " usou mutue cash para fazer a alteração no pagamento número {$pagamento->Codigo}, neste mesmo pagamento fasse alteração no número de estudante, de {$factura->CodigoMatricula} para {$estudante->Codigo}. Ás"  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
         $factura->codigo_preinscricao = $estudante->admissao->preinscricao->Codigo;   
-        $factura->update();        
+       
         
         if($factura->Troco > 0){
             $estudante_antigo = Matricula::with(['admissao.preinscricao'])->findOrFail($request->matricula);
@@ -492,6 +531,18 @@ class PagamentosController extends Controller
             $estudante_novo->update();
             
         }
+          
+        Acesso::create([
+            'designacao' => Auth::user()->nome ,
+            'descricao' => $descricao,
+            'ip_maquina' => $ip,
+            'browser' => $browser,
+            'rota_acessado' => $rotaAtual,
+            'nome_maquina' => NULL,
+            'utilizador_id' => $user->pk_utilizador,
+        ]);
+        
+        $factura->update();   
 
         // Retorne a resposta em JSON
         return response()->json([
@@ -2606,8 +2657,6 @@ class PagamentosController extends Controller
             ->where('tb_tipo_servicos.TipoServico', 'Mensal')
             ->first();
 
-        //if($pagarComSaldo==1){
-
         $fact_aluno = DB::table('factura')
             ->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
             ->join('tb_admissao', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
@@ -2616,13 +2665,16 @@ class PagamentosController extends Controller
             ->where('tb_preinscricao.Codigo', $preinscricao->Codigo)
             ->select('factura.Codigo', 'factura.ValorAPagar', 'factura.ano_lectivo', 'factura.codigo_descricao')
             ->first();
-
+    
+    
         $factura_items = DB::table('factura_items')
             ->join('factura', 'factura_items.CodigoFactura', '=', 'factura.Codigo')
             ->select('factura_items.*')
-            ->where('factura.Codigo', $fact_aluno->Codigo)
+            ->where('factura.Codigo', $fact_aluno?  $fact_aluno->Codigo : $codigo_fatura)
             ->get();
-
+            
+        // dd($factura_items, $fact_aluno, $codigo_fatura, $preinscricao);
+        
         $array_fatura = json_decode($factura_items, true);
         $id_pag = null;
 

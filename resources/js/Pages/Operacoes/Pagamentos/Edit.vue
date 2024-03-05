@@ -32,8 +32,7 @@
                 <h1><i class="fa fa-check-circle text-success"></i></h1>
                 <h3>Alterar o serviço</h3>
                 <p>
-                  Informe o tipo de empressora a ser utilizado, condição a
-                  empressora, Metódo da empressora, teste de impressão..
+                  A alteração de um serviço em um pagamento realizado incorretamente.
                 </p>
               </div>
 
@@ -47,8 +46,7 @@
                 >
 
                 <p>
-                  Proporcionar uma experiência aprimorada com o sistema de
-                  gestão de faturas EA-VIEGA.
+                  Essa modificação busca corrigir qualquer equívoco relacionado ao serviço inicialmente selecionado, assegurando que o pagamento reflita precisamente a natureza do serviço desejado.
                 </p>
               </div>
             </div>
@@ -60,8 +58,7 @@
                 <h1><i class="fa fa-check-circle text-success"></i></h1>
                 <h3>Alterar Nº do estudante</h3>
                 <p>
-                  Informe o tipo de empressora a ser utilizado, condição a
-                  empressora, Metódo da empressora, teste de impressão.
+                  A solicitação de alteração do número de estudante em um pagamento feito erroneamente.
                 </p>
               </div>
 
@@ -73,8 +70,7 @@
                 >
 
                 <p>
-                  Proporcionar uma experiência aprimorada com o sistema de
-                  gestão de faturas EA-VIEGA.
+                  Ao realizar essa alteração, é essencial fornecer o número correcto do estudante garantindo a integridade e a transparência nos registros financeiros e acadêmicos da instituição.
                 </p>
               </div>
             </div>
@@ -86,19 +82,17 @@
                 <h1><i class="fa fa-check-circle text-success"></i></h1>
                 <h3>Editar Factura Completa</h3>
                 <p>
-                  Informe o tipo de empressora a ser utilizado, condição a
-                  empressora, Metódo da empressora, teste de impressão.
+                  ..........................................
                 </p>
               </div>
 
               <div class="card-body text-center">
-                <a href="" class="btn-lg btn-primary d-block my-4"
+                <!-- <a href="" class="btn-lg btn-primary d-block my-4"
                   >Editar Factura Completa</a
-                >
+                > -->
 
                 <p>
-                  Proporcionar uma experiência aprimorada com o sistema de
-                  gestão de faturas EA-VIEGA.
+                  ..........................................
                 </p>
               </div>
             </div>
@@ -110,8 +104,7 @@
                 <h1><i class="fa fa-check-circle text-success"></i></h1>
                 <h3>Anular o Pagamento</h3>
                 <p>
-                  Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  Fugit ratione eius recusandae omnis, consequuntur
+                  A anulação de um pagamento efetuado erroneamente é um procedimento essencial para corrigir equívocos financeiros.
                 </p>
               </div>
 
@@ -124,8 +117,7 @@
                 >
 
                 <p>
-                  Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  Fugit ratione eius recusandae omnis, consequuntur
+                  Esse processo, geralmente facilitado por mecanismos seguros de gestão de pagamentos, assegura a precisão e a transparência nas operações financeiras, garantindo uma experiência confiável para todas as partes envolvidas.
                 </p>
               </div>
             </div>

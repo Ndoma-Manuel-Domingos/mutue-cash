@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\DepositosExport;
+use App\Models\Acesso;
 use App\Models\Caixa;
 use App\Models\Deposito;
 use App\Models\Grupo;
@@ -184,7 +185,11 @@ class DepositoController extends Controller
             'valor_a_depositar.required' => "Valor a depositar Invalido!",
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
-                
+        
+        $browser = $_SERVER['HTTP_USER_AGENT'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $rotaAtual = $_SERVER['REQUEST_URI'];
+       
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
         if(!$caixas){
@@ -199,11 +204,10 @@ class DepositoController extends Controller
         $resultado = Matricula::where('tb_matriculas.Codigo', $request->codigo_matricula)
         ->join('tb_admissao', 'tb_matriculas.Codigo_Aluno', '=', 'tb_admissao.Codigo')
         ->join('tb_preinscricao', 'tb_admissao.pre_incricao', '=', 'tb_preinscricao.Codigo')
-        ->select('tb_preinscricao.Codigo','tb_preinscricao.saldo_anterior','tb_preinscricao.saldo')
+        ->select('tb_preinscricao.Codigo','tb_preinscricao.saldo_anterior','tb_preinscricao.saldo', 'tb_preinscricao.Nome_Completo')
         ->first();
         
         $saldo_apos_movimento = $resultado->saldo + $request->valor_a_depositar;
-        
         
         $tipo_folha_impressao = $request->factura ?? 'Ticket';
         
@@ -235,6 +239,20 @@ class DepositoController extends Controller
         $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $request->valor_a_depositar;
         $update->valor_arrecadado_total = $update->valor_arrecadado_total + $request->valor_a_depositar;
         $update->update();
+                
+        $valor = number_format($request->valor_a_depositar, 2, ',', '.');
+                
+        $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . Auth::user()->nome . " fez um deposito para o estudante de Nome: {$preinscricao->Nome_Completo} com o número da matrícula: {$request->codigo_matricula} no valor de {$valor} as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+                                
+        Acesso::create([
+            'designacao' => Auth::user()->nome ,
+            'descricao' => $descricao,
+            'ip_maquina' => $ip,
+            'browser' => $browser,
+            'rota_acessado' => $rotaAtual,
+            'nome_maquina' => NULL,
+            'utilizador_id' => Auth::user()->pk_utilizador,
+        ]);
         
 
         // Retorne a resposta em JSON
@@ -298,6 +316,10 @@ class DepositoController extends Controller
             ], 401);
         }
         
+        $browser = $_SERVER['HTTP_USER_AGENT'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $rotaAtual = $_SERVER['REQUEST_URI'];
+        
         $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
                 
         $deposito = Deposito::findOrFail($request->codigo);
@@ -309,6 +331,7 @@ class DepositoController extends Controller
             $preinscricao->saldo_anterior = ($preinscricao->saldo_anterior - $deposito->valor_depositar) + $request->valor_a_depositar;
                
             $preinscricao->update();
+        
         }
         
         if($request->valor_a_depositar != $deposito->valor_depositar){
@@ -328,6 +351,24 @@ class DepositoController extends Controller
             $deposito->tipo_folha = $request->factura;
             
             $deposito->update();
+            
+            
+            $valor = number_format($deposito->valor_depositar, 2, ',', '.');
+            $valor_actual = number_format($request->valor_a_depositar, 2, ',', '.');
+                
+            $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . Auth::user()->nome . " fez uma actualização no deposito do estudante de Nome: {$preinscricao->Nome_Completo} com o número da matrícula: {$deposito->codigo_matricula_id} do valor {$valor} para o valor {$valor_actual} as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+            
+            Acesso::create([
+                'designacao' => Auth::user()->nome ,
+                'descricao' => $descricao,
+                'ip_maquina' => $ip,
+                'browser' => $browser,
+                'rota_acessado' => $rotaAtual,
+                'nome_maquina' => NULL,
+                'utilizador_id' => Auth::user()->pk_utilizador,
+            ]);
+            
+            
         }
         
         return response()->json([

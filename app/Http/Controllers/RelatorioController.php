@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\DepositosExtratoExport;
 use App\Exports\PagamentosExtratoExport;
+use App\Models\Acesso;
 use App\Models\AnoLectivo;
 use App\Models\Caixa;
 use App\Models\Deposito;
@@ -315,7 +316,7 @@ class RelatorioController extends Controller
         }
         
         
-        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
+        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->where('ordem', '>=', 15)->get();
         $data['servicos'] = TipoServico::when($request->ano_lectivo, function($query, $value){
             $query->where('codigo_ano_lectivo', $value);
         })->get();
@@ -583,6 +584,40 @@ class RelatorioController extends Controller
         return Excel::download(new DepositosExtratoExport($request), 'lista-de-extratos-depositos.xlsx');
     }
     
+        /**
+     * LISTA ESTUDANTES START
+     */
+    public function listarLoggsAcesso(Request $request)
+    {
+        $ano = AnoLectivo::where('estado', 'activo')->first();
+
+        if (!$request->anolectivo) {
+            $request->anolectivo = $ano->Codigo;
+        }
+
+        $data['items'] = Acesso::when($request->operador_id, function($query, $value){
+            $query->where('utilizador_id' ,$value);
+        })
+        ->when($request->data_inicio, function($query, $value){
+            $query->whereDate("created_at", "<=", $value);
+        })
+        ->when($request->data_final, function($query, $value){
+            $query->whereDate("created_at", ">=", $value);
+        })
+        ->with(['operador'])->paginate($request->page_size ?? 20)
+        ->withQueryString();
+        
+        $data['utilizadores'] = Utilizador::whereIn('user_pertence', ['Cash', 'Finance-Cash', 'Finance'])
+        ->select('pk_utilizador AS id', 'nome AS text')
+        ->get();
+        
+        $data['utilizadores'] = $this->adicionar_element_todos($data['utilizadores']);
+    
+    
+        return Inertia::render('Relatorios/FechoCaixa/ListarLoggsAcesso', $data);
+    }
+
+    
     public function extratoPagamento(Request $request)
     {
             
@@ -672,7 +707,7 @@ class RelatorioController extends Controller
             })->whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->with('utilizadores')->get();
         }
 
-        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->get();
+        $data['ano_lectivos'] = AnoLectivo::orderBy('ordem', 'desc')->where('ordem', '>=', 15)->get();
         
         
         $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
@@ -808,5 +843,22 @@ class RelatorioController extends Controller
         return Excel::download(new PagamentosExtratoExport($request), 'lista-de-pagamentos-extrato.xlsx');
     }
     
+        
+    public function adicionar_element_todos($resultQuery)
+    {
+        $formaPagamentos = $resultQuery->toArray();
+        $novoRegistro = ['id' => "0", 'text' => 'TODOS'];
+        array_unshift($formaPagamentos, $novoRegistro);
+        return collect($formaPagamentos);
+    } 
+    
+    public function adicionar_element_todos_exemplo($resultQuery)
+    {
+        $formaPagamentos = $resultQuery->toArray();
+        $novoRegistro = [ 'id' => "00", 'text' => 'Mensalidades'];
+        array_unshift($formaPagamentos, $novoRegistro);
+        return collect($formaPagamentos); 
+    }
+
 
 }

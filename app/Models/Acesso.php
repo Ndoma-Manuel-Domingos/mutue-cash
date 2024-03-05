@@ -9,22 +9,25 @@ class Acesso extends Model
 {
     use HasFactory;
     
-    protected $table = "mca_tb_acesso";
+    protected $table = "log_mutue_cash";
     
-    protected $primaryKey = 'pk_acesso';
+    protected $primaryKey = 'id';
     
     public $timestamps = false;
 
     protected $fillable = [
         'designacao',
         'descricao',
-        'sigla',
-        'icone',
-        'fk_modulo',
-        'fk_submenu',
-        'fk_pagina',
-        'fk_tipo_acesso',
-        'obs',
-        'ordem',
+        'ip_maquina',
+        'browser',
+        'nome_maquina',
+        'rota_acessado',
+        'utilizador_id',
     ];
+    
+    public function operador()
+    {
+        return $this->belongsTo(User::class, 'utilizador_id', 'pk_utilizador');
+    }
+
 }

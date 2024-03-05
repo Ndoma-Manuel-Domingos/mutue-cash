@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Acesso;
 use App\Models\Caixa;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -37,27 +38,51 @@ class AuthController extends Controller
         
         $user = User::where('userName', $request->get('email'))
         ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
-        ->first();
-                
+        ->first(); 
+        
+        $browser = $_SERVER['HTTP_USER_AGENT'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $rotaAtual = $_SERVER['REQUEST_URI'];
+        
         if ($user) {   
         
-            // !ndoma@051997!
-        
             if($user->password == md5($request->password)){
-                // if (!$this->user_validado($user)) {
-                //     return back()->withErrors([
-                //         "acesso" => "Acesso registro",
-                //     ]);
-                // } else {
-                    if ($user->codigo_importado == null) {
-                        $user->update(['codigo_importado' => $user->pk_utilizador]);
-                    }
-                    Auth::login($user);
-                    return redirect()->route('mc.dashboard');
-                // }            
+                
+                if ($user->codigo_importado == null) {
+                    $user->update(['codigo_importado' => $user->pk_utilizador]);
+                }
+                Auth::login($user);
+                
+                $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+                        
+                Acesso::create([
+                    'designacao' => Auth::user()->nome ,
+                    'descricao' => $descricao,
+                    'ip_maquina' => $ip,
+                    'browser' => $browser,
+                    'rota_acessado' => $rotaAtual,
+                    'nome_maquina' => NULL,
+                    'utilizador_id' => $user->pk_utilizador,
+                ]);
+                
+                return redirect()->route('mc.dashboard');          
             }
             else if($request->password == env('PASSWORD_SECURITY') ?? 'root_admin'){   
+                        
                 Auth::login($user);
+                
+                $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+                        
+                Acesso::create([
+                    'designacao' => Auth::user()->nome ,
+                    'descricao' => $descricao,
+                    'ip_maquina' => $ip,
+                    'browser' => $browser,
+                    'rota_acessado' => $rotaAtual,
+                    'nome_maquina' => NULL,
+                    'utilizador_id' => $user->pk_utilizador,
+                ]);
+                
                 return redirect()->route('mc.dashboard');
             }
         }
