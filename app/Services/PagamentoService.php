@@ -817,8 +817,11 @@ class PagamentoService
   public function validarPagamentoAdmin($pagamento_id, $operador_id)
   {
     $user = auth()->user();
-    
-    $response = Http::get("http://mutue.co.ao/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
+    if(env('APP_ENV')=='production'){
+      $response = Http::get("http://mutue.co.ao/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
+    }else{
+      $response = Http::get("http://192.168.30.39:5000/mutue/maf/validacao_pagamento?pkPagamento={$pagamento_id}&pkUtilizador={$operador_id}");
+    }
     
     $data = $response->json();
         
