@@ -12,11 +12,11 @@ class DescontoService
     $taxa1 = DB::table('descontos_especiais')->where('id', 1)->where('estado', 1)->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_fim)')])->first();
 
     $taxa1Fim = DB::table('descontos_especiais')->where('id', 1)->where('estado', 1)->where(DB::raw('CURDATE()'), '>',  DB::raw('date(data_fim)'))->first();
-    
+
     $taxa4Fim = DB::table('descontos_especiais')->where('id',4)->where('estado', 1)->first();
 
     $taxa2 = DB::table('descontos_especiais')->where('id', 2)->where('estado', 1)->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_fim)')])->first();
-    
+
     $taxa4 = DB::table('descontos_especiais')->where('id', 4)->where('estado', 1)->first();
 
     $taxa = $taxa1;
@@ -40,9 +40,9 @@ class DescontoService
     $taxa1 = DB::table('descontos_especiais')->where('id', 1)->where('estado', 1)->where(DB::raw('date(data_inicio)'),'<=',$dataBanco)->where(DB::raw('date(data_fim)'),'>=',$dataBanco)->first();
 
     $taxa1Fim = DB::table('descontos_especiais')->where('id', 1)->where('estado', 1)->where(DB::raw('date(data_fim)'), '<', $dataBanco)->first();
-   
+
     $taxa2 = DB::table('descontos_especiais')->where('id', 2)->where('estado', 1)->where(DB::raw('date(data_inicio)'),'<=',$dataBanco)->where(DB::raw('date(data_fim)'),'>=',$dataBanco)->first();
-   
+
     $taxa = $taxa1;
 
     if ($taxa1Fim) {
@@ -70,9 +70,9 @@ class DescontoService
   public function descontoAgropecuaria(){
     $taxa = null;
 
-    $taxa1 = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->first();
+    $taxa1 = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->whereBetween(DB::raw('CURDATE()'), [DB::raw('date(data_inicio)'), DB::raw('date(data_fim)')])->first();
     $taxa1Fim = DB::table('descontos_especiais')->where('id', 5)->where('estado', 1)->where(DB::raw('CURDATE()'), '>',  DB::raw('date(data_fim)'))->first();
-    
+
     $taxa = $taxa1;
 
     if ($taxa1Fim) {
@@ -80,7 +80,7 @@ class DescontoService
     }
     return ($taxa);
   }
-  
+
   public function descontosAlunosEspeciaisIncentivos($matricula_id){
 
     $taxa = null;

@@ -443,6 +443,7 @@
                           </th>
                           <th>Valor</th>
                           <th>Multa</th>
+                          <th>Valor Iva(%)</th>
                           <th>Desconto</th>
                           <th>Total</th>
                         </tr>
@@ -485,6 +486,7 @@
 
                           <td>{{ formatPrice(item.Preco) }}</td>
                           <td>{{ formatPrice(item.Multa) }}</td>
+                          <td>{{formatPrice(item.valor_do_iva)}} ({{item.taxa_iva}}%)</td>
                           <td>{{ formatPrice(item.Desconto) }}</td>
                           <td>{{ (item.Total<0)?formatPrice(item.Total*(-1)):formatPrice(item.Total) }}</td>
                         </tr>
@@ -1086,7 +1088,7 @@ const trilhoes = [
 ];
 
 export default {
-  props: ["forma_pagamentos"],
+  props: ["forma_pagamentos", "percentagem_retencao", "empresa"],
   data() {
     return {
       switch1: false,
@@ -1151,6 +1153,11 @@ export default {
       desconto_incentivo: 0,
       desconto_alunos_pecuaria: 0,
       add_servico: {},
+      tabela1: [],
+      total_retencao: "",
+      total_desconto: "",
+      total_incidencia: "",
+      totalIVA: "",
       info_desconto_ano_todo: "",
       desconto_finalista: 0,
       bolseiro: {},
@@ -1260,7 +1267,7 @@ export default {
       desconto_especial_nov21_jul22: 0,
       meses_bolsa: [],
       prazo_desconto_ano_todo: {},
-      
+
       desconto_atribuido: {},
 
       form: this.$inertia.form({
@@ -1583,6 +1590,10 @@ export default {
       formData.append("talao_banco", this.talao_banco);
       // formData.append("talao_banco2", this.talao_banco2);
       formData.append("fonte", 1); // fonte de requisicao
+      formData.append("total_desconto", this.total_desconto);
+      formData.append("total_retencao", this.total_retencao);
+      formData.append("total_incidencia", this.total_incidencia);
+      formData.append("totalIVA", this.totalIVA);
 
       this.$Progress.start();
       axios
@@ -1597,7 +1608,7 @@ export default {
           if (response.status === 200) {
             var fatura = this.numero_fatura_nao_paga;
 
-                          
+
             if(this.tipo_folha_impressao == "Ticket") {
               this.factura_a_imprimir = this.imprimirFaturaTicket(fatura);
             }else if(this.tipo_folha_impressao == "A4"){
@@ -1614,16 +1625,16 @@ export default {
               confirmButtonText: "Ok",
               onClose: this.factura_a_imprimir,
             });
-            
+
             if(this.tipo_folha_impressao == "Ticket") {
               this.imprimirFaturaTicket(fatura);
-            }else              
+            }else
             if(this.tipo_folha_impressao == "A4"){
               this.imprimirFatura(fatura);
             }else{
               this.imprimirFaturaTicket(fatura);
             }
-            
+
             this.troco = this.formatValor(this.troco);
             this.condicao_troco = false;
             this.switch1 = false;
@@ -1784,24 +1795,24 @@ export default {
 
     // recuperar todas as facturas
     faturaByReference: function () {
-      
+
       if (this.numero_fatura_nao_paga == -1) {
         this.fatura = [];
         this.extenso = "";
         this.itens = [];
         this.valor_pagamentos = 0;
-        
+
         // alert("1")
         //novo
         this.AllClean();
       } else {
         // alert("2")
-        
+
         this.fatura = [];
         this.extenso = "";
         this.itens = [];
         this.valor_pagamentos = 0;
-        
+
         axios
           .get("/pagamentos-estudantes/fatura-by-reference", {
             params: { codigo_fatura: this.numero_fatura_nao_paga },
@@ -2084,7 +2095,7 @@ export default {
         }`
       );
     },
-    
+
     imprimirFaturaTicket(codigo_fatura) {
       window.open("/imprimir-factura-ticket/" + btoa(btoa(btoa(codigo_fatura))));
     },
@@ -2104,7 +2115,7 @@ export default {
       let val = (value / 1).toFixed(3).replace(".", ",");
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
-    
+
     pegaDescontoAtribuido: function () {
       this.$Progress.start();
       axios
@@ -2177,12 +2188,36 @@ export default {
       this.decrementarAdicionado();
       //this.total_adicionado=0;
     },
-    
+
     addOutrosServicos: function () {
-      this.add_servico.Total = this.add_servico.Preco;
-      this.add_servico.Multa = 0;
-      this.add_servico.Desconto = 0;
-      this.tabela.push({ ...this.add_servico, Mes: "#", mes_temp_id: null });
+
+        this.add_servico.taxa_iva = this.add_servico.taxa_iva;
+        if(this.empresa.tipo_regime_id != 1){
+            this.add_servico.taxa_iva = 0;
+        }
+
+        this.add_servico.Total = this.add_servico.Preco;
+        this.add_servico.Multa = 0;
+        this.add_servico.Desconto = 0;
+        this.total_incidencia = 0;
+        this.total_desconto = 0;
+        this.total_retencao = 0;
+        this.totalIVA = 0;
+
+        this.add_servico.incidencia = this.add_servico.Preco - this.add_servico.Desconto;
+        var valor_do_iva = this.add_servico.incidencia * (this.add_servico.taxa_iva/100);
+        this.add_servico.valor_do_iva = valor_do_iva;
+        // this.add_servico.Total = parseFloat(this.add_servico.Preco) + parseFloat(this.add_servico.valor_do_iva);
+        this.tabela1.push({ ...this.add_servico, Mes: "#", mes_temp_id: null });
+
+        for (let index = 0; index < this.tabela1.length; index++) {
+            this.total_incidencia += this.tabela1[index].incidencia
+            this.total_desconto += Number(this.tabela1[index].Desconto)
+            this.totalIVA += Number(this.tabela1[index].valor_do_iva)
+        }
+        this.add_servico.Total = parseFloat(this.add_servico.Preco) + parseFloat(this.add_servico.valor_do_iva);
+
+        this.tabela.push({ ...this.add_servico, Mes: "#", mes_temp_id: null });
     },
 
     mesSeguinte: function (mes_ultimo) {
@@ -2237,7 +2272,8 @@ export default {
       this.tabela.forEach((item) => {
         soma += parseFloat(item.Total);
       });
-      this.total_adicionado = soma;
+      this.total_retencao = soma * (this.percentagem_retencao / 100);
+      this.total_adicionado = soma - (this.total_desconto +  Number(this.total_retencao));
     },
 
     decrementarAdicionado: function () {
@@ -2425,9 +2461,18 @@ export default {
 
     add: function () {
       if (this.add_servico.TipoServico == "Mensal") {
+        this.add_servico.valor_do_iva = 0;
+        this.add_servico.taxa_iva = 0;
         this.add_servico.Multa = 0;
         this.add_servico.Desconto = 0;
 
+
+        this.add_servico.incidencia = this.add_servico.Preco;
+        this.add_servico.valor_do_iva = 0;
+        this.total_incidencia = 0;
+        this.total_desconto = 0;
+        this.total_retencao = 0;
+        this.totalIVA = 0;
         //Desconto geral desconto = valor_total_com_reajuste - valor_total_sem_reajuste até dia 30.10.2021, desconto_excepcao_todos
         this.aplicarDescontoNov21Jul22();
         if (this.cadeiras >= 0 && this.cadeiras <= 3) {
@@ -2436,7 +2481,7 @@ export default {
         if (this.desconto_preinscricao > 0) {
           this.aplicarDescontoPreinscricao();
           //}
-        } 
+        }
         if (this.desconto_alunos_pecuaria > 0) {
           this.aplicarDescontoAgroPecuaria();
         }
@@ -2462,6 +2507,16 @@ export default {
 
                 if (!(+this.anoLectivo.Designacao <= 2019)) {
                   this.aplicarMultaAnoAtual();
+                }
+
+                this.tabela1.push({
+                    ...this.add_servico,
+                    Mes: this.mes_seguinte_novo,
+                    mes_temp_id: this.mes_id,
+                });
+
+                for (let index = 0; index < this.tabela1.length; index++) {
+                    this.total_incidencia += this.tabela1[index].incidencia
                 }
 
                 this.tabela.push({
@@ -2706,6 +2761,10 @@ export default {
         formData.append("troco", troco);
         formData.append("referencia", referencia);
         formData.append("fonte", 2); // fonte de requisicao
+        formData.append("total_desconto", this.total_desconto);
+        formData.append("total_retencao", this.total_retencao);
+        formData.append("total_incidencia", this.total_incidencia);
+        formData.append("totalIVA", this.totalIVA);
 
         this.$Progress.start();
         axios
@@ -2725,45 +2784,45 @@ export default {
 
               this.botao = true;
               var fatura_ref = this.fatura_id;
-              
+
               if(this.tipo_folha_impressao == "Ticket") {
                 this.factura_a_imprimir = this.imprimirFaturaTicket(fatura_ref);
-              }else              
+              }else
               if(this.tipo_folha_impressao == "A4"){
                 this.factura_a_imprimir = this.imprimirFatura(fatura_ref);
               }else{
                 this.factura_a_imprimir = this.imprimirFaturaTicket(fatura_ref);
               }
-              
+
               Swal.fire({
                 title: "Sucesso",
                 text: response.data.message,
                 icon: "success",
                 confirmButtonColor: "#3d5476",
                 confirmButtonText: "Ok",
-                
+
                 // onClose: () => {
                 //     this.imprimirFatura(fatura_ref);
                 // },
                 // onClose: this.imprimirFatura(fatura_ref),
                 onClose: this.factura_a_imprimir,
-                
+
               });
               this.troco = this.formatValor(this.troco);
               this.condicao_troco = false;
               this.switch1 = false;
               this.saldo_aluno = 0;
               this.estudante = {};
-              
+
               if(this.tipo_folha_impressao == "Ticket") {
                 this.imprimirFaturaTicket(fatura_ref);
-              }else              
+              }else
               if(this.tipo_folha_impressao == "A4"){
                 this.imprimirFatura(fatura_ref);
               }else{
                 this.imprimirFaturaTicket(fatura_ref);
               }
-              
+
               this.tabela = [];
               this.codigo_matricula = null;
               (this.nome_estudante = null),

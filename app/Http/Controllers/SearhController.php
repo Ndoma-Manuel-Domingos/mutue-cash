@@ -194,16 +194,16 @@ class SearhController extends Controller
             // ->where('status',  0)
             // ->select('*', 'tb_tipo_bolsas.designacao as tipo_bolsa')
             ->first(); //Abordagem do ano actual
-     
+
         // dd($ano, $desconto, $codigo_matricula);
-     
+
         if ($desconto) {
             return Response()->json($desconto);
         } else {
             return Response()->json('');
         }
     }
-    
+
     public function pegaAnolectivo(Request $request, $codigo_matricula)
     {
         $ano_lectivo = null;
@@ -292,9 +292,11 @@ class SearhController extends Controller
                 ->first();
         }
         $data['propina'] = DB::table('tb_tipo_servicos')
-            ->select('Descricao', 'Preco', 'TipoServico', 'Codigo')
-            ->where('Descricao', 'like', '%' . $curso->curso . '%')
-            ->where('cacuaco', $candidato->AlunoCacuaco)
+            ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+            'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+            ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+            ->where('tb_tipo_servicos.Descricao', 'like', '%' . $curso->curso . '%')
+            ->where('tb_tipo_servicos.cacuaco', $candidato->AlunoCacuaco)
             ->first();
 
 
@@ -609,22 +611,74 @@ class SearhController extends Controller
         $anoCorrente = $this->anoAtualPrincipal->index();
         // $dado = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('codigo_ano_lectivo', $codigo_ano)->where('Descricao', '!=', '')->where('Descricao', 'not like', '%Propina%')->where('visualizar_no_portal', 'SIM')->orderBy('Descricao', 'asc')->get();
         if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 1) {
-            $dado = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('codigo_ano_lectivo', $codigo_ano)->where('Descricao', '!=', '')->where('Descricao', 'not like', '%Propina%')->where('visualizar_no_portal', 'SIM')->whereIn('tipo_candidatura', [0, 1])->orderBy('Descricao', 'asc')->get();
+            $dado = DB::table('tb_tipo_servicos')
+            ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+            'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+            ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+            ->where('tb_tipo_servicos.codigo_ano_lectivo', $codigo_ano)
+            ->where('tb_tipo_servicos.Descricao', '!=', '')
+            ->where('tb_tipo_servicos.Descricao', 'not like', '%Propina%')
+            ->where('tb_tipo_servicos.visualizar_no_portal', 'SIM')
+            ->whereIn('tb_tipo_servicos.tipo_candidatura', [0, 1])
+            ->orderBy('tb_tipo_servicos.Descricao', 'asc')->get();
             if ($this->alunoRepository->verificaConfirmacaoNosAnosAnteriores((int)$aluno->admissao->preinscricao->user_id) == 0 && $this->alunoRepository->dadosAlunoLogado((int)$aluno->admissao->preinscricao->user_id)->estado_matricula == 'inactivo') {
-                $dado = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('codigo_ano_lectivo', $codigo_ano)->where('Descricao', '!=', '')/*->where('sigla', '!=', 'TdR')*/->where('Descricao', 'not like', '%Propina%')->where('visualizar_no_portal', 'SIM')->whereIn('tipo_candidatura', [0, 1])->orderBy('Descricao', 'asc')->get();
+                $dado = DB::table('tb_tipo_servicos')
+                ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                ->where('tb_tipo_servicos.codigo_ano_lectivo', $codigo_ano)
+                ->where('tb_tipo_servicos.Descricao', '!=', '')/*->where('sigla', '!=', 'TdR')*/
+                ->where('tb_tipo_servicos.Descricao', 'not like', '%Propina%')
+                ->where('tb_tipo_servicos.visualizar_no_portal', 'SIM')
+                ->whereIn('tb_tipo_servicos.tipo_candidatura', [0, 1])
+                ->orderBy('tb_tipo_servicos.Descricao', 'asc')->get();
             }
         }
         if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 2) {
-            $dado = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('codigo_ano_lectivo', $codigo_ano)->where('Descricao', '!=', '')->where('Descricao', 'not like', '%Propina%')->where('visualizar_no_portal', 'SIM')->whereIn('tipo_candidatura', [0, 2, 5])->orderBy('Descricao', 'asc')->get();
+            $dado = DB::table('tb_tipo_servicos')
+            ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+            'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+            ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+            ->where('tb_tipo_servicos.codigo_ano_lectivo', $codigo_ano)
+            ->where('tb_tipo_servicos.Descricao', '!=', '')
+            ->where('tb_tipo_servicos.Descricao', 'not like', '%Propina%')
+            ->where('tb_tipo_servicos.visualizar_no_portal', 'SIM')
+            ->whereIn('tb_tipo_servicos.tipo_candidatura', [0, 2, 5])
+            ->orderBy('tb_tipo_servicos.Descricao', 'asc')->get();
         }
         if ($aluno->admissao->preinscricao->codigo_tipo_candidatura == 3) {
-            $dado = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('codigo_ano_lectivo', $codigo_ano)->where('Descricao', '!=', '')->where('Descricao', 'not like', '%Propina%')->where('visualizar_no_portal', 'SIM')->whereIn('tipo_candidatura', [0, 3, 5])->orderBy('Descricao', 'asc')->get();
+            $dado = DB::table('tb_tipo_servicos')
+            ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+            'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+            ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+            ->where('tb_tipo_servicos.codigo_ano_lectivo', $codigo_ano)
+            ->where('tb_tipo_servicos.Descricao', '!=', '')
+            ->where('tb_tipo_servicos.Descricao', 'not like', '%Propina%')
+            ->where('tb_tipo_servicos.visualizar_no_portal', 'SIM')
+            ->whereIn('tb_tipo_servicos.tipo_candidatura', [0, 3, 5])
+            ->orderBy('tb_tipo_servicos.Descricao', 'asc')->get();
         }
 
         if ($codigo_ano == 1 || ($codigo_ano >= 17 && $codigo_ano != $anoCorrente)) {
-            $dado = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('codigo_ano_lectivo', $codigo_ano)->where('Descricao', '!=', '')->where('sigla', 'JdMdFdC')->where('visualizar_no_portal', 'SIM')->orderBy('Descricao', 'asc')->get();
+            $dado = DB::table('tb_tipo_servicos')
+            ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+            'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+            ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+            ->where('tb_tipo_servicos.codigo_ano_lectivo', $codigo_ano)
+            ->where('tb_tipo_servicos.Descricao', '!=', '')
+            ->where('tb_tipo_servicos.sigla', 'JdMdFdC')
+            ->where('tb_tipo_servicos.visualizar_no_portal', 'SIM')
+            ->orderBy('tb_tipo_servicos.Descricao', 'asc')->get();
             if ($aluno->admissao->preinscricao->codigo_tipo_candidatura != 1) {
-                $dado = DB::table('tb_tipo_servicos')->select('Descricao', 'Preco', 'TipoServico', 'Codigo')->where('codigo_ano_lectivo', $codigo_ano)->where('Descricao', '!=', '')->where('sigla', 'JdDoT')->where('visualizar_no_portal', 'SIM')->orderBy('Descricao', 'asc')->get();
+                $dado = DB::table('tb_tipo_servicos')
+                ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                ->where('tb_tipo_servicos.codigo_ano_lectivo', $codigo_ano)
+                ->where('tb_tipo_servicos.Descricao', '!=', '')
+                ->where('tb_tipo_servicos.sigla', 'JdDoT')
+                ->where('tb_tipo_servicos.visualizar_no_portal', 'SIM')
+                ->orderBy('tb_tipo_servicos.Descricao', 'asc')->get();
             }
         }
 
@@ -667,12 +721,12 @@ class SearhController extends Controller
         // } else {
         //     return Response()->json('');
         // }
-        
-        
+
+
         $bolseiro1 = $this->bolsaService->BolsaPorSemestre1($aluno->matricula, $ano_lectivo, 1);
         $bolseiro2 = $this->bolsaService->BolsaPorSemestre2($aluno->matricula, $ano_lectivo, 2);
         $bolseiro = "";
-    
+
         if($bolseiro1){
           $bolseiro = $bolseiro1;
         }elseif($bolseiro2){
@@ -1216,10 +1270,12 @@ class SearhController extends Controller
 
 
         $data['propina'] = DB::table('tb_tipo_servicos')
-            ->select('Descricao', 'Preco', 'TipoServico', 'Codigo', 'valor_anterior')
-            ->where('Descricao', 'like', 'propina ' . $curso->curso . '%')
-            ->where('cacuaco', $candidato->AlunoCacuaco)
-            ->where('codigo_ano_lectivo', $ano)
+            ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+            'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+            ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+            ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $curso->curso . '%')
+            ->where('tb_tipo_servicos.cacuaco', $candidato->AlunoCacuaco)
+            ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
             ->first();
 
         //dd($data['propina'],$curso->curso,$candidato->AlunoCacuaco,$ano);
@@ -1250,17 +1306,22 @@ class SearhController extends Controller
                 ->first();
 
             $propina = DB::table('tb_tipo_servicos')
-                ->select('Descricao', 'Preco', 'TipoServico', 'Codigo', 'valor_anterior')
-                ->where('Descricao', 'like', 'propina ' . $cursoPagamento->Designacao . '%')
-                ->where('cacuaco', $candidato->AlunoCacuaco)->where('codigo_ano_lectivo', $ano)
+                ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $cursoPagamento->Designacao . '%')
+                ->where('tb_tipo_servicos.cacuaco', $candidato->AlunoCacuaco)->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                 ->first();
 
 
             $collection->push([
                 'Descricao' => $cursoPrincipal,
-                'Preco' => $propina->Preco, 'TipoServico' => $propina->TipoServico,
+                'Preco' => $propina->Preco,
+                'TipoServico' => $propina->TipoServico,
                 'Codigo' => $propina->Codigo,
-                'valor_anterior' => $propina->valor_anterior
+                'valor_anterior' => $propina->valor_anterior,
+                'taxa_iva' => $propina->taxa_iva,
+                'descricao_iva' => $propina->descricao_iva
             ]);
 
             $data['propina'] = $collection->first();
@@ -1273,13 +1334,23 @@ class SearhController extends Controller
 
         if (date($data_actual) <= date($data_limite) && ($ano == $anoCorrente)) {
             $propina1 = DB::table('tb_tipo_servicos')
-                ->select('Descricao', 'Preco', 'TipoServico', 'Codigo', 'valor_anterior')
-                ->where('Descricao', 'like', 'propina ' . $curso->curso . '%')
-                ->where('cacuaco', $candidato->AlunoCacuaco)
-                ->where('codigo_ano_lectivo', $ano)
+                ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $curso->curso . '%')
+                ->where('tb_tipo_servicos.cacuaco', $candidato->AlunoCacuaco)
+                ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                 ->first();
 
-            $collection1->push(['Descricao' => $cursoPrincipal, 'Preco' => $propina1->Preco, 'TipoServico' => $propina1->TipoServico, 'Codigo' => $propina1->Codigo, 'valor_anterior' => $propina1->valor_anterior]);
+            $collection1->push([
+                'Descricao' => $cursoPrincipal,
+                'Preco' => $propina1->Preco,
+                'TipoServico' => $propina1->TipoServico,
+                'Codigo' => $propina1->Codigo,
+                'valor_anterior' => $propina1->valor_anterior,
+                'taxa_iva' => $propina1->taxa_iva,
+                'descricao_iva' => $propina1->descricao_iva
+            ]);
 
             $data['propina'] = $collection1->first();
         }
@@ -1288,46 +1359,70 @@ class SearhController extends Controller
         if ($this->extenso->finalista($aluno1->admissao->preinscricao->user_id) > 0 && $this->extenso->finalista($aluno1->admissao->preinscricao->user_id) <= 3 && $candidato->AlunoCacuaco == 'NAO' && $ano == $anoCorrente) {
 
             $data['propina'] = DB::table('tb_tipo_servicos')
-                ->select('Descricao', 'Preco', 'TipoServico', 'Codigo', 'valor_anterior')
-                ->where('Descricao', 'like', 'propina ' . $curso->curso . '%')
-                ->where('cacuaco', 'NAO')
-                ->where('codigo_ano_lectivo', $ano)
+                ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $curso->curso . '%')
+                ->where('tb_tipo_servicos.cacuaco', 'NAO')
+                ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                 ->first();
 
 
             if ($aplicarDesconto == 'SIM') {
 
                 $propina1 = DB::table('tb_tipo_servicos')
-                    ->select('Descricao', 'Preco', 'TipoServico', 'Codigo', 'valor_anterior')
-                    ->where('Descricao', 'like', 'propina ' . $cursoPagamento->Designacao . '%')
-                    ->where('cacuaco', 'NAO')
-                    ->where('codigo_ano_lectivo', $ano)
+                    ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                    'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                    ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                    ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $cursoPagamento->Designacao . '%')
+                    ->where('tb_tipo_servicos.cacuaco', 'NAO')
+                    ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                     ->first();
 
-                $collection1->push(['Descricao' => $cursoPrincipal, 'Preco' => $propina1->Preco, 'TipoServico' => $propina1->TipoServico, 'Codigo' => $propina1->Codigo, 'valor_anterior' => $propina1->valor_anterior]);
+                $collection1->push([
+                    'Descricao' => $cursoPrincipal,
+                    'Preco' => $propina1->Preco,
+                    'TipoServico' => $propina1->TipoServico,
+                    'Codigo' => $propina1->Codigo,
+                    'valor_anterior' => $propina1->valor_anterior,
+                    'taxa_iva' => $propina1->taxa_iva,
+                    'descricao_iva' => $propina1->descricao_iva
+                ]);
 
                 $data['propina'] = $collection1->first();
             }
         } elseif ($this->extenso->finalista($aluno1->admissao->preinscricao->user_id) > 0 && $this->extenso->finalista($aluno1->admissao->preinscricao->user_id) <= 3 && $candidato->AlunoCacuaco == 'SIM' && $ano == $anoCorrente) {
 
             $data['propina'] = DB::table('tb_tipo_servicos')
-                ->select('Descricao', 'Preco', 'TipoServico', 'Codigo', 'valor_anterior')
-                ->where('Descricao', 'like', 'propina ' . $curso->curso . '%')
-                ->where('cacuaco', 'SIM')
-                ->where('codigo_ano_lectivo', $ano)
+                ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $curso->curso . '%')
+                ->where('tb_tipo_servicos.cacuaco', 'SIM')
+                ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                 ->first();
 
 
             if ($aplicarDesconto == 'SIM') {
 
                 $propina1 = DB::table('tb_tipo_servicos')
-                    ->select('Descricao', 'Preco', 'TipoServico', 'Codigo', 'valor_anterior')
-                    ->where('Descricao', 'like', 'propina ' . $cursoPagamento->Designacao . '%')
-                    ->where('cacuaco', 'SIM')
-                    ->where('codigo_ano_lectivo', $ano)
+                    ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
+                    'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
+                    ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
+                    ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $cursoPagamento->Designacao . '%')
+                    ->where('tb_tipo_servicos.cacuaco', 'SIM')
+                    ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                     ->first();
 
-                $collection1->push(['Descricao' => $cursoPrincipal, 'Preco' => $propina1->Preco, 'TipoServico' => $propina1->TipoServico, 'Codigo' => $propina1->Codigo, 'valor_anterior' => $propina1->valor_anterior]);
+                $collection1->push([
+                    'Descricao' => $cursoPrincipal,
+                    'Preco' => $propina1->Preco,
+                    'TipoServico' => $propina1->TipoServico,
+                    'Codigo' => $propina1->Codigo,
+                    'valor_anterior' => $propina1->valor_anterior,
+                    'taxa_iva' => $propina1->taxa_iva,
+                    'descricao_iva' => $propina1->descricao_iva
+                ]);
 
                 $data['propina'] = $collection1->first();
             }
@@ -1362,7 +1457,7 @@ class SearhController extends Controller
             //         $data['taxa_nov21_jul22'] = $taxa_nov21_jul22->taxa;
             //     }
             // }
-            
+
             $taxa_desconto_incentivo = $this->descontoService->descontosAlunosEspeciaisIncentivos($matricula->codigo_matricula);
 
             // desconto de incentivo para alunos noturnos
@@ -1373,7 +1468,7 @@ class SearhController extends Controller
             }
 
             if ($taxa_desconto_agro) {
-                if (($alunoLogado->anoLectivo == $taxa_desconto_agro->ano_lectivo_id && $alunoLogado->curso_matricula == $taxa_desconto_agro->curso_id && $alunoLogado->codigo_tipo_candidatura == $taxa_desconto_agro->tipo_candidatura_id) && ($alunoLogado->estado_matricula != 'inactivo')) {
+                if (($alunoLogado->curso_matricula == $taxa_desconto_agro->curso_id && $alunoLogado->codigo_tipo_candidatura == 1)) {
                     $data['desconto_alunos_agro_pecuaria'] = ($taxa_desconto_agro->taxa / 100);
                 }
             }
@@ -1557,20 +1652,20 @@ class SearhController extends Controller
         // $data = $response->json();
         $pagamento = Pagamento::findOrFail($pagamento_id);
         $ano = AnoLectivo::where('estado', 'Activo')->first();
-        
+
         if($ano){
-        
+
             if ($pagamento) {
-    
+
                 $pagamento->estado = 1;
                 $pagamento->update();
-    
+
                 $preinscricao = Preinscricao::leftJoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
                     ->leftJoin('tb_matriculas', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
                     ->select('tb_matriculas.Codigo AS codigo_matricula','tb_preinscricao.Codigo AS codigo_preinscricao')
                     ->findOrFail($pagamento->Codigo_PreInscricao);
                 if ($preinscricao) {
-                    
+
                     $grades = GradeCurricularAluno::where('codigo_matricula', $preinscricao->codigo_matricula)->where('codigo_ano_lectivo', $ano->Codigo)->get();
                     if($grades){
                         foreach($grades as $grade){
@@ -1579,7 +1674,7 @@ class SearhController extends Controller
                             $update->update();
                         }
                     }
-                
+
                 }
             }
         }
