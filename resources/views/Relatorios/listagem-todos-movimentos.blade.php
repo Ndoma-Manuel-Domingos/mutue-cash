@@ -161,8 +161,7 @@
             <br><br><br>
             <p style="text-align:center;">Assinatura<br><br>
                 __________________________ <br><br>
-                {{ $operador ? $operador->nome : 'Todos' }}
-
+                {{ $assinatura ? $assinatura->nome : 'Todos' }}
             </p>
         </div>
 

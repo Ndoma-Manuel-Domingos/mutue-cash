@@ -588,7 +588,7 @@ class MovimentoController extends Controller
     
     public function pdf(Request $request)
     {
-        
+        $user = auth()->user();
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
     
@@ -613,7 +613,14 @@ class MovimentoController extends Controller
         ->get();
         
         $data['requests'] = $request->all('data_inicio', 'data_final');
-        $data['operador'] = User::where('codigo_importado',$request->operador_id)->first();
+        
+        if($request->operador_id){
+            $data['assinatura'] = User::where('codigo_importado', $request->operador_id)->first();
+        }else{
+            $data['assinatura'] = $user;
+        }
+        
+        $data['operador'] = User::where('codigo_importado', $request->operador_id)->first();
         $data['caixa'] = Caixa::find($request->caixa_id);
         
         $pdf = \App::make('dompdf.wrapper');
