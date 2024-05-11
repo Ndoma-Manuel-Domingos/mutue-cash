@@ -1371,9 +1371,9 @@ class SearhController extends Controller
                     $data['taxa_nov21_jul22'] = $taxa_nov21_jul22->taxa;
                 }
             }
-
+            
             if ($taxa_desconto_agro) {
-                if (($alunoLogado->anoLectivo == $taxa_desconto_agro->ano_lectivo_id && $alunoLogado->curso_matricula == $taxa_desconto_agro->curso_id && $alunoLogado->codigo_tipo_candidatura == $taxa_desconto_agro->tipo_candidatura_id) && ($alunoLogado->estado_matricula != 'inactivo')) {
+                if (($alunoLogado->curso_matricula == $taxa_desconto_agro->curso_id && $alunoLogado->codigo_tipo_candidatura == 1)) {
                     $data['desconto_alunos_agro_pecuaria'] = ($taxa_desconto_agro->taxa / 100);
                 }
             }

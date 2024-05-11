@@ -3,8 +3,8 @@
       Options -MultiViews -Indexes
   </IfModule>
   <IfModule mod_headers.c>
-    Header set Content-Security-Policy "frame-ancestors 'self' https://cash.mutue.ao"
-    Header set X-Frame-Options "ALLOW-FROM https://cash.mutue.ao"
+    Header set Content-Security-Policy "frame-ancestors 'self' https://cash.mutue.net"
+    Header set X-Frame-Options "ALLOW-FROM https://cash.mutue.net"
 
   </IfModule>
   
