@@ -46,9 +46,9 @@ use phpseclib\Crypt\RSA;
 
 class PagamentosController extends Controller
 {
+    use TraitChavesEmpresa;
     use TraitHelpers;
 
-    use TraitChavesEmpresa;
 
     public $extenso;
     public $descontoService;
@@ -383,7 +383,6 @@ class PagamentosController extends Controller
 
     public function create(Request $request)
     {
-
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -2188,6 +2187,7 @@ class PagamentosController extends Controller
 
     public function faturaDiversos(Request $request, $codigo_matricula)
     {
+
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -2563,7 +2563,7 @@ class PagamentosController extends Controller
 
             $numeracaoFactura = "FT " . $yearNow . '/' . $numSequenciaFactura; //retirar somente 3 primeiros caracteres na facturaSerie da factura: substr('abcdef', 0, 3);
 
-
+            /** depois voltaremos a fazer a validação do sistema com o hash */
             $rsa = new RSA(); //Algoritimo RSA
             $privatekey = $this->pegarChavePrivada();
             $rsa->loadKey($privatekey);

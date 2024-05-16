@@ -14,33 +14,58 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
+use App\Services\TraitChavesEmpresa;
+use phpseclib\Crypt\RSA;
 
 class CaixaController extends Controller
 {
+    use TraitChavesEmpresa;
     public function __construct()
     {
         $this->middleware('auth');
     }
-    
-        
+
+
     public function index()
     {
         $data['items'] = Caixa::with('operador_que_abriu')->paginate(15);
 
         $data['total_geral'] = Caixa::with('operador')->count();
-        
+
         return Inertia::render('Operacoes/Caixas/Index', $data);
     }
 
     public function show($id)
     {
         $caixa = Caixa::find($id);
-        
+
         return response()->json($caixa, 200);
     }
-    
+
     public function store(Request $request)
     {
+
+        // $datactual = Carbon::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s'));
+
+        // /** depois voltaremos a fazer a validação do sistema com o hash */
+        // $rsa = new RSA(); //Algoritimo RSA
+        // $privatekey = $this->pegarChavePrivada();
+        // $rsa->loadKey($privatekey);
+
+        // $plaintext = str_replace(date(' H:i:s'), '', $datactual) . ';' . str_replace(' ', 'T', $datactual) . ';';
+
+        // // HASH
+        // $hash = 'sha1'; // Tipo de Hash
+        // $rsa->setHash(strtolower($hash)); // Configurando para o tipo Hash especificado em cima
+
+        // //ASSINATURA
+        // $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1); //Tipo de assinatura
+        // $signaturePlaintext = $rsa->sign($plaintext); //Assinando o texto $plaintext(resultado das concatenaÃ§Ãµes)
+        // $hashValor = base64_encode($signaturePlaintext);
+
+        // dd($hashValor, $plaintext);
+
+
         $request->validate([
             'nome' => 'required|unique:tb_caixas,nome,except,codigo',
         ], [
@@ -49,7 +74,7 @@ class CaixaController extends Controller
         ]);
 
         DB::beginTransaction();
-        
+
         try {
             $create = Caixa::create([
                 'nome' => strtoupper($request->nome),
@@ -69,7 +94,7 @@ class CaixaController extends Controller
         }
 
         DB::commit();
-       
+
         return response()->json([
             'message' => 'Operação realizada com sucesso!',
             'data' => $create
@@ -81,7 +106,7 @@ class CaixaController extends Controller
     {
 
         $caixa = Caixa::find($request->codigo);
-        
+
         $request->validate([
             'nome' => 'required',
         ], [
@@ -89,7 +114,7 @@ class CaixaController extends Controller
         ]);
 
         DB::beginTransaction();
-        
+
         try {
             $update = $caixa->update([
                 'nome' => strtoupper($request->nome),
@@ -106,7 +131,7 @@ class CaixaController extends Controller
         }
 
         DB::commit();
-       
+
         return response()->json([
             'message' => 'Operação realizada com sucesso!',
             'data' => $update
@@ -134,13 +159,13 @@ class CaixaController extends Controller
             'data' => $delete
         ]);
     }
-    
-          
+
+
     public function excel(Request $request)
     {
         return Excel::download(new ListagemTodosMovimentoExport($request), 'listagem-de-todos-movimentos.xlsx');
     }
-    
+
     public function pdf(Request $request)
     {
         $data['items'] = Caixa::when($request->data_inicio, function($query, $value){
@@ -158,16 +183,16 @@ class CaixaController extends Controller
         ->with(['operador', 'caixa'])
         ->orderBy('codigo', 'desc')
         ->get();
-        
+
         $data['requests'] = $request->all('data_inicio', 'data_final');
         $data['operador'] = User::where('codigo_importado',$request->operador_id)->first();
         $data['caixa'] = Caixa::find($request->caixa_id);
-        
+
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadView('Relatorios.listagem-todos-movimentos', $data);
         $pdf->getDOMPdf()->set_option('isPhpEnabled', true);
         return $pdf->stream();
     }
-    
-    
+
+
 }
