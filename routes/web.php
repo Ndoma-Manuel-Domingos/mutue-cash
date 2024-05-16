@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Route::get('/renomear-arquivos', function () {
-    
+
 //     $depositos= Deposito::whereNotNull('codigo_matricula_id')->pluck('codigo_matricula_id')->toArray();
 
 //     $matriculados = DB::table('tb_matriculas')
@@ -59,7 +59,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('mc.logout');
 
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('mc.dashboard');
-    
+
     Route::get('/depositos', [DepositoController::class, 'index']);
     Route::post('/depositos/store', [DepositoController::class, 'store']); //->name('mc.depositos.store');
     Route::get('/depositos/pdf', [DepositoController::class, 'pdf']);
@@ -73,7 +73,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/movimentos/diarios-operador', [MovimentoController::class, 'diariosOperador']);
     Route::get('/movimentos/caixas-abertos', [MovimentoController::class, 'caixasAbertos']);
     Route::get('/movimentos/registrar-saidas', [MovimentoController::class, 'registrarSaidas']);
-    
+
     Route::get('/movimentos/abertura-caixa', [MovimentoController::class, 'abertura']);//->name('mc.movimentos-abertura-caixa');
     Route::post('/movimentos/abertura-caixa', [MovimentoController::class, 'aberturaStore']);//->name('mc.movimentos-abertura-caixa-store');
     Route::get('/movimentos/fecho-caixa-por-admin', [MovimentoController::class, 'fechoAdmin']);
@@ -110,7 +110,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/relatorios/extrato-deposito/pdf', [RelatorioController::class, 'pdf_deposito']);
     Route::get('/relatorios/extrato-deposito/excel', [RelatorioController::class, 'excel_deposito']);
     Route::get('/relatorios/listar-loggs-acesso', [RelatorioController::class, 'listarLoggsAcesso']); //->name('mf.relatorio-listar-estudantes');
-    
+
     /**SEARCH */
     Route::get('/pesquisar-estudante', [SearhController::class, 'search']);//->name('mc.searh-estudante.index');
 
@@ -128,7 +128,7 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/fatura-recibo/inscricao/{factura_id}', [PagamentosController::class, 'pdfFatReciboIExameAcesso']);
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
     Route::get('/imprimir-factura-ticket/{factura_id}', [PagamentosController::class, 'FaturaTicket']);
-    
+
 
 
     Route::get('/banco-formaPagamento', [SearhController::class, 'bancosFormaPagamento']);//->name('mc.banco-formas-pagamento');
@@ -166,15 +166,15 @@ Route::group(["middleware" => "auth"], function () {
     Route::post('/roles/utilizadores-roles', [RoleController::class, 'adicionar_perfil_utilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/utilizador-perfil/{id}', [RoleController::class, 'getPerfilUtilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
     Route::get('/roles/utilizador-remover-perfil/{id}', [RoleController::class, 'removerPerfilUtilizador']); //->middleware('role_or_permission:Gestor de Caixa|criar operador|listar operador');
-    
+
     Route::get('/verificar-caixa-aberto',  [SearhController::class, 'verificarCaixaAberto']);
-    
+
     Route::resource('notifications',  NotificationController::class)->except(['edit']);
-    
-    
+
+
     Route::get('/teste-api/{pag}/{op}',  [SearhController::class, 'teste']);
-    
-    
+
+
     Route::get('/carregar-pagamentos-ultimos-seis-meses',  [DashboardController::class, 'pagamentoUltimosSeisMeses']);
 
 });
