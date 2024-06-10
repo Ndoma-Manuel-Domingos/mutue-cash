@@ -2,14 +2,17 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaixaController;
+use App\Http\Controllers\ContaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepositoController;
 use App\Http\Controllers\MovimentoController;
+use App\Http\Controllers\MovimentoFluxoController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PagamentosController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SearhController;
+use App\Http\Controllers\SubContaController;
 use App\Models\Caixa;
 use App\Models\Deposito;
 use Illuminate\Support\Facades\DB;
@@ -129,6 +132,10 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/pagamentos-estudantes/propina/{id_user}', [SearhController::class, 'propina']);
     Route::get('/imprimir-factura-ticket/{factura_id}', [PagamentosController::class, 'FaturaTicket']);
 
+
+    Route::resource('listar-contas', ContaController::class);
+    Route::resource('listar-sub-contas', SubContaController::class);
+    Route::resource('movimento-fluxo', MovimentoFluxoController::class);
 
 
     Route::get('/banco-formaPagamento', [SearhController::class, 'bancosFormaPagamento']);//->name('mc.banco-formas-pagamento');

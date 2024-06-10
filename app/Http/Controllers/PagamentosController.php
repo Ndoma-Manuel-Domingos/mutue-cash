@@ -41,6 +41,7 @@ use App\Models\Utilizador;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\TraitChavesEmpresa;
+use Illuminate\Support\Facades\Http;
 use phpseclib\Crypt\RSA;
 
 
@@ -2564,19 +2565,19 @@ class PagamentosController extends Controller
             $numeracaoFactura = "FT " . $yearNow . '/' . $numSequenciaFactura; //retirar somente 3 primeiros caracteres na facturaSerie da factura: substr('abcdef', 0, 3);
 
             /** depois voltaremos a fazer a validação do sistema com o hash */
-            $rsa = new RSA(); //Algoritimo RSA
+            // $rsa = new RSA(); //Algoritimo RSA
             $privatekey = $this->pegarChavePrivada();
-            $rsa->loadKey($privatekey);
+            // $rsa->loadKey($privatekey);
 
             $plaintext = str_replace(date(' H:i:s'), '', $datactual) . ';' . str_replace(' ', 'T', $datactual) . ';' . $numeracaoFactura . ';' . number_format($request->total, 2, ".", "") . ';' . $hashAnterior;
 
             // HASH
             $hash = 'sha1'; // Tipo de Hash
-            $rsa->setHash(strtolower($hash)); // Configurando para o tipo Hash especificado em cima
+            // $rsa->setHash(strtolower($hash)); // Configurando para o tipo Hash especificado em cima
 
             //ASSINATURA
-            $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1); //Tipo de assinatura
-            $signaturePlaintext = $rsa->sign($plaintext); //Assinando o texto $plaintext(resultado das concatenaÃ§Ãµes)
+            // $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1); //Tipo de assinatura
+            $signaturePlaintext = "teste"; // $rsa->sign($plaintext); //Assinando o texto $plaintext(resultado das concatenaÃ§Ãµes)
             $hashValor = base64_encode($signaturePlaintext);
 
             $total_incidencia = 0;
@@ -2964,7 +2965,6 @@ class PagamentosController extends Controller
             }
         }
 
-
         if (!$pagmnt_total_com_saldo) {
 
             $this->codigo_factura_em_curso = $codigo_fatura;
@@ -2978,6 +2978,26 @@ class PagamentosController extends Controller
                 throw $e;
             }
         }
+        
+        $aplicacao_name = ENV('APLICATION_NAME');
+              
+        // conta a creditar
+        $subconta_cliente = "31.1.1.{$codigo_matricula}";
+        //conta a debitar
+        $subconta_servico = "62.1.5";
+        //conta a caixa ou banco
+        $subconta_caixa_banco = "45.1.5";
+          
+        $response = Http::post("http://10.10.50.37:8080/api/criar-debito", 
+        [
+              'empresa_id' => 1,
+              'valor' => $valor_apagar,
+              'tipo_instituicao' => $aplicacao_name,
+              'subconta_cliente' => $subconta_cliente,
+              'subconta_caixa_banco' => $subconta_caixa_banco,
+              'subconta_servico' => $subconta_servico,
+              'designacao' => "Pagamento de Serviço Diverso",
+        ]);        
 
         // aqui vai a funcao de salvar pagamento
 

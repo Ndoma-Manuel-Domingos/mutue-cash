@@ -90,6 +90,20 @@
               <p>Lista dos Caixas</p>
             </Link>
           </li>
+          
+          <li class="nav-item" title="Movimentos">
+            <Link
+              href="/movimento-fluxo"
+              class="nav-link"
+              :class="{
+                active: $page.component == 'Movimentos/Index',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Movimentos</p>
+            </Link>
+          </li>
+          
         </ul>
       </li>
 
@@ -283,6 +297,49 @@
           </li>
         </ul>
       </li>
+      
+      
+      <li class="nav-item">
+        <a
+          href="#"
+          class="nav-link"
+          :class="{ active: $page.component.startsWith('AreaFinanceira/') }"
+        >
+          <i class="nav-icon fas fa-chart-line"></i>
+          <p>
+            PGC - Plano Geral
+            <i class="right fas fa-angle-left"></i>
+          </p>
+        </a>
+        <ul class="nav nav-treeview">
+  
+          <li class="nav-item" title="CONTAS">
+            <Link
+              href="/listar-contas"
+              class="nav-link"
+              :class="{
+                active: $page.component == 'Contas/Index',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Contas</p>
+            </Link>
+          </li>
+
+          <li class="nav-item" title="SUBCONTAS">
+            <Link
+              href="/listar-sub-contas"
+              class="nav-link"
+              :class="{
+                active: $page.component == 'SubContas/Index',
+              }"
+            >
+              <i class="far fa-circle nav-icon"></i>
+              <p>Sub-Contas</p>
+            </Link>
+          </li>
+        </ul>
+      </li>      
 
       <li class="nav-item" v-if="user.auth.can['criar operador']">
         <a
