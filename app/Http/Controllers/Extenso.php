@@ -93,7 +93,7 @@ class Extenso
       ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)
       ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_duracao.codigo as codigo_duracao')
       ->distinct('disciplina')
-      ->where('tb_grade_curricular.status', 1)
+      ->whereIn('tb_grade_curricular.status', [1, 2])
       ->get()
       ->count();
 
@@ -104,12 +104,34 @@ class Extenso
     $planoCurricular1 = DB::table('tb_grade_curricular')->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
       ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)
       ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_duracao.codigo as codigo_duracao')
-      ->distinct('disciplina')->where('tb_grade_curricular.status', 1)->get()->count();
+      ->distinct('disciplina')->whereIn('tb_grade_curricular.status', [1, 2])->get()->count();
 
-    $cadeirasEliminadas1 = DB::table('tb_grade_curricular')->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)->where('tb_grade_curricular.status', 1)->distinct('disciplina')->get()->count();
+    $cadeirasEliminadas1 = DB::table('tb_grade_curricular')
+    ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+    ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+    ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+    ->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')
+    ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+    ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+    ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina',
+    'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
+    ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)
+    ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
+    ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
+    ->whereIn('tb_grade_curricular.status', [1, 2])->distinct('disciplina')->get()->count();
 
 
-    $cadeirasEliminadas = DB::table('tb_grade_curricular')->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)->where('tb_grade_curricular.status', 1)->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)->distinct('disciplina')->get()->count();
+    $cadeirasEliminadas = DB::table('tb_grade_curricular')
+    ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
+    ->join('tb_classes', 'tb_classes.Codigo', '=', 'tb_grade_curricular.Codigo_Classe')
+    ->join('tb_cursos', 'tb_cursos.Codigo', '=', 'tb_grade_curricular.Codigo_Curso')
+    ->join('tb_grade_curricular_aluno', 'tb_grade_curricular_aluno.codigo_grade_curricular', '=', 'tb_grade_curricular.Codigo')
+    ->join('tb_duracao', 'tb_duracao.codigo', '=', 'tb_disciplinas.duracao')
+    ->join('tb_semestres', 'tb_grade_curricular.Codigo_Semestre', '=', 'tb_semestres.Codigo')
+    ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina',
+    'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
+    ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
+    ->whereIn('tb_grade_curricular.status', [1, 2])->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)->distinct('disciplina')->get()->count();
 
     $cadeirasEliminadaAnoCorrente = DB::table('tb_grade_curricular')
       ->join('tb_disciplinas', 'tb_disciplinas.Codigo', '=', 'tb_grade_curricular.Codigo_Disciplina')
@@ -122,7 +144,7 @@ class Extenso
       ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
       ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_preinscricao)
       ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
-      ->where('tb_grade_curricular.status', 1)
+      ->whereIn('tb_grade_curricular.status', [1, 2])
       ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
       ->where('tb_ano_lectivo.estado', 'Activo')
       ->distinct('disciplina')->get()->count();
@@ -139,7 +161,7 @@ class Extenso
       ->select('tb_disciplinas.Designacao as disciplina', 'tb_semestres.Designacao as semestre', 'tb_classes.Designacao as classe', 'tb_duracao.designacao as duracao_disciplina', 'tb_grade_curricular.Codigo as codigo_grade', 'tb_classes.Codigo as codigo_ano', 'tb_grade_curricular.valor_inscricao as valor_cadeira', 'tb_duracao.codigo as codigo_duracao')
       ->where('tb_grade_curricular.Codigo_Curso', $aluno->curso_matricula)
       ->where('tb_grade_curricular_aluno.Codigo_Status_Grade_Curricular', 3)
-      ->where('tb_grade_curricular.status', 1)
+      ->whereIn('tb_grade_curricular.status', [1, 2])
       ->where('tb_grade_curricular_aluno.codigo_matricula', $aluno->matricula)
       ->where('tb_ano_lectivo.estado', 'Activo')
       ->distinct('disciplina')->get()->count();
@@ -174,6 +196,7 @@ class Extenso
         $cadeirasRestantes = $cadeirasRestantes + $cadeirasEliminadaAnoCorrente;
       }
     }
+
     return $cadeirasRestantes;
   }
 

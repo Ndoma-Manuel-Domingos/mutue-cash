@@ -1355,8 +1355,7 @@ class SearhController extends Controller
             $data['propina'] = $collection1->first();
         }
 
-
-        if ($this->extenso->finalista($aluno1->admissao->preinscricao->user_id) > 0 && $this->extenso->finalista($aluno1->admissao->preinscricao->user_id) <= 3 && $candidato->AlunoCacuaco == 'NAO' && $ano == $anoCorrente) {
+        if ($this->extenso->finalista($aluno1->admissao->preinscricao->user_id) > 0 && $this->extenso->finalista($aluno1->admissao->preinscricao->user_id) <= 3 && $candidato->AlunoCacuaco == 'NAO' && (int)$ano == $anoCorrente) {
 
             $data['propina'] = DB::table('tb_tipo_servicos')
                 ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
@@ -1366,7 +1365,6 @@ class SearhController extends Controller
                 ->where('tb_tipo_servicos.cacuaco', 'NAO')
                 ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                 ->first();
-
 
             if ($aplicarDesconto == 'SIM') {
 
@@ -1391,14 +1389,14 @@ class SearhController extends Controller
 
                 $data['propina'] = $collection1->first();
             }
-        } elseif ($this->extenso->finalista($aluno1->admissao->preinscricao->user_id) > 0 && $this->extenso->finalista($aluno1->admissao->preinscricao->user_id) <= 3 && $candidato->AlunoCacuaco == 'SIM' && $ano == $anoCorrente) {
+        } elseif ($this->extenso->finalista($aluno1->admissao->preinscricao->user_id) > 0 && $this->extenso->finalista($aluno1->admissao->preinscricao->user_id) <= 3 && $candidato->AlunoCacuaco == 'SIM' && (int)$ano == $anoCorrente) {
 
             $data['propina'] = DB::table('tb_tipo_servicos')
                 ->select('tb_tipo_servicos.Descricao as Descricao', 'tb_tipo_servicos.Preco as Preco', 'tb_tipo_servicos.TipoServico as TipoServico',
                 'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
                 ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
                 ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $curso->curso . '%')
-                ->where('tb_tipo_servicos.cacuaco', 'SIM')
+                ->where('tb_tipo_servicos.cacuaco', 'NAO')
                 ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                 ->first();
 
@@ -1410,7 +1408,7 @@ class SearhController extends Controller
                     'tb_tipo_servicos.Codigo as Codigo', 'tb_tipo_servicos.valor_anterior as valor_anterior', 'tipo_taxas.taxa as taxa_iva', 'tipo_taxas.descricao as descricao_iva')
                     ->leftJoin('tipo_taxas', 'tipo_taxas.id', 'tb_tipo_servicos.taxa_iva_id')
                     ->where('tb_tipo_servicos.Descricao', 'like', 'propina ' . $cursoPagamento->Designacao . '%')
-                    ->where('tb_tipo_servicos.cacuaco', 'SIM')
+                    ->where('tb_tipo_servicos.cacuaco', 'NAO')
                     ->where('tb_tipo_servicos.codigo_ano_lectivo', $ano)
                     ->first();
 
