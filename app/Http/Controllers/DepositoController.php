@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DepositoController extends Controller
@@ -32,6 +35,7 @@ class DepositoController extends Controller
     
     public function index(Request $request)
     {
+    
         $user = auth()->user();
                 
         // verificar se o caixa esta bloqueado
@@ -186,74 +190,106 @@ class DepositoController extends Controller
             'valor_a_depositar.numeric' => "Valor a depositar deve serve um valor númerico!",
         ]);
         
-        $browser = $_SERVER['HTTP_USER_AGENT'];
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $rotaAtual = $_SERVER['REQUEST_URI'];
-       
-        $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
         
-        if(!$caixas){
-            return response()->json([
-                'message' => 'Sem nenhum caixa aberto para realizar o deposito!',
-            ], 401);
+        try {
+            DB::beginTransaction();
+            // Realizar operações de banco de dados aqui
+              
+            $browser = $_SERVER['HTTP_USER_AGENT'];
+            $ip = $_SERVER['REMOTE_ADDR'];
+            $rotaAtual = $_SERVER['REQUEST_URI'];
+             
+            $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+              
+            if(!$caixas){
+                  return response()->json([
+                      'message' => 'Sem nenhum caixa aberto para realizar o deposito!',
+                  ], 401);
+            }
+              
+            $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
+                      
+            $resultado = Matricula::where('tb_matriculas.Codigo', $request->codigo_matricula)
+              ->join('tb_admissao', 'tb_matriculas.Codigo_Aluno', '=', 'tb_admissao.Codigo')
+              ->join('tb_preinscricao', 'tb_admissao.pre_incricao', '=', 'tb_preinscricao.Codigo')
+              ->select('tb_preinscricao.Codigo','tb_preinscricao.saldo_anterior','tb_preinscricao.saldo', 'tb_preinscricao.Nome_Completo')
+              ->first();
+              
+            $saldo_apos_movimento = $resultado->saldo + $request->valor_a_depositar;
+              
+            $tipo_folha_impressao = $request->factura ?? 'Ticket';
+              
+              // registramos o deposito 
+            $create = Deposito::create([
+                  'codigo_matricula_id' => $request->codigo_matricula,
+                  'Codigo_PreInscricao' => $resultado->Codigo,
+                  'valor_depositar' => $request->valor_a_depositar,
+                  'saldo_apos_movimento' => $saldo_apos_movimento,
+                  'tipo_folha' => $tipo_folha_impressao,
+                  'forma_pagamento_id' => 6,
+                  'caixa_id' => $caixas->codigo,
+                  'status' => 'pendente',
+                  'data_movimento' => date("Y-m-d"),
+                  'ano_lectivo_id' => $this->anoLectivoActivo(),
+                  'created_by' => Auth::user()->codigo_importado,
+                  'updated_by' => Auth::user()->codigo_importado
+            ]);
+              
+              // actualizamos os dados do aluno
+            $preinscricao = PreInscricao::findOrFail($resultado->Codigo);
+            $preinscricao->saldo_anterior = $preinscricao->saldo;
+            $preinscricao->saldo += $request->valor_a_depositar;
+            $preinscricao->update();
+              
+            $update = MovimentoCaixa::findOrFail($movimento->codigo);
+            $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $request->valor_a_depositar;
+            $update->valor_arrecadado_total = $update->valor_arrecadado_total + $request->valor_a_depositar;
+            $update->update();
+                      
+            $aplicacao_name = ENV('APLICATION_NAME');
+              
+            // conta a creditar
+            $subconta_cliente = "31.1.1.{$request->codigo_matricula}";
+            //conta a debitar
+            $subconta_servico = "62.1.5";
+            //conta a caixa ou banco
+            $subconta_caixa_banco = "45.1.5";
+              
+            $response = Http::post("http://10.10.50.37:8080/api/criar-debito", 
+            [
+                  'empresa_id' => 1,
+                  'valor' => $request->valor_a_depositar,
+                  'tipo_instituicao' => $aplicacao_name,
+                  'subconta_cliente' => $subconta_cliente,
+                  'subconta_caixa_banco' => $subconta_caixa_banco,
+                  'subconta_servico' => $subconta_servico,
+                  'designacao' => "Pagamento de Serviço Deposito",
+            ]);        
+              
+            // realizar movimento com contas certas depois do debito --- END       
+                      
+            $valor = number_format($request->valor_a_depositar, 2, ',', '.');
+                      
+            $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . Auth::user()->nome . " fez um deposito para o estudante de Nome: {$preinscricao->Nome_Completo} com o número da matrícula: {$request->codigo_matricula} no valor de {$valor} as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+                                      
+            Acesso::create([
+                  'designacao' => Auth::user()->nome ,
+                  'descricao' => $descricao,
+                  'ip_maquina' => $ip,
+                  'browser' => $browser,
+                  'rota_acessado' => $rotaAtual,
+                  'nome_maquina' => NULL,
+                  'utilizador_id' => Auth::user()->pk_utilizador,
+            ]);
+  
+            // Se todas as operações foram bem-sucedidas, você pode fazer o commit
+            DB::commit();
+        } catch (\Exception $e) {
+            // Caso ocorra algum erro, você pode fazer rollback para desfazer as operações
+            DB::rollback();
+            return response()->json($e->getMessage(), 201);
+            // Você também pode tratar o erro de alguma forma, como registrar logs ou retornar uma mensagem de erro para o usuário.
         }
-        
-        
-        $movimento = MovimentoCaixa::where('caixa_id', $caixas->codigo)->where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
-                
-        $resultado = Matricula::where('tb_matriculas.Codigo', $request->codigo_matricula)
-        ->join('tb_admissao', 'tb_matriculas.Codigo_Aluno', '=', 'tb_admissao.Codigo')
-        ->join('tb_preinscricao', 'tb_admissao.pre_incricao', '=', 'tb_preinscricao.Codigo')
-        ->select('tb_preinscricao.Codigo','tb_preinscricao.saldo_anterior','tb_preinscricao.saldo', 'tb_preinscricao.Nome_Completo')
-        ->first();
-        
-        $saldo_apos_movimento = $resultado->saldo + $request->valor_a_depositar;
-        
-        $tipo_folha_impressao = $request->factura ?? 'Ticket';
-        
-        // registramos o deposito 
-        $create = Deposito::create([
-            'codigo_matricula_id' => $request->codigo_matricula,
-            'Codigo_PreInscricao' => $resultado->Codigo,
-            'valor_depositar' => $request->valor_a_depositar,
-            'saldo_apos_movimento' => $saldo_apos_movimento,
-            'tipo_folha' => $tipo_folha_impressao,
-            'forma_pagamento_id' => 6,
-            'caixa_id' => $caixas->codigo,
-            'status' => 'pendente',
-            'data_movimento' => date("Y-m-d"),
-            'ano_lectivo_id' => $this->anoLectivoActivo(),
-            'created_by' => Auth::user()->codigo_importado,
-            'updated_by' => Auth::user()->codigo_importado
-        ]);
-
-        
-        // actualizamos os dados do aluno
-        $preinscricao = PreInscricao::findOrFail($resultado->Codigo);
-        $preinscricao->saldo_anterior = $preinscricao->saldo;
-        $preinscricao->saldo += $request->valor_a_depositar;
-        $preinscricao->update();
-        
-        
-        $update = MovimentoCaixa::findOrFail($movimento->codigo);
-        $update->valor_arrecadado_depositos = $update->valor_arrecadado_depositos + $request->valor_a_depositar;
-        $update->valor_arrecadado_total = $update->valor_arrecadado_total + $request->valor_a_depositar;
-        $update->update();
-                
-        $valor = number_format($request->valor_a_depositar, 2, ',', '.');
-                
-        $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . Auth::user()->nome . " fez um deposito para o estudante de Nome: {$preinscricao->Nome_Completo} com o número da matrícula: {$request->codigo_matricula} no valor de {$valor} as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
-                                
-        Acesso::create([
-            'designacao' => Auth::user()->nome ,
-            'descricao' => $descricao,
-            'ip_maquina' => $ip,
-            'browser' => $browser,
-            'rota_acessado' => $rotaAtual,
-            'nome_maquina' => NULL,
-            'utilizador_id' => Auth::user()->pk_utilizador,
-        ]);
-        
 
         // Retorne a resposta em JSON
         return response()->json([
@@ -265,10 +301,8 @@ class DepositoController extends Controller
 
     }
     
-    
     public function edit($id)
     {
-                       
         if(!auth()->user()->can(['alterar deposito'])){
             return redirect()->back();
         }
