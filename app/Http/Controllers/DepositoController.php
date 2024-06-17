@@ -263,6 +263,7 @@ class DepositoController extends Controller
                   'subconta_cliente' => $subconta_cliente,
                   'subconta_caixa_banco' => $subconta_caixa_banco,
                   'subconta_servico' => $subconta_servico,
+                  'instituicao_id' => 1,
                   'designacao' => "Pagamento de Serviço Deposito",
             ]);        
               

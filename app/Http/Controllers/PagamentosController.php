@@ -1056,6 +1056,7 @@ class PagamentosController extends Controller
                         $pagamento_saldo['caixa_id'] = $caixas->codigo;
                         $pagamento_saldo['status_pagamento'] = 'pendente';
                         $pagamento_saldo['estado'] = 1;
+                        $pagamento_saldo['canal'] = 10;
                         $pagamento_saldo['corrente'] = 1;
                         $pagamento_saldo['Observacao'] = "Pagamento efectuado com Reserva no Mutue Cash";
                         $pagamento_saldo['forma_pagamento'] = "6";
@@ -1169,6 +1170,7 @@ class PagamentosController extends Controller
                     $data['DataRegisto'] = date('Y-m-d H:i:s');
                     $data['codigo_factura'] = $fact_aluno->Codigo;
                     $data['estado'] = 1;
+                    $data['canal'] = 10;
                     $data['corrente'] = 1;
                     $data['caixa_id'] = $caixas->codigo;
                     $data['status_pagamento'] = 'pendente';
@@ -1709,6 +1711,7 @@ class PagamentosController extends Controller
             $pagamento['caixa_id'] = $caixas->codigo;
             $pagamento['status_pagamento'] = 'pendente';
             $pagamento['estado'] = 1;
+            $pagamento['canal'] = 10;
             $pagamento['Observacao'] =  'Pagamento efectuado com Reserva no Mutue Cash';
             $pagamento['forma_pagamento'] =  '6';
             $pagamento['feito_com_reserva'] =  'Y';
@@ -2607,6 +2610,7 @@ class PagamentosController extends Controller
             $fatura['next'] = $numeracaoFactura;
             $fatura['tipo_documento_factura_id'] = 2;
             $fatura['estado'] = 1;
+            $fatura['canal'] = 10;
             $result['codigo_fatura'] = DB::table('factura')
                 ->insertGetId($fatura);
 
@@ -2760,6 +2764,7 @@ class PagamentosController extends Controller
                     $pagamento['AnoLectivo'] = $fact_aluno->ano_lectivo;
                     $pagamento['Codigo_PreInscricao'] = $preinscricao->Codigo;
                     $pagamento['caixa_id'] = $caixas->codigo;
+                    $pagamento['canal'] = 10;
                     $pagamento['status_pagamento'] = 'pendente';
                     $pagamento['valor_depositado'] = $valor_apagar;
                     $pagamento['Totalgeral'] = $valor_apagar;
@@ -2949,6 +2954,7 @@ class PagamentosController extends Controller
                     $pagamento['feito_com_reserva'] =  'Y';
                     $pagamento['forma_pagamento'] =  '6';
                     $pagamento['estado'] = 1;
+                    $pagamento['canal'] = 10;
                     $data['corrente'] = 1;
 
                     $id_pag = DB::table('tb_pagamentos')->insertGetId($pagamento);
