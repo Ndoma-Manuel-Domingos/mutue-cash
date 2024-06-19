@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlterarSenhaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaixaController;
 use App\Http\Controllers\ContaController;
@@ -55,8 +56,13 @@ Route::get('/login', [AuthController::class, 'login'])
 
 Route::post('/login', [AuthController::class, 'autenticacao'])->name('mc.login.post');
 
-Route::group(["middleware" => "auth"], function () {
+Route::get('/password/change', [AlterarSenhaController::class, 'changePassword']);
+Route::post('/password/change', [AlterarSenhaController::class, 'changePasswordPost']);
 
+// Route::get('/password/change', [AuthController::class, 'changePassword'])->name('password.change');
+
+Route::group(["middleware" => ["auth", "password.check"]], function () {
+    
     // ['prefix' => 'api', 'middleware' => ['auth', 'role_or_permission:Admin|Docano|Reitoria|listar provas']
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('mc.logout');

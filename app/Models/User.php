@@ -22,6 +22,8 @@ class User extends Authenticatable
     
     public $timestamps = false;
 
+    protected $dates = ['last_password_change'];
+    
     protected $fillable = [
         'codigo_importado',
         'nome',
@@ -30,6 +32,7 @@ class User extends Authenticatable
         'obs',
         'active_state'
     ];
+    
 
     protected static function boot()
     {
