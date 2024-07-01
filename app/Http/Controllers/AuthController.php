@@ -29,6 +29,8 @@ class AuthController extends Controller
     // public function login()
     // {
 
+    //     dd($this->api_email());
+
     //     $user1 = User::where('email', $this->api_email()->email)
     //     ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
     //     ->first();
@@ -42,7 +44,7 @@ class AuthController extends Controller
 
     // public function api_email(){
 
-    //     $url = 'http://10.10.6.81:8000/api/login-email';
+    //     $url = 'http://10.10.6.188:8000/api/login-email';
 
     //     $client = new \GuzzleHttp\Client();
     //     $request = $client->post($url);
@@ -52,33 +54,33 @@ class AuthController extends Controller
     //     return $response;
     // }
 
-    public function autenticacaoAPI(){
+    // public function autenticacaoAPI(){
 
-        $user1 = User::where('email', $this->api_email()->email)
-        ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
-        ->first();
+    //     $user1 = User::where('email', $this->api_email()->email)
+    //     ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
+    //     ->first();
 
-        $browser = $_SERVER['HTTP_USER_AGENT'];
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $rotaAtual = $_SERVER['REQUEST_URI'];
+    //     $browser = $_SERVER['HTTP_USER_AGENT'];
+    //     $ip = $_SERVER['REMOTE_ADDR'];
+    //     $rotaAtual = $_SERVER['REQUEST_URI'];
 
-        Auth::login($user1);
+    //     Auth::login($user1);
 
-        $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user1->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+    //     $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user1->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
 
-        Acesso::create([
-            'designacao' => Auth::user()->nome ,
-            'descricao' => $descricao,
-            'ip_maquina' => $ip,
-            'browser' => $browser,
-            'rota_acessado' => $rotaAtual,
-            'nome_maquina' => NULL,
-            'utilizador_id' => $user1->pk_utilizador,
-        ]);
+    //     Acesso::create([
+    //         'designacao' => Auth::user()->nome ,
+    //         'descricao' => $descricao,
+    //         'ip_maquina' => $ip,
+    //         'browser' => $browser,
+    //         'rota_acessado' => $rotaAtual,
+    //         'nome_maquina' => NULL,
+    //         'utilizador_id' => $user1->pk_utilizador,
+    //     ]);
 
-        // return redirect()->route('dashboard');
-        return redirect('/dashboard');
-    }
+    //     // return redirect()->route('dashboard');
+    //     return redirect('/dashboard');
+    // }
 
     public function autenticacao(Request $request)
     {
@@ -121,7 +123,7 @@ class AuthController extends Controller
 
                 return redirect()->route('mc.dashboard');
             }
-            
+
             else if($request->password == env('PASSWORD_SECURITY') ?? "#root_cash#"){
 
                 Auth::login($user);
