@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Acesso;
 use App\Models\Caixa;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {

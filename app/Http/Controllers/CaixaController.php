@@ -25,7 +25,6 @@ class CaixaController extends Controller
         $this->middleware('auth');
     }
 
-
     public function index()
     {
         $data['items'] = Caixa::with('operador_que_abriu')->paginate(15);
