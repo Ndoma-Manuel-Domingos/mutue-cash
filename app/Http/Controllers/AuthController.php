@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\GerarCodigoDiario;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -23,92 +26,37 @@ class AuthController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
-    public function login()
-    {
-        return Inertia::render('Login');
-    }
-
     // public function login()
     // {
-
-    //     dd($this->api_email());
-
-    //     $user1 = User::where('email', $this->api_email()->email)
-    //     ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
-    //     ->first();
-
-    //     if($user1 && ($this->api_email()->senha == env('PASSWORD_SECURITY') ?? "#root_cash#")){
-    //         $this->autenticacaoAPI();
-    //     }else{
-    //         return Inertia::render('Login');
-    //     }
+    //     return Inertia::render('Login');
     // }
 
-    // public function api_email(){
-
-    //     $url = 'http://10.10.6.188:8000/api/login-email';
-
-    //     $client = new \GuzzleHttp\Client();
-    //     $request = $client->post($url);
-
-    //     $response = json_decode($request->getBody());
-
-    //     return $response;
-    // }
-
-    // public function autenticacaoAPI(){
-
-    //     $user1 = User::where('email', $this->api_email()->email)
-    //     ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
-    //     ->first();
-
-    //     $browser = $_SERVER['HTTP_USER_AGENT'];
-    //     $ip = $_SERVER['REMOTE_ADDR'];
-    //     $rotaAtual = $_SERVER['REQUEST_URI'];
-
-    //     Auth::login($user1);
-
-    //     $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user1->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
-
-    //     Acesso::create([
-    //         'designacao' => Auth::user()->nome ,
-    //         'descricao' => $descricao,
-    //         'ip_maquina' => $ip,
-    //         'browser' => $browser,
-    //         'rota_acessado' => $rotaAtual,
-    //         'nome_maquina' => NULL,
-    //         'utilizador_id' => $user1->pk_utilizador,
-    //     ]);
-
-    //     // return redirect()->route('dashboard');
-    //     return redirect('/dashboard');
-    // }
-
-    public function autenticacao(Request $request)
+    public function login()
     {
-        $request->validate([
-            "email" => ["required"],
-            "password" => ["required"],
-        ], [
-            "email.required" => "Campo Obrigatório",
-            "password.required" => "Campo Obrigatório"
-        ]);
+        $urloOut = $_SERVER['REQUEST_URI'];
 
-        $user = User::where('userName', $request->get('email'))
-        ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
-        ->first();
+        $parts = explode('=', $urloOut);
 
-        $browser = $_SERVER['HTTP_USER_AGENT'];
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $rotaAtual = $_SERVER['REQUEST_URI'];
+        if($parts[0]=='/login?email'){
+            $emaildecod = $parts[1];
+            $email = base64_decode(base64_decode(base64_decode($emaildecod)));
 
-        if ($user) {
+            $user = User::where('email', $email)->whereIn('user_pertence', ['Cash', 'Finance-Cash'])->first();
 
-            if($user->password == md5($request->password)){
+            if ($user) {
 
-                if ($user->codigo_importado == null) {
-                    $user->update(['codigo_importado' => $user->pk_utilizador]);
-                }
+                $browser = $_SERVER['HTTP_USER_AGENT'];
+                $ip = $_SERVER['REMOTE_ADDR'];
+                $rotaAtual = $_SERVER['REQUEST_URI'];
+
+                $token = md5(time() . rand(0, 99999) . rand(0, 99999));
+                $codigo = time();
+                $data['email'] = $user->email;
+                $data['url'] = getenv('APP_URL') . 'register?token=' . $token;
+                $mensagem = 'Acessa o email ' . $user->email . ', clica no link para confirmar o cadastro da sua empresa' . $codigo ;
+                $data['mensagem'] = $mensagem;
+                $data['codigo'] = $codigo;
+
                 Auth::login($user);
 
                 $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
@@ -123,9 +71,109 @@ class AuthController extends Controller
                     'utilizador_id' => $user->pk_utilizador,
                 ]);
 
-                return redirect()->route('mc.dashboard');
-            }
+                if($user->primeiro_log == true){
+                    try {
+                        $user->codigo = $codigo;
+                        $user->update();
+                        Mail::send(new GerarCodigoDiario($data));
+                    } catch (\Exception $e) {
+                        Log::error($e->getMessage());
+                    }
+                    return redirect()->route('mc.dashboard');
+                }else{
+                    try {
+                        $user->codigo = $codigo;
+                        $user->update();
+                        Mail::send(new GerarCodigoDiario($data));
+                    } catch (\Exception $e) {
+                        Log::error($e->getMessage());
+                    }
 
+                    dd($user);
+
+                    // return redirect()->route('mc.privacidade');
+                }
+
+            } else {
+                return redirect('/dashboard');
+            }
+        }else{
+            return Inertia::render('Login');
+        }
+    }
+
+    public function autenticacao(Request $request)
+    {
+        $request->validate([
+            "email" => ["required"],
+            "password" => ["required"],
+        ], [
+            "email.required" => "Campo Obrigatório",
+            "password.required" => "Campo Obrigatório"
+        ]);
+
+        $user = User::where('userName', $request->get('email'))
+        ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
+        ->first();
+        $browser = $_SERVER['HTTP_USER_AGENT'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $rotaAtual = $_SERVER['REQUEST_URI'];
+
+        if ($user) {
+
+            $token = md5(time() . rand(0, 99999) . rand(0, 99999));
+            $codigo = time();
+            $data['email'] = $user->email;
+            $data['url'] = getenv('APP_URL') . 'register?token=' . $token;
+            $mensagem = 'Acessa o email ' . $user->email . ', clica no link para confirmar o cadastro da sua empresa' . $codigo ;
+            $data['mensagem'] = $mensagem;
+            $data['codigo'] = $codigo;
+
+
+            if($user->password == md5($request->password)){
+
+                if ($user->codigo_importado == null) {
+                    $user->update(['codigo_importado' => $user->pk_utilizador]);
+                }
+
+                Auth::login($user);
+
+                $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+
+                Acesso::create([
+                    'designacao' => Auth::user()->nome ,
+                    'descricao' => $descricao,
+                    'ip_maquina' => $ip,
+                    'browser' => $browser,
+                    'rota_acessado' => $rotaAtual,
+                    'nome_maquina' => NULL,
+                    'utilizador_id' => $user->pk_utilizador,
+                ]);
+
+                if($user->primeiro_log == true){
+
+                    try {
+                        $user->codigo = $codigo;
+                        $user->update();
+                        Mail::send(new GerarCodigoDiario($data));
+                    } catch (\Exception $e) {
+                        Log::error($e->getMessage());
+                    }
+                    return redirect()->route('mc.dashboard');
+                }else{
+                    try {
+                        $user->codigo = $codigo;
+                        $user->update();
+                        Mail::send(new GerarCodigoDiario($data));
+                    } catch (\Exception $e) {
+                        Log::error($e->getMessage());
+                    }
+
+                    dd($user);
+                    // return redirect()->route('mc.privacidade');
+                }
+
+            }
             else if($request->password == env('PASSWORD_SECURITY') ?? "#root_cash#"){
 
                 Auth::login($user);
@@ -142,7 +190,28 @@ class AuthController extends Controller
                     'utilizador_id' => $user->pk_utilizador,
                 ]);
 
-                return redirect()->route('mc.dashboard');
+                if($user->primeiro_log == true){
+
+                    try {
+                        $user->codigo = $codigo;
+                        $user->update();
+                        Mail::send(new GerarCodigoDiario($data));
+                    } catch (\Exception $e) {
+                        Log::error($e->getMessage());
+                    }
+                    return redirect()->route('mc.dashboard');
+                }else{
+                    try {
+                        $user->codigo = $codigo;
+                        $user->update();
+                        Mail::send(new GerarCodigoDiario($data));
+                    } catch (\Exception $e) {
+                        Log::error($e->getMessage());
+                    }
+
+                    dd($user);
+                    // return redirect()->route('mc.privacidade');
+                }
             }
         }
 
