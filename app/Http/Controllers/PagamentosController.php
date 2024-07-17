@@ -754,6 +754,11 @@ class PagamentosController extends Controller
         $multaItem = 0;
         $valorComdesconto = 0;
         $anoCorrente = $this->anoLectivoActivo();
+        
+        
+        $browser = $_SERVER['HTTP_USER_AGENT'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $rotaAtual = $_SERVER['REQUEST_URI'];
 
         $fatura_paga = DB::table('factura')
             ->join('tb_matriculas', 'tb_matriculas.Codigo', 'factura.CodigoMatricula')
@@ -859,11 +864,23 @@ class PagamentosController extends Controller
                 $array_fatura1 = json_decode($factura_items1, true);
 
                 DB::beginTransaction();
+                                     
+                // SALVAR LOG DO PAGAMENTO
+                $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . Auth::user()->nome . " fez um pagamento no estudante de Nome: {$aluno->admissao->preinscricao->Nome_Completo}, número da preinscrição: {$aluno->admissao->preinscricao->Codigo}, número da matrícula: {$fatura_paga->matricula}. O valor pago para este serviço foi {$fatura_paga->ValorAPagar} as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
+                  
+                Acesso::create([
+                    'designacao' => Auth::user()->nome ,
+                    'descricao' => $descricao,
+                    'ip_maquina' => $ip,
+                    'browser' => $browser,
+                    'rota_acessado' => $rotaAtual,
+                    'nome_maquina' => NULL,
+                    'utilizador_id' => Auth::user()->pk_utilizador,
+                ]);
+                
 
                 if ($valorFatura /*&& $valorFatura->ano_factura == $anoCorrente */ && $valorFatura->tipo_factura != 5 && $servico_mensal && $valorFatura->estado_factura != 2) {
                     foreach ($array_fatura1 as $key => $value) {
-
-
                         $data_limite = $this->aplicarMultaMes($data['DataBanco'], $value['mes_temp_id']);
 
                         if ($data_limite &&  $data['DataBanco'] <= $data_limite['data'] && $value['Multa'] > 0) {
@@ -1583,34 +1600,7 @@ class PagamentosController extends Controller
 
             if ($fact_aluno->codigo_descricao == 3) {
                 $this->pagamentoService->corrigirFalhaDeValidacaoDaAPI($id_pag);
-                // $ano = AnoLectivo::where('estado', 'Activo')->first();
-                // $pagamento = Pagamento::findOrFail($id_pag);
-
-                // if($ano){
-
-                //     if ($pagamento) {
-
-                //         $pagamento->estado = 1;
-                //         $pagamento->forma_pagamento = 6;
-                //         $pagamento->update();
-
-                //         $preinscricao = Preinscricao::leftJoin('tb_admissao', 'tb_preinscricao.Codigo', '=', 'tb_admissao.pre_incricao')
-                //             ->leftJoin('tb_matriculas', 'tb_admissao.Codigo', '=', 'tb_matriculas.Codigo_Aluno')
-                //             ->select('tb_matriculas.Codigo AS codigo_matricula','tb_preinscricao.Codigo AS codigo_preinscricao')
-                //             ->findOrFail($pagamento->Codigo_PreInscricao);
-                //         if ($preinscricao) {
-
-                //             $grades = GradeCurricularAluno::where('codigo_matricula', $preinscricao->codigo_matricula)->where('codigo_ano_lectivo', $ano->Codigo)->get();
-                //             if($grades){
-                //                 foreach($grades as $grade){
-                //                     $update = GradeCurricularAluno::findOrFail($grade->codigo);
-                //                     $update->Codigo_Status_Grade_Curricular = 2;
-                //                     $update->update();
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
+               
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
@@ -1622,10 +1612,7 @@ class PagamentosController extends Controller
         try {
             $troc = Factura::find($codigoDaFatura);
             $troc->update(['Troco' => $troco_front]);
-            // if(($fatura_paga->codigo_descricao == 1) || ($fatura_paga->codigo_descricao == 9) || ($fatura_paga->codigo_descricao == 11)){
-            //     $troc = Factura::find($codigoDaFatura);
-            //     $troc->update(['Troco' =>$troco_front]);
-            // }
+       
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollback();
             return Response()->json($e->getMessage());
@@ -2186,10 +2173,8 @@ class PagamentosController extends Controller
         }
     }
 
-
     public function faturaDiversos(Request $request, $codigo_matricula)
     {
-
         // verificar se o caixa esta bloqueado
         $caixa = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
@@ -2246,7 +2231,7 @@ class PagamentosController extends Controller
         $referencia = $keygen;
 
         DB::beginTransaction();
-
+        
         $caixas = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         if (blank($caixas)) {
@@ -2397,8 +2382,6 @@ class PagamentosController extends Controller
                         $parametroServico = "Nenhum";
                     }
 
-                    //dd($retricaoPagamento->prestacao);
-
                     if ($value['Descricao'] == $parametroServico) {
                         $prestacao_anterior = $parametroDocumentos->prestacao_em_cobranca - 1;
 
@@ -2427,7 +2410,6 @@ class PagamentosController extends Controller
                     }
                     //nova restricao liquidacao
                     if ($value['TipoServico'] == 'Mensal') {
-
 
                         $liquidacao_fatura = DB::table('factura')
                             ->select('factura_items.estado as estado_item', 'factura_items.CodigoFactura', 'factura.estado as estado_fatura', 'factura.corrente')
@@ -2463,7 +2445,6 @@ class PagamentosController extends Controller
                             //->whereRaw('factura_items.mes_temp_id IS NOT NULL')
                             ->orderBy('factura.Codigo', 'desc')->first();
                     }
-
 
                     if ($liquidacao_fatura) {
                         $result['message'] = '2. Caro estudante, tem uma factura que não foi liquidada totalmente com o número ' . $liquidacao_fatura->CodigoFactura;
@@ -2613,6 +2594,7 @@ class PagamentosController extends Controller
                 ->insertGetId($fatura);
 
             $codigo_fatura = $result['codigo_fatura'];
+   
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
@@ -2741,8 +2723,6 @@ class PagamentosController extends Controller
             ->select('factura_items.*')
             ->where('factura.Codigo', $fact_aluno ?  $fact_aluno->Codigo : $codigo_fatura)
             ->get();
-
-        // dd($factura_items, $fact_aluno, $codigo_fatura, $preinscricao);
 
         $array_fatura = json_decode($factura_items, true);
         $id_pag = null;
@@ -2982,7 +2962,7 @@ class PagamentosController extends Controller
                 throw $e;
             }
         }
-        
+
         $aplicacao_name = ENV('APLICATION_NAME');
               
         // conta a creditar

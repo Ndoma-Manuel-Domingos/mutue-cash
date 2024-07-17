@@ -403,7 +403,6 @@ class DepositoController extends Controller
                 'utilizador_id' => Auth::user()->pk_utilizador,
             ]);
             
-            
         }
         
         return response()->json([
