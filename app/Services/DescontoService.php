@@ -76,7 +76,9 @@ class DescontoService
     $taxa = $taxa1;
 
     if ($taxa1Fim) {
-      $taxa->taxa = 0;
+        $taxa = $taxa1;
+    }else{
+        $taxa->taxa = 0;
     }
     return ($taxa);
   }
