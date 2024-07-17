@@ -191,3 +191,5 @@ Route::group(["middleware" => ["auth", "password.check"]], function () {
     Route::get('/carregar-pagamentos-ultimos-seis-meses',  [DashboardController::class, 'pagamentoUltimosSeisMeses']);
 
 });
+
+

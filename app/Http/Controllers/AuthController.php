@@ -93,8 +93,8 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('userName', $request->get('email'))
-        ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
-        ->first();
+            ->whereIn('user_pertence', ['Cash', 'Finance-Cash'])
+            ->first();
 
         $browser = $_SERVER['HTTP_USER_AGENT'];
         $ip = $_SERVER['REMOTE_ADDR'];

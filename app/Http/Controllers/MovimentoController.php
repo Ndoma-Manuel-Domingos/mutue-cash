@@ -105,6 +105,7 @@ class MovimentoController extends Controller
         
     public function abertura()
     {
+    
         $user = auth()->user();
         
         // verificar se o caixa esta bloqueado
@@ -120,6 +121,7 @@ class MovimentoController extends Controller
             ->first();
         }
         
+        
         if($caixa && $caixa->bloqueio == 'Y'){
             return redirect('/movimentos/bloquear-caixa');
         }
@@ -127,28 +129,12 @@ class MovimentoController extends Controller
         $caixas = Caixa::where('status', 'fechado')->get();
         
         $ultimo_movimento = MovimentoCaixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'fechado')->where('status_admin', 'validado')->latest()->first();
-        
-        $validacao = Grupo::where('designacao', "Validação de Pagamentos")->select('pk_grupo')->first();
-        $admins = Grupo::where('designacao', 'Administrador')->select('pk_grupo')->first();
-        $finans = Grupo::where('designacao', 'Area Financeira')->select('pk_grupo')->first();
-        $tesous = Grupo::where('designacao', 'Tesouraria')->select('pk_grupo')->first();
-
-        // $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)->with('utilizadores')->get();
-        // $utilizadores = GrupoUtilizador::whereIn('fk_grupo', [$validacao->pk_grupo, $finans->pk_grupo, $tesous->pk_grupo])->orWhere('fk_utilizador', Auth::user()->pk_utilizador)
-        // ->whereHas('utilizadores', function($query, $value){
-        //     dd($value);
-        // })
-        // ->with('utilizadores')->get();
-        // dd($utilizadores);
-        
                 
         $utilizadores = User::whereIn('user_pertence', ['Cash','Finance-Cash', 'Todos'])
         ->with('roles')
         // ->whereIn('pk_utilizador', $array_utilizadores)
         ->where('active_state', 1)
         ->get();
-    
-        //dd($utilizadores);
     
         $header = [
             "caixas" => $caixas,
@@ -174,6 +160,7 @@ class MovimentoController extends Controller
             'valor_inicial.numeric' => "Valor da abertura do caixa deve serve um valor númerico!",
         ]);
         
+        
         $user = auth()->user();
         
         if($user->codigo_importado == null){
@@ -185,7 +172,7 @@ class MovimentoController extends Controller
         $caixa = Caixa::findOrFail($request->caixa_id);
       
         if(filled($verificar)){
-            
+        
             $caixa_aberto = $verificar ? Caixa::findOrFail($verificar->caixa_id) : null;
 
             return redirect()->back()->with('error', 'o operador que pretendes associar o '.$caixa->nome.', já está associado ao '.$caixa_aberto->nome.' que não foi ainda encerrado');

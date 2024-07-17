@@ -386,7 +386,7 @@
                               +meses_temp_lista.length
                           "
                           class="btn-sm btn-success m-1"
-                        >
+                        > 
                           <i class="fas fa-plus"></i> ADICIONAR
                         </button>
                       </template>
@@ -2377,9 +2377,10 @@ export default {
       });
     },
 
-    adicionarMeses: function () {
+    adicionarMeses: function () {    
       if (+this.anoLectivo.Designacao <= 2019) {
         if (this.opcoes == 1) {
+
           if (
             +this.ultima_prestacao_antiga_paga >= this.prestacoes_por_ano ||
             +this.tabela.length + this.todos_meses_pagos >= this.meses.length
