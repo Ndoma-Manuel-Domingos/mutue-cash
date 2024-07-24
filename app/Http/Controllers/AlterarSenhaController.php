@@ -51,5 +51,33 @@ class AlterarSenhaController extends Controller
         
     }
 
+    public function checkAccount(Request $request)
+    {
+        return Inertia::render('VerificarConta');
+    }
+
+    public function checkAccountPost(Request $request)
+    {
+        // |confirmed
+        $request->validate(
+            ['codigo_check' => 'required',], 
+            ['codigo_check.required' => "Campo Obrigatório",]
+        );
+        
+        $user = Auth::user();
+        
+        if($user->codigo != $request->codigo_check){
+            return back()->withErrors([
+                "codigo_check" => "Codigo Inválido!",
+            ]);
+        }
+        
+        $user->check = 1;
+        $user->save();
+        
+        return redirect()->route('mc.dashboard');
+        
+    }
+
     //
 }

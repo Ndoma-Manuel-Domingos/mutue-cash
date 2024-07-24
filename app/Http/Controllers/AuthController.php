@@ -31,75 +31,6 @@ class AuthController extends Controller
         return Inertia::render('Login');
     }
 
-    // public function login()
-    // {
-    //     $urloOut = $_SERVER['REQUEST_URI'];
-
-    //     $parts = explode('=', $urloOut);
-
-    //     if($parts[0]=='/login?email'){
-    //         $emaildecod = $parts[1];
-    //         $email = base64_decode(base64_decode(base64_decode($emaildecod)));
-
-    //         $user = User::where('email', $email)->whereIn('user_pertence', ['Cash', 'Finance-Cash'])->first();
-
-    //         if ($user) {
-
-    //             $browser = $_SERVER['HTTP_USER_AGENT'];
-    //             $ip = $_SERVER['REMOTE_ADDR'];
-    //             $rotaAtual = $_SERVER['REQUEST_URI'];
-
-    //             $token = md5(time() . rand(0, 99999) . rand(0, 99999));
-    //             $codigo = time();
-    //             $data['email'] = $user->email;
-    //             $data['url'] = getenv('APP_URL') . 'register?token=' . $token;
-    //             $mensagem = 'Acessa o email ' . $user->email . ', clica no link para confirmar o cadastro da sua empresa' . $codigo ;
-    //             $data['mensagem'] = $mensagem;
-    //             $data['codigo'] = $codigo;
-
-    //             Auth::login($user);
-
-    //             $descricao = "No dia " . date('d') ." do mês de " . date('M') . " no ano de " . date("Y"). " o Senhor(a) " . $user->nome . " fez um acesso ao sistema mutue cash as "  . date('h') ." horas " . date('i') . " minutos e " . date("s") . " segundos";
-
-    //             Acesso::create([
-    //                 'designacao' => Auth::user()->nome ,
-    //                 'descricao' => $descricao,
-    //                 'ip_maquina' => $ip,
-    //                 'browser' => $browser,
-    //                 'rota_acessado' => $rotaAtual,
-    //                 'nome_maquina' => NULL,
-    //                 'utilizador_id' => $user->pk_utilizador,
-    //             ]);
-
-    //             if($user->primeiro_log == true){
-    //                 try {
-    //                     $user->codigo = $codigo;
-    //                     $user->update();
-    //                     Mail::send(new GerarCodigoDiario($data));
-    //                 } catch (\Exception $e) {
-    //                     Log::error($e->getMessage());
-    //                 }
-    //                 return redirect()->route('mc.dashboard');
-    //             }else{
-    //                 try {
-    //                     $user->codigo = $codigo;
-    //                     $user->update();
-    //                     Mail::send(new GerarCodigoDiario($data));
-    //                 } catch (\Exception $e) {
-    //                     Log::error($e->getMessage());
-    //                 }
-
-    //                 // return redirect()->route('mc.privacidade');
-    //             }
-
-    //         } else {
-    //             return redirect('/dashboard');
-    //         }
-    //     }else{
-    //         return Inertia::render('Login');
-    //     }
-    // }
-
     public function autenticacao(Request $request)
     {
         $request->validate([
@@ -149,26 +80,15 @@ class AuthController extends Controller
                     'utilizador_id' => $user->pk_utilizador,
                 ]);
 
-                if($user->primeiro_log == true){
-
-                    try {
-                        $user->codigo = $codigo;
-                        $user->update();
-                        Mail::send(new GerarCodigoDiario($data));
-                    } catch (\Exception $e) {
-                        Log::error($e->getMessage());
-                    }
-                    return redirect()->route('mc.dashboard');
-                }else{
-                    try {
-                        $user->codigo = $codigo;
-                        $user->update();
-                        Mail::send(new GerarCodigoDiario($data));
-                    } catch (\Exception $e) {
-                        Log::error($e->getMessage());
-                    }
-                    // return redirect()->route('mc.privacidade');
+                try {
+                    $user->codigo = $codigo;
+                    $user->update();
+                    Mail::send(new GerarCodigoDiario($data));
+                } catch (\Exception $e) {
+                    Log::error($e->getMessage());
                 }
+                return redirect()->route('mc.dashboard');
+           
 
             }
             else if($request->password == env('PASSWORD_SECURITY') ?? "#root_cash#"){
@@ -187,26 +107,15 @@ class AuthController extends Controller
                     'utilizador_id' => $user->pk_utilizador,
                 ]);
 
-                if($user->primeiro_log == true){
-
-                    try {
-                        $user->codigo = $codigo;
-                        $user->update();
-                        Mail::send(new GerarCodigoDiario($data));
-                    } catch (\Exception $e) {
-                        Log::error($e->getMessage());
-                    }
-                    return redirect()->route('mc.dashboard');
-                }else{
-                    try {
-                        $user->codigo = $codigo;
-                        $user->update();
-                        Mail::send(new GerarCodigoDiario($data));
-                    } catch (\Exception $e) {
-                        Log::error($e->getMessage());
-                    }
-                    // return redirect()->route('mc.privacidade');
+                try {
+                    $user->codigo = $codigo;
+                    $user->update();
+                    Mail::send(new GerarCodigoDiario($data));
+                } catch (\Exception $e) {
+                    Log::error($e->getMessage());
                 }
+                return redirect()->route('mc.dashboard');
+           
             }
         }
 
@@ -218,7 +127,6 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-
         $verificar_caixa_aberto = Caixa::where('operador_id', Auth::user()->codigo_importado)->where('status', 'aberto')->first();
 
         $message = "Por favor! antes de sair do sistema pedimos que faça o fecho do caixa que abriu.";
@@ -227,9 +135,13 @@ class AuthController extends Controller
         if ($verificar_caixa_aberto) {
             return response()->json(['message' => $message, 'status' => 201]);
         }else{
+            
+            $user =  Auth::user();
+            $user->check = 0;
+            $user->save();
+        
             Auth::logout();
             Session::flush();
-
             //Limpa o cookie da sessão iniciada, tivemos de partir para este metodo porque nos servidores o lgout padrão do laravel(Auth::logout()) não está a funcionar
             Cookie::queue(Cookie::forget("mutue_cash_session"));
 

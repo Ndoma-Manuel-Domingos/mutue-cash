@@ -59,9 +59,12 @@ Route::post('/login', [AuthController::class, 'autenticacao'])->name('mc.login.p
 Route::get('/password/change', [AlterarSenhaController::class, 'changePassword']);
 Route::post('/password/change', [AlterarSenhaController::class, 'changePasswordPost']);
 
+Route::get('/verificacao/conta', [AlterarSenhaController::class, 'checkAccount']);
+Route::post('/verificacao/conta', [AlterarSenhaController::class, 'checkAccountPost']);
+
 // Route::get('/password/change', [AuthController::class, 'changePassword'])->name('password.change');
 
-Route::group(["middleware" => ["auth", "password.check"]], function () {
+Route::group(["middleware" => ["auth", "password.check", "check.account"]], function () {
     
     // ['prefix' => 'api', 'middleware' => ['auth', 'role_or_permission:Admin|Docano|Reitoria|listar provas']
 

@@ -30,9 +30,11 @@ class User extends Authenticatable
         'userName',
         'password',
         'obs',
-        'active_state'
+        'active_state',
+        'codigo',
+        'check',
+        'last_password_change',
     ];
-    
 
     protected static function boot()
     {

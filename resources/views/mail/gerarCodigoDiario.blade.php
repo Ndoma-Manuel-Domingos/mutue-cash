@@ -1,5 +1,7 @@
-<h4>Este código permitirá que você valide pagamentos ao longo do dia de hoje.</h4>
+<h4>Por favor, clique no botão abaixo para verificar seu endereço de email e completar seu acesso ao sistema Mutue Cash.'</h4>
+
 <h2>Código: {{ $codigo }}</h2>
-{{-- <a href="<?= $url ?>">{{ $url}}</a> --}}
+
+<a href="/verificacao/conta" class="btn btn-primary btn-lg">clica aqui para verificar a sua conta!</a>
 
  
